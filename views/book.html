@@ -1,0 +1,23 @@
+<div ng-include="'views/loading.html'"></div>
+<div class="container" ng-show="!$root.loading && !$root.error" style="padding-bottom:20px">
+  <div class="ui segment" ng-repeat="item in data track by $index">
+    <h4 class="ui header" ng-bind="item.title"></h4>
+    <div class="ui divided selection list">
+      <div class="item">
+        <div class="ui green horizontal label">
+          <i class="barcode icon"></i> 条码
+        </div>
+        <span style="color:#333" ng-bind="item.barcode"></span>
+      </div>
+      <div class="item">
+        <div class="ui teal horizontal label">
+          <i class="wait outline icon"></i> 期限
+        </div>
+        <span style="color:#333" ng-bind="item.time"></span>
+        <div class="circular ui icon orange mini button" style="padding: 5px 10px;" ng-click="renew(item)">
+          <i class="history icon"></i> 续借
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

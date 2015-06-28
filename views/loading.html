@@ -1,0 +1,8 @@
+<div class="container">
+  <div class="ui active centered inline text loader" ng-if="$root.loading">
+    加载中，请稍候...
+  </div>
+  <div class="ui warning message" ng-if="$root.error && $root.error.length">
+    <div class="header" ng-bind="$root.error"></div>
+  </div>
+</div>

@@ -1,0 +1,28 @@
+<div ng-include="'views/loading.html'"></div>
+<div class="container" ng-show="!$root.loading && !$root.error" style="padding-bottom:20px">
+  <div class="ui positive message">
+    <div class="header">
+      卡号：<div class="ui green horizontal label" ng-bind="info.cardId"></div>
+      余额：<div class="ui green horizontal label" ng-bind="info.balance"></div>
+    </div>
+  </div>
+  <table class="ui teal celled striped unstackable attached table" ng-if="data && data.length">
+    <thead>
+      <tr>
+        <th class="center aligned">交易时间</th>
+        <th class="center aligned">交易额</th>
+        <th class="center aligned">余额</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="item in data">
+        <td class="center aligned" ng-bind="item.time"></td>
+        <td class="center aligned" ng-bind="item.trade"></td>
+        <td class="center aligned" ng-bind="item.balance"></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="ui teal message" ng-if="data && !data.length">
+    <div class="header">您的一卡通最近无交易情况</div>
+  </div>
+</div>

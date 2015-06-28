@@ -1,0 +1,50 @@
+<div ng-include="'views/loading.html'" ng-show="!judging"></div>
+<div class="container" style="padding-bottom:20px">
+  <!-- 评教列表 -->
+  <table class="ui teal celled striped unstackable attached table" ng-show="!$root.error && !judging" ng-if="!$root.loading && data && data.length ">
+    <thead>
+      <tr>
+        <th class="eight wide center aligned">科目</th>
+        <th class="four wide center aligned">教师</th>
+        <th class="four wide center aligned">评价</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-init="isSubmit = ((item.submit == '是') && (item.mark >= 55))" ng-repeat="item in data track by $index">
+        <td class="center aligned" ng-bind="item.course"></td>
+        <td class="center aligned" ng-bind="item.teacher"></td>
+        <td class="center aligned" ng-if="isSubmit">
+          <i class="green checkmark icon"></i> {{item.mark}}
+        </td>
+        <td class="center aligned" ng-if="!isSubmit">
+          <a href="javascript:void(0)" ng-click="judge(item)">评价</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <!-- 评教中 -->
+  <div class="ui form attached segment" ng-show="judging" style="margin-top:0">
+    <h3 class="ui header" ng-bind="judging.course"></h3>
+    <div class="ui vertical teal segment" ng-repeat="title in ['老师讲课有吸引力，能激发我思考和探究的兴趣。','我的学习在课内课外都能够得到老师的指导和帮助。','我感觉老师是用心备课。','老师关注学生的课堂表现并能维持良好的学习环境。','老师能布置课内或课外作业，及时进行批改或点评。','老师评价学生的表现时公正合理，对作业及测验成绩很重视。','老师着装得体、普通话标准，具有人格魅力，对我的影响很大。','老师帮助我进一步掌握了知识的获取方法和理解途径。','老师能合理运用板书和课件等多种教学媒体，便于我理解教学内容。','老师会结合学科前沿或社会热点，对教材知识进行拓展性讲解。'];">
+      <h5 ng-bind="(index + 1) + '、' + title"></h5>
+      <div class="grouped inline fields" ng-init="index = $index">
+        <div class="field" ng-repeat="radio in ['很满意','满意','一般','较差']">
+          <div class="ui radio checkbox">
+            <input type="radio" name="a{{index}}" value="{{$index}}" ng-model="judging['a' + i]">  
+            <label ng-bind="radio"></label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ui vertical segment" style="text-align:right">
+      <div class="ui buttons">
+        <div class="ui green button" ng-class="{loading:$root.loading}" ng-click="submit()">提交并保存</div>
+        <div class="or" ng-show="!$root.loading"></div>
+        <div class="ui orange button" ng-show="!$root.loading" ng-click="judging = false">返回上级</div>
+      </div>
+    </div>
+  </div>
+  <div class="ui bottom attached warning message" ng-show="judging && $root.error">
+    <i class="warning circle icon"></i> {{$root.error}}
+  </div>
+</div>

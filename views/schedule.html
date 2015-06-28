@@ -1,0 +1,41 @@
+<div ng-include="'views/loading.html'"></div>
+<div class="container" ng-show="!$root.loading && !$root.error" style="padding-bottom:20px">
+  <div class="ui positive message">
+    <div class="header">
+      {{info.term[0]}}学期课表（<a ng-href="{{$root.url}}?fun=schedule&download">点击下载</a>）
+    </div>
+  </div>
+  <div class="ui top attached fluid seven tabular item menu">
+    <a class="item" data-tab="{{$index + 1}}" ng-class="{active:!$index}" ng-repeat="day in ['周一','周二','周三','周四','周五','周六','周日']" ng-bind="day"></a>
+  </div>
+  <div class="ui bottom attached tab segment" ng-class="{active:!$index}" data-tab="{{tab}}" ng-repeat="tab in [1,2,3,4,5,6,7]">
+    <div class="ui vertical segment" ng-repeat="items in data track by $index" ng-if="items[tab].length">
+      <div class="ui teal ribbon label" ng-bind="($index * 2 + 1) + '-' + ($index * 2 + 2) + '节课'"></div>
+      <div class="ui divided relaxed list">
+        <div class="item" ng-repeat="per in items[tab] track by $index">
+          <div class="ui divided selection list">
+            <div class="item">
+              <div class="ui orange horizontal label">
+                <i class="wait icon"></i> 周次
+              </div>
+              <span style="color:#333" ng-bind="per.time"></span>
+            </div>
+            <div class="item">
+              <div class="ui green horizontal label">
+                <i class="book icon"></i> 课程
+              </div>
+              <span style="color:#333" ng-bind="per.course"></span>
+            </div>
+            <div class="item">
+              <div class="ui teal horizontal label">
+                <i class="building icon"></i> 教室
+              </div>
+              <span style="color:#333" ng-bind="per.classroom"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ui blue message" ng-bind="info.remarks"></div>
+</div>

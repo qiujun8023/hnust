@@ -1,0 +1,23 @@
+<div ng-include="'views/loading.html'"></div>
+<div class="container" ng-show="!$root.loading && !$root.error" style="padding-bottom:20px">
+  <table class="ui teal celled striped unstackable attached table">
+    <thead>
+      <tr>
+        <th class="center aligned">科目</th>
+        <th class="center aligned">学分</th>
+        <th class="center aligned">成绩</th>
+        <th class="center aligned">对应绩点</th>
+        <th class="center aligned">学分绩点</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="item in data" ng-class="{error: ((item.score < 60) || (item.score == '不及格') || !item.score)}">
+        <td class="center aligned" ng-bind="item.course"></td>
+        <td class="center aligned" ng-bind="item.credit"></td>
+        <td class="center aligned" ng-bind="item.score + (item.resit? '*':'')"></td>
+        <td class="center aligned" ng-bind="item.point"></td>
+        <td class="center aligned" ng-bind="item.gpa"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
