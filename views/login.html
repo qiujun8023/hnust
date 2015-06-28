@@ -3,15 +3,11 @@
   <form class="ui attached fluid form segment">
     <div class="field">
       <label>学号</label>
-      <div class="ui large input">
-        <input type="text" placeholder="请输入学号" name="studentId" ng-model="studentId">
-      </div>
+      <input type="text" style="font-size:1.1em" placeholder="请输入学号" name="studentId" ng-model="studentId">
     </div>
     <div class="field">
       <label>密码</label>
-      <div class="ui large input">
-        <input type="password" placeholder="教务网密码或身份证后6位" name="passwd" ng-model="passwd" >
-      </div>
+      <input type="password" style="font-size:1.1em" placeholder="教务网密码或身份证后6位" name="passwd" ng-model="passwd">
     </div>
     <div class="positive ui submit button" ng-class="{loading:$root.loading}">登录</div>
   </form>
