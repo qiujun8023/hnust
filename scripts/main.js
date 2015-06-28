@@ -7,7 +7,7 @@
     //AngularJS
     var hnust = angular.module('hnust', ['ngRoute', 'ngCookies']);
 
-    hnust.config(function($routeProvider, $httpProvider) {
+    hnust.config(function ($routeProvider, $httpProvider) {
         //设置默认headers
         $httpProvider.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 
@@ -194,7 +194,7 @@
                     $cookies.rank = info.rank || '-1';
                     $cookies.studentId = info.studentId || '游客';
                 });
-                return false;
+                return true;
             }
         });
     };

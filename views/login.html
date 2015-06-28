@@ -1,6 +1,8 @@
 <div class="container">
   <div class="ui teal message">您需要登录后才能访问。</div>
-  <form class="ui attached fluid form segment">
+  <!-- 触发浏览器保存密码 -->
+  <iframe name='iframe' style="display:none"></iframe> 
+  <form class="ui attached fluid form segment" method="post" action="README.md" target="iframe">
     <div class="field">
       <label>学号</label>
       <input type="text" style="font-size:1.1em" placeholder="请输入学号" name="studentId" ng-model="studentId">
