@@ -62,7 +62,7 @@
     <div class="item" ng-bind="title"></div>
     <div class="right menu">
       <div class="item" ng-bind="$root.studentId"></div>
-      <div class="icon pointer item" ng-click="$root.logout()">
+      <div class="icon pointer item" ng-click="$root.jsonp({fun:'logout'})">
         <i class="sign out icon"></i>
       </div>
     </div>

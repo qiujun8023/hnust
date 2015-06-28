@@ -147,11 +147,6 @@
                 $rootScope.checkStatus({'code':'-1'});
             });
         };
-
-        //注销登录
-        $rootScope.logout = function() {
-            $root.post({fun:'logout'});
-        }
     };
 
     //登录
