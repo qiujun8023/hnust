@@ -27,3 +27,7 @@
 .fixed.menu .icon.item {
   font-size: 16px;
 }
+
+.agreement p {
+  text-indent : 2em;
+}

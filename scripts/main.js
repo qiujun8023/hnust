@@ -15,6 +15,9 @@
         $routeProvider.when('/login', {
             controller: login,
             templateUrl: 'views/login.html'
+        }).when('/agreement', {
+            controller: agreement,
+            templateUrl: 'views/agreement.html'
         }).when('/score', {
             controller: score,
             templateUrl: 'views/score.html'
@@ -152,6 +155,7 @@
     //登录
     var login = function($scope, $rootScope, $cookies) {
         $('#sidebar').sidebar('hide');
+        $('.ui.checkbox').checkbox();
         if ($cookies.rank && ($cookies.rank > '-1')) {
             return $rootScope.checkStatus({code:4});
         }
@@ -180,6 +184,13 @@
                     prompt: '密码不能为空！'
                 }]
             },
+            agreement: {
+                identifier: 'agreement',
+                rules: [{
+                    type  : 'checked',
+                    prompt: '同意用户使用协议方可使用！'
+                }]
+            } 
         }, {
             inline: true,
             on    : 'blur',
@@ -197,6 +208,11 @@
                 return true;
             }
         });
+    };
+
+    var agreement = function($scope, $rootScope) {
+        $rootScope.title = '用户使用协议';
+        $rootScope.params.fun = 'agreement';
     };
 
     //成绩

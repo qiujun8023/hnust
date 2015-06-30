@@ -11,6 +11,12 @@
       <label>密码</label>
       <input type="password" style="font-size:1.1em" placeholder="教务网密码或身份证后6位" name="passwd" ng-model="passwd">
     </div>
+    <div class="field">
+      <div class="ui checkbox">
+        <input type="checkbox" name="agreement" checked>
+        <label>我同意《<a href="#/agreement">用户使用协议</a>》</label>
+      </div>
+    </div>
     <div class="positive ui submit button" ng-class="{loading:$root.loading}">登录</div>
   </form>
   <div class="ui bottom attached warning message" ng-if="$root.error && $root.error.length">
