@@ -66,24 +66,21 @@
         }, true);
 
         //提示信息
-        $rootScope.popUp = function(msg) {
+        $rootScope.msg = function(msg) {
             layer.msg(msg);
         }
 
         //检查状态
         $rootScope.checkStatus = function(data) {
-            //弹窗
-            if (angular.isObject(data) == false) {
-                $rootScope.popUp('服务器错误！');
-                return false;
-            } else if (['1', '2'].indexOf(data.code) != -1) {
-                $rootScope.popUp(data.msg);
-            }
-
+            //错误
             if (data.code == '-1') {
-                $rootScope.error = data.msg || '网络连接超时，请刷新或稍后再试。'
+                $rootScope.error = data.msg || '网络连接超时 OR 服务器错误。';
+            //弹窗
+            } else if (data.code == '1') {
+                $rootScope.msg(data.msg);
             //返回上一页
             } else if (data.code == '2') {
+                $rootScope.msg(data.msg);
                 window.history.back();
             //跳至登陆
             } else if (data.code == '3') {
