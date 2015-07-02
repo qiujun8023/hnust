@@ -1,9 +1,4 @@
 (function() {
-    //消息弹窗
-    Messenger.options = {
-        extraClasses: 'messenger-fixed messenger-on-bottom',
-        theme: 'flat'
-    }
     //AngularJS
     var hnust = angular.module('hnust', ['ngRoute', 'ngCookies']);
 
@@ -72,10 +67,7 @@
 
         //提示信息
         $rootScope.popUp = function(msg) {
-            Messenger().post({
-                message: msg,
-                showCloseButton: true
-            });
+            layer.msg(msg);
         }
 
         //检查状态
