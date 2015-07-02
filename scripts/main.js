@@ -81,7 +81,7 @@
         //检查状态
         $rootScope.checkStatus = function(data) {
             //弹窗
-            if (_.isObject(data) == false) {
+            if (angular.isObject(data) == false) {
                 $rootScope.popUp('服务器错误！');
                 return false;
             } else if (['1', '2'].indexOf(data.code) != -1) {
@@ -221,7 +221,10 @@
         $rootScope.params.fun = 'score';
         $rootScope.jsonp($rootScope.params, 10000, function(data) {
             $scope.data = data.data;
-            $scope.terms = _.keys(data.data).reverse();
+            $scope.terms = [];
+            for (k in $scope.data) {
+              $scope.terms.unshift(k);
+            }
         });
     };
 
