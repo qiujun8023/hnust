@@ -58,10 +58,6 @@ main = ($scope, $rootScope, $http, $location, $cookies) ->
         $rootScope.studentId = $cookies.studentId || '游客'
     , true)
 
-    #弹窗
-    $rootScope.msg = (msg) ->
-        layer.msg msg
-
     #检查返回数据
     $rootScope.checkData = (data) ->
         switch data.code
@@ -70,10 +66,10 @@ main = ($scope, $rootScope, $http, $location, $cookies) ->
                 $rootScope.error = data.msg || '网络连接超时 OR 服务器错误。'
             #弹窗
             when 1
-                $rootScope.msg data.msg
+                layer.msg data.msg
             #返回上一页
             when 2
-                $rootScope.msg data.msg
+                layer.msg data.msg, shift:6
                 window.history.back()
             #跳至登陆
             when 3
@@ -219,7 +215,7 @@ tuition = ($scope, $rootScope) ->
         $scope.total = data.data[0]
 
 #教学评价
-judge = ($scope, $rootScope) ->
+judge = ($scope, $rootScope, $location, $anchorScroll) ->
     $rootScope.title = '教学评价'
     $rootScope.params.fun = 'judge'
     $rootScope.jsonp $rootScope.params, 15000, (data) ->
@@ -229,7 +225,7 @@ judge = ($scope, $rootScope) ->
         $('.ui.checkbox').checkbox()
         $('.ui.form').form 'clear'
         $scope.judging = item
-    
+
     $scope.submit = ->
         $rootScope.error = ''
         data = params:$scope.judging.params
@@ -237,12 +233,12 @@ judge = ($scope, $rootScope) ->
         for i in [0...10]
             data["a#{i}"] = $("input[name='a#{i}']:checked").val()
             if !data["a#{i}"]
-                $rootScope.error = '请确定表单已填写完整。'
+                layer.msg '请确定表单已填写完整。', shift:6
                 return false
             if i isnt 0 and data["a#{i}"] isnt data["a#{i-1}"]
                 flag = false
         if flag
-            $rootScope.error = '不能全部选择相同的选项。'
+            layer.msg '不能全部选择相同的选项。', shift:6
             return false
         params =
             fun  : 'judge'

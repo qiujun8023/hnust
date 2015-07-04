@@ -57,19 +57,18 @@
       $rootScope.rank = $cookies.rank || '-1';
       return $rootScope.studentId = $cookies.studentId || '游客';
     }, true);
-    $rootScope.msg = function(msg) {
-      return layer.msg(msg);
-    };
     $rootScope.checkData = function(data) {
       switch (data.code) {
         case -1:
           $rootScope.error = data.msg || '网络连接超时 OR 服务器错误。';
           break;
         case 1:
-          $rootScope.msg(data.msg);
+          layer.msg(data.msg);
           break;
         case 2:
-          $rootScope.msg(data.msg);
+          layer.msg(data.msg, {
+            shift: 6
+          });
           window.history.back();
           break;
         case 3:
@@ -249,7 +248,7 @@
     });
   };
 
-  judge = function($scope, $rootScope) {
+  judge = function($scope, $rootScope, $location, $anchorScroll) {
     $rootScope.title = '教学评价';
     $rootScope.params.fun = 'judge';
     $rootScope.jsonp($rootScope.params, 15000, function(data) {
@@ -270,7 +269,9 @@
       for (i = j = 0; j < 10; i = ++j) {
         data["a" + i] = $("input[name='a" + i + "']:checked").val();
         if (!data["a" + i]) {
-          $rootScope.error = '请确定表单已填写完整。';
+          layer.msg('请确定表单已填写完整。', {
+            shift: 6
+          });
           return false;
         }
         if (i !== 0 && data["a" + i] !== data["a" + (i - 1)]) {
@@ -278,7 +279,9 @@
         }
       }
       if (flag) {
-        $rootScope.error = '不能全部选择相同的选项。';
+        layer.msg('不能全部选择相同的选项。', {
+          shift: 6
+        });
         return false;
       }
       params = {
