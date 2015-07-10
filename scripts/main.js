@@ -64,7 +64,7 @@
           break;
         case 1:
           layer.msg(data.msg);
-          break;
+          return true;
         case 2:
           layer.msg(data.msg, {
             shift: 6
@@ -120,7 +120,8 @@
       }).error(function() {
         $rootScope.loading = false;
         return $rootScope.checkData({
-          'code': '-1'
+          code: -1,
+          msg: '教务网网络异常，请稍后再试。'
         });
       });
     };
@@ -181,7 +182,7 @@
           passwd: $scope.passwd,
           studentId: $scope.studentId
         };
-        return $rootScope.jsonp(params, 8000, function(data) {
+        return $rootScope.jsonp(params, 5000, function(data) {
           var ref, ref1;
           $cookies.rank = (data != null ? (ref = data.info) != null ? ref.rank : void 0 : void 0) || '-1';
           return $cookies.studentId = (data != null ? (ref1 = data.info) != null ? ref1.studentId : void 0 : void 0) || '游客';
@@ -217,7 +218,7 @@
   schedule = function($scope, $rootScope) {
     $rootScope.title = '实时课表';
     $rootScope.params.fun = 'schedule';
-    return $rootScope.jsonp($rootScope.params, 15000, function(data) {
+    return $rootScope.jsonp($rootScope.params, 10000, function(data) {
       $scope.data = data.data;
       $scope.info = data.info;
       return $('.menu .item').tab();
@@ -227,7 +228,7 @@
   exam = function($scope, $rootScope) {
     $rootScope.title = '考试安排';
     $rootScope.params.fun = 'exam';
-    return $rootScope.jsonp($rootScope.params, 15000, function(data) {
+    return $rootScope.jsonp($rootScope.params, 10000, function(data) {
       return $scope.data = data.data;
     });
   };
@@ -235,7 +236,7 @@
   credit = function($scope, $rootScope) {
     $rootScope.title = '学分绩点';
     $rootScope.params.fun = 'credit';
-    return $rootScope.jsonp($rootScope.params, 15000, function(data) {
+    return $rootScope.jsonp($rootScope.params, 10000, function(data) {
       return $scope.data = data.data;
     });
   };
@@ -243,7 +244,7 @@
   tuition = function($scope, $rootScope) {
     $rootScope.title = '学年学费';
     $rootScope.params.fun = 'tuition';
-    return $rootScope.jsonp($rootScope.params, 15000, function(data) {
+    return $rootScope.jsonp($rootScope.params, 10000, function(data) {
       return $scope.total = data.data[0];
     });
   };
@@ -251,7 +252,7 @@
   judge = function($scope, $rootScope, $location, $anchorScroll) {
     $rootScope.title = '教学评价';
     $rootScope.params.fun = 'judge';
-    $rootScope.jsonp($rootScope.params, 15000, function(data) {
+    $rootScope.jsonp($rootScope.params, 10000, function(data) {
       return $scope.data = data.data;
     });
     $scope.judge = function(item) {
@@ -288,7 +289,7 @@
         fun: 'judge',
         data: angular.toJson(data)
       };
-      return $rootScope.jsonp(params, 15000, function(data) {
+      return $rootScope.jsonp(params, 10000, function(data) {
         if (data.code === 0) {
           $scope.judging = false;
           return $scope.data = data.data;
@@ -314,7 +315,7 @@
   card = function($scope, $rootScope) {
     $rootScope.title = '校园一卡通';
     $rootScope.params.fun = 'card';
-    return $rootScope.jsonp($rootScope.params, 15000, function(data) {
+    return $rootScope.jsonp($rootScope.params, 10000, function(data) {
       $scope.info = data.info;
       return $scope.data = data.data;
     });

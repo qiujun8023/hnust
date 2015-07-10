@@ -30,7 +30,7 @@
       <div class="four fields" ng-init="index = $index">
         <div class="field" ng-repeat="radio in ['非常满意','满意','一般','较差']">
           <div class="ui radio checkbox">
-            <input type="radio" name="a{{index}}" value="{{$index}}" ng-model="judging['a' + i]">  
+            <input type="radio" name="a{{index}}" value="{{$index}}">  
             <label ng-bind="radio"></label>
           </div>
         </div>

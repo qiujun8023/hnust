@@ -67,6 +67,7 @@ main = ($scope, $rootScope, $http, $location, $cookies) ->
             #弹窗
             when 1
                 layer.msg data.msg
+                return true
             #返回上一页
             when 2
                 layer.msg data.msg, shift:6
@@ -119,7 +120,9 @@ main = ($scope, $rootScope, $http, $location, $cookies) ->
                     callback response
         .error ->
             $rootScope.loading = false
-            $rootScope.checkData 'code':'-1'
+            $rootScope.checkData 
+                code: -1
+                msg : '教务网网络异常，请稍后再试。'
 
 #登录
 login = ($scope, $rootScope, $cookies) ->
@@ -167,7 +170,7 @@ login = ($scope, $rootScope, $cookies) ->
                 fun : 'login'
                 passwd : $scope.passwd
                 studentId : $scope.studentId
-            $rootScope.jsonp params, 8000, (data) ->
+            $rootScope.jsonp params, 5000, (data) ->
                 $cookies.rank = data?.info?.rank || '-1'
                 $cookies.studentId = data?.info?.studentId || '游客'
 
@@ -188,7 +191,7 @@ score = ($scope, $rootScope) ->
 schedule = ($scope, $rootScope) ->
     $rootScope.title = '实时课表'
     $rootScope.params.fun = 'schedule'
-    $rootScope.jsonp $rootScope.params, 15000, (data) ->
+    $rootScope.jsonp $rootScope.params, 10000, (data) ->
         $scope.data = data.data
         $scope.info = data.info
         $('.menu .item').tab()
@@ -197,28 +200,28 @@ schedule = ($scope, $rootScope) ->
 exam = ($scope, $rootScope) ->
     $rootScope.title = '考试安排'
     $rootScope.params.fun = 'exam'
-    $rootScope.jsonp $rootScope.params, 15000, (data) ->
+    $rootScope.jsonp $rootScope.params, 10000, (data) ->
         $scope.data = data.data
 
 #学分绩点
 credit = ($scope, $rootScope) ->
     $rootScope.title = '学分绩点'
     $rootScope.params.fun = 'credit'
-    $rootScope.jsonp $rootScope.params, 15000, (data) ->
+    $rootScope.jsonp $rootScope.params, 10000, (data) ->
         $scope.data = data.data
 
 #学费
 tuition = ($scope, $rootScope) ->
     $rootScope.title = '学年学费'
     $rootScope.params.fun = 'tuition'
-    $rootScope.jsonp $rootScope.params, 15000, (data) ->
+    $rootScope.jsonp $rootScope.params, 10000, (data) ->
         $scope.total = data.data[0]
 
 #教学评价
 judge = ($scope, $rootScope, $location, $anchorScroll) ->
     $rootScope.title = '教学评价'
     $rootScope.params.fun = 'judge'
-    $rootScope.jsonp $rootScope.params, 15000, (data) ->
+    $rootScope.jsonp $rootScope.params, 10000, (data) ->
         $scope.data = data.data
 
     $scope.judge = (item) ->
@@ -243,7 +246,7 @@ judge = ($scope, $rootScope, $location, $anchorScroll) ->
         params =
             fun  : 'judge'
             data : angular.toJson(data)
-        $rootScope.jsonp params, 15000, (data) ->
+        $rootScope.jsonp params, 10000, (data) ->
             if data.code is 0
                 $scope.judging = false
                 $scope.data = data.data
@@ -265,7 +268,7 @@ book = ($scope, $rootScope) ->
 card = ($scope, $rootScope) ->
     $rootScope.title = '校园一卡通'
     $rootScope.params.fun = 'card'
-    $rootScope.jsonp $rootScope.params, 15000, (data) ->
+    $rootScope.jsonp $rootScope.params, 10000, (data) ->
         $scope.info = data.info
         $scope.data = data.data
 
