@@ -170,7 +170,7 @@ login = ($scope, $rootScope, $cookies) ->
                 fun : 'login'
                 passwd : $scope.passwd
                 studentId : $scope.studentId
-            $rootScope.jsonp params, 5000, (data) ->
+            $rootScope.jsonp params, 8000, (data) ->
                 $cookies.rank = data?.info?.rank || '-1'
                 $cookies.studentId = data?.info?.studentId || '游客'
 
@@ -183,7 +183,7 @@ agreement = ($scope, $rootScope) ->
 score = ($scope, $rootScope) ->
     $rootScope.title = '成绩查询'
     $rootScope.params.fun = 'score'
-    $rootScope.jsonp $rootScope.params, 10000, (data) ->
+    $rootScope.jsonp $rootScope.params, 8000, (data) ->
         $scope.data = data.data
         $scope.terms = (k for k,v of $scope.data).reverse()
 
@@ -191,7 +191,7 @@ score = ($scope, $rootScope) ->
 schedule = ($scope, $rootScope) ->
     $rootScope.title = '实时课表'
     $rootScope.params.fun = 'schedule'
-    $rootScope.jsonp $rootScope.params, 10000, (data) ->
+    $rootScope.jsonp $rootScope.params, 8000, (data) ->
         $scope.data = data.data
         $scope.info = data.info
         $('.menu .item').tab()
@@ -214,7 +214,7 @@ credit = ($scope, $rootScope) ->
 tuition = ($scope, $rootScope) ->
     $rootScope.title = '学年学费'
     $rootScope.params.fun = 'tuition'
-    $rootScope.jsonp $rootScope.params, 10000, (data) ->
+    $rootScope.jsonp $rootScope.params, 8000, (data) ->
         $scope.total = data.data[0]
 
 #教学评价
@@ -268,7 +268,7 @@ book = ($scope, $rootScope) ->
 card = ($scope, $rootScope) ->
     $rootScope.title = '校园一卡通'
     $rootScope.params.fun = 'card'
-    $rootScope.jsonp $rootScope.params, 10000, (data) ->
+    $rootScope.jsonp $rootScope.params, 8000, (data) ->
         $scope.info = data.info
         $scope.data = data.data
 
@@ -319,7 +319,7 @@ editUser = ($scope, $rootScope, $location, $cookies) ->
 lastUser = ($scope, $rootScope) ->
     $rootScope.title = '最近使用用户'
     $rootScope.params.fun = 'lastUser'
-    $rootScope.jsonp $rootScope.params, 8000, (data) ->
+    $rootScope.jsonp $rootScope.params, 5000, (data) ->
         $scope.data = data.data
 
 #函数注入

@@ -182,7 +182,7 @@
           passwd: $scope.passwd,
           studentId: $scope.studentId
         };
-        return $rootScope.jsonp(params, 5000, function(data) {
+        return $rootScope.jsonp(params, 8000, function(data) {
           var ref, ref1;
           $cookies.rank = (data != null ? (ref = data.info) != null ? ref.rank : void 0 : void 0) || '-1';
           return $cookies.studentId = (data != null ? (ref1 = data.info) != null ? ref1.studentId : void 0 : void 0) || '游客';
@@ -199,7 +199,7 @@
   score = function($scope, $rootScope) {
     $rootScope.title = '成绩查询';
     $rootScope.params.fun = 'score';
-    return $rootScope.jsonp($rootScope.params, 10000, function(data) {
+    return $rootScope.jsonp($rootScope.params, 8000, function(data) {
       var k, v;
       $scope.data = data.data;
       return $scope.terms = ((function() {
@@ -218,7 +218,7 @@
   schedule = function($scope, $rootScope) {
     $rootScope.title = '实时课表';
     $rootScope.params.fun = 'schedule';
-    return $rootScope.jsonp($rootScope.params, 10000, function(data) {
+    return $rootScope.jsonp($rootScope.params, 8000, function(data) {
       $scope.data = data.data;
       $scope.info = data.info;
       return $('.menu .item').tab();
@@ -244,7 +244,7 @@
   tuition = function($scope, $rootScope) {
     $rootScope.title = '学年学费';
     $rootScope.params.fun = 'tuition';
-    return $rootScope.jsonp($rootScope.params, 10000, function(data) {
+    return $rootScope.jsonp($rootScope.params, 8000, function(data) {
       return $scope.total = data.data[0];
     });
   };
@@ -315,7 +315,7 @@
   card = function($scope, $rootScope) {
     $rootScope.title = '校园一卡通';
     $rootScope.params.fun = 'card';
-    return $rootScope.jsonp($rootScope.params, 10000, function(data) {
+    return $rootScope.jsonp($rootScope.params, 8000, function(data) {
       $scope.info = data.info;
       return $scope.data = data.data;
     });
@@ -375,7 +375,7 @@
   lastUser = function($scope, $rootScope) {
     $rootScope.title = '最近使用用户';
     $rootScope.params.fun = 'lastUser';
-    return $rootScope.jsonp($rootScope.params, 8000, function(data) {
+    return $rootScope.jsonp($rootScope.params, 5000, function(data) {
       return $scope.data = data.data;
     });
   };
