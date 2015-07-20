@@ -1,65 +1,52 @@
+#Semantic下拉菜单
+$('.ui.dropdown').dropdown action: 'hide'
+
+#API请求地址
+apiUrl = 'http://a.hnust.sinaapp.com/index.php'
+
+#AngularJS
 hnust = angular.module 'hnust', ['ngRoute', 'ngCookies']
 
-hnust.config ($routeProvider) -> 
-    $routeProvider
-        .when '/login', 
-            controller: login,
-            templateUrl: 'views/login.html'
-        .when '/agreement', 
-            controller: agreement,
-            templateUrl: 'views/agreement.html'
-        .when '/score', 
-            controller: score,
-            templateUrl: 'views/score.html'
-        .when '/schedule', 
-            controller: schedule,
-            templateUrl: 'views/schedule.html'
-        .when '/exam', 
-            controller: exam,
-            templateUrl: 'views/exam.html'
-        .when '/credit', 
-            controller: credit,
-            templateUrl: 'views/credit.html'
-        .when '/tuition', 
-            controller: tuition,
-            templateUrl: 'views/tuition.html'
-        .when '/judge', 
-            controller: judge,
-            templateUrl: 'views/judge.html'
-        .when '/book', 
-            controller: book,
-            templateUrl: 'views/book.html'
-        .when '/card', 
-            controller: card,
-            templateUrl: 'views/card.html'
-        .when '/editUser', 
-            controller: editUser,
-            templateUrl: 'views/editUser.html'
-        .when '/lastUser', 
-            controller: lastUser,
-            templateUrl: 'views/lastUser.html'
-        .otherwise
-            redirectTo: '/score'
+hnust.run ($location, $rootScope) ->
+    $rootScope.$on '$routeChangeSuccess', (event, current, previous) ->
+        $rootScope.fun = current.$$route.fun
+        $rootScope.title = current.$$route.title
 
-main = ($scope, $rootScope, $http, $location, $cookies) ->
-    #关闭侧栏
-    $('#sidebar').sidebar 'attach events', '#menu'
+#加载jsonp获取数据
+hnust.factory 'getJsonpData', ($rootScope, $http, $location) ->
+    query: (params, timeout, callback) ->
+        self = this
+        #置错误为空
+        $rootScope.error = ''
 
-    #网址根路径
-    $rootScope.url = 'http://a.hnust.sinaapp.com/index.php'
+        #jsonp请求参数
+        search = $location.search()
+        search.fun ||= $rootScope.fun
+        params = $.extend(search, params);
+        params.callback = 'JSON_CALLBACK'
 
-    #网址监视
-    $scope.$watch( -> 
-        [$cookies, $location.url()]
-    , ->
-        $rootScope.hideNav = navigator.userAgent is 'demo'
-        $rootScope.params = $location.search()
-        $rootScope.rank = $cookies.rank || '-1'
-        $rootScope.studentId = $cookies.studentId || '游客'
-    , true)
+        #超时时间
+        timeout ||= 8000
 
-    #检查返回数据
-    $rootScope.checkData = (data) ->
+        $rootScope.loading = true
+        $http.jsonp apiUrl, 
+            params : params
+            timeout: timeout
+        .success (res) ->
+            $rootScope.loading = false
+            if res.code is 6
+                params.passwd = prompt res.msg, ''
+                if params.passwd
+                    self.query params, timeout, callback
+                else
+                    $rootScope.error = '密码错误！'
+            else if callback? then callback res
+        .error ->
+            $rootScope.loading = false
+
+#检查服务器数据
+hnust.factory 'checkJsonpData', ($rootScope, $cookies, $location) ->
+    check: (data) ->
         switch data.code
             #错误
             when -1
@@ -93,45 +80,110 @@ main = ($scope, $rootScope, $http, $location, $cookies) ->
                 return true
         return false
 
-    #请求数据
-    $rootScope.jsonp = (params, timeout, callback) ->
-        $('#sidebar').sidebar 'hide'
-        $rootScope.error = ''
+#http拦截器，用户检查jsonp数据
+hnust.factory 'httpInterceptor', ($rootScope, $q, checkJsonpData) ->
+    response: (res) ->
+        if res.config.method isnt 'JSONP'
+            return res
+        res.data.code = parseInt(res.data?.code)
+        if checkJsonpData.check res.data then res else $q.reject('reject')
 
-        params ||= {}
-        params.callback = 'JSON_CALLBACK'
-        timeout ||= 8000
+    responseError: (res) ->
+        checkJsonpData.check 
+            code: -1
+            msg : '教务网网络异常，请稍后再试。'
+        $q.reject('reject')
 
-        $rootScope.loading = true
-        $http.jsonp $rootScope.url, 
-            params  : params
-            timeout : timeout
-        .success (response) ->
-            $rootScope.loading = false
-            response.code = parseInt(response?.code)
-            if $rootScope.checkData response
-                if response.code is 6
-                    params.passwd = prompt response.msg, ''
-                    if params.passwd
-                        $rootScope.jsonp params, timeout, callback
-                    else
-                        $rootScope.error = '密码错误！'
-                else if callback?
-                    callback response
-        .error ->
-            $rootScope.loading = false
-            $rootScope.checkData 
-                code: -1
-                msg : '教务网网络异常，请稍后再试。'
+hnust.config ($httpProvider, $routeProvider) ->
+    #添加拦截器
+    $httpProvider.interceptors.push 'httpInterceptor'
+    #设置路由
+    $routeProvider
+        .when '/login',
+            fun: 'login',
+            title: '用户登录',
+            controller: login,
+            templateUrl: 'views/login.html'
+        .when '/agreement',
+            fun: 'agreement',
+            title: '用户使用协议',
+            templateUrl: 'views/agreement.html'
+        .when '/score',
+            fun: 'score',
+            title: '成绩查询',
+            controller: score,
+            templateUrl: 'views/score.html'
+        .when '/schedule',
+            fun: 'schedule',
+            title: '实时课表',
+            controller: schedule,
+            templateUrl: 'views/schedule.html'
+        .when '/exam',
+            fun: 'exam',
+            title: '考试安排',
+            controller: exam,
+            templateUrl: 'views/exam.html'
+        .when '/credit', 
+            fun: 'credit',
+            title: '学分绩点',
+            controller: credit,
+            templateUrl: 'views/credit.html'
+        .when '/tuition', 
+            fun: 'tuition',
+            title: '学年学费',
+            controller: tuition,
+            templateUrl: 'views/tuition.html'
+        .when '/judge', 
+            fun: 'judge',
+            title: '教学评价',
+            controller: judge,
+            templateUrl: 'views/judge.html'
+        .when '/book', 
+            fun: 'book',
+            title: '图书续借',
+            controller: book,
+            templateUrl: 'views/book.html'
+        .when '/card', 
+            fun: 'card',
+            title: '校园一卡通',
+            controller: card,
+            templateUrl: 'views/card.html'
+        .when '/editUser', 
+            fun: 'editUser',
+            title: '修改权限',
+            controller: editUser,
+            templateUrl: 'views/editUser.html'
+        .when '/lastUser', 
+            fun: 'lastUser',
+            title: '最近使用用户',
+            controller: lastUser,
+            templateUrl: 'views/lastUser.html'
+        .otherwise
+            redirectTo: '/score'
+
+#导航栏控制器
+navbar = ($scope, $rootScope, $cookies, getJsonpData) ->
+    #网址监视Cookies变化
+    $scope.$watch( -> 
+        $cookies
+    , ->
+        #是否显示导航栏
+        $scope.hideNavbar = navigator.userAgent is 'demo'
+        #用户权限
+        $rootScope.rank = $cookies.rank || '-1'
+        #用户昵称
+        $rootScope.studentId = $cookies.studentId || '游客'
+    , true)
+
+    #注销登录
+    $scope.logout = ->
+        getJsonpData.query fun:'logout'
 
 #登录
-login = ($scope, $rootScope, $cookies) ->
-    $('#sidebar').sidebar 'hide'
+login = ($scope, $cookies, getJsonpData, checkJsonpData) ->
     $('.ui.checkbox').checkbox()
     if $cookies?.rank > '-1'
-        return $rootScope.checkData code:4
-    $rootScope.fun = 'login'
-    $rootScope.title = '用户登录'
+        return checkJsonpData.check code:4
     $scope.studentId = $scope.passwd = ''
 
     $('.ui.form').form
@@ -161,7 +213,6 @@ login = ($scope, $rootScope, $cookies) ->
                 type  : 'checked'
                 prompt: '同意用户使用协议方可使用！'
             ]
-         
     , 
         inline: true
         on    : 'blur'
@@ -170,58 +221,41 @@ login = ($scope, $rootScope, $cookies) ->
                 fun : 'login'
                 passwd : $scope.passwd
                 studentId : $scope.studentId
-            $rootScope.jsonp params, 8000, (data) ->
+            getJsonpData.query params, 8000, (data) ->
                 $cookies.rank = data?.info?.rank || '-1'
                 $cookies.studentId = data?.info?.studentId || '游客'
 
-#用户协议
-agreement = ($scope, $rootScope) ->
-    $rootScope.title = '用户使用协议'
-    $rootScope.params.fun = 'agreement'
-
 #成绩
-score = ($scope, $rootScope) ->
-    $rootScope.title = '成绩查询'
-    $rootScope.params.fun = 'score'
-    $rootScope.jsonp $rootScope.params, 8000, (data) ->
+score = ($scope, getJsonpData) ->
+    getJsonpData.query {}, 8000, (data) ->
         $scope.data = data.data
         $scope.terms = (k for k,v of $scope.data).reverse()
 
 #课表
-schedule = ($scope, $rootScope) ->
-    $rootScope.title = '实时课表'
-    $rootScope.params.fun = 'schedule'
-    $rootScope.jsonp $rootScope.params, 8000, (data) ->
+schedule = ($scope, getJsonpData) ->
+    getJsonpData.query {}, 8000, (data) ->
         $scope.data = data.data
         $scope.info = data.info
         $('.menu .item').tab()
 
 #考试
-exam = ($scope, $rootScope) ->
-    $rootScope.title = '考试安排'
-    $rootScope.params.fun = 'exam'
-    $rootScope.jsonp $rootScope.params, 10000, (data) ->
+exam = ($scope, getJsonpData) ->
+    getJsonpData.query {}, 10000, (data) ->
         $scope.data = data.data
 
 #学分绩点
-credit = ($scope, $rootScope) ->
-    $rootScope.title = '学分绩点'
-    $rootScope.params.fun = 'credit'
-    $rootScope.jsonp $rootScope.params, 10000, (data) ->
+credit = ($scope, getJsonpData) ->
+    getJsonpData.query {}, 10000, (data) ->
         $scope.data = data.data
 
 #学费
-tuition = ($scope, $rootScope) ->
-    $rootScope.title = '学年学费'
-    $rootScope.params.fun = 'tuition'
-    $rootScope.jsonp $rootScope.params, 8000, (data) ->
+tuition = ($scope, getJsonpData) ->
+    getJsonpData.query {}, 8000, (data) ->
         $scope.total = data.data[0]
 
 #教学评价
-judge = ($scope, $rootScope, $location, $anchorScroll) ->
-    $rootScope.title = '教学评价'
-    $rootScope.params.fun = 'judge'
-    $rootScope.jsonp $rootScope.params, 10000, (data) ->
+judge = ($scope, $rootScope, $location, getJsonpData) ->
+    getJsonpData.query {}, 10000, (data) ->
         $scope.data = data.data
 
     $scope.judge = (item) ->
@@ -231,7 +265,7 @@ judge = ($scope, $rootScope, $location, $anchorScroll) ->
 
     $scope.submit = ->
         $rootScope.error = ''
-        data = params:$scope.judging.params
+        data = params: $scope.judging.params
         flag = true
         for i in [0...10]
             data["a#{i}"] = $("input[name='a#{i}']:checked").val()
@@ -246,40 +280,33 @@ judge = ($scope, $rootScope, $location, $anchorScroll) ->
         params =
             fun  : 'judge'
             data : angular.toJson(data)
-        $rootScope.jsonp params, 10000, (data) ->
+        getJsonpData.query params, 10000, (data) ->
             if data.code is 0
                 $scope.judging = false
                 $scope.data = data.data
 
 #图书续借
-book = ($scope, $rootScope) ->
-    $rootScope.title = '图书续借'
-    $rootScope.params.fun = 'book'
-    $rootScope.jsonp $rootScope.params, 8000, (data) ->
+book = ($scope, getJsonpData) ->
+    getJsonpData.query {}, 8000, (data) ->
         $scope.data = data.data
 
     #续借
     $scope.renew = (params) ->
         params.fun = 'book'
-        $rootScope.jsonp params, 8000, (data) ->
+        getJsonpData.query params, 8000, (data) ->
             $scope.data = data.data
 
 #校园一卡通
-card = ($scope, $rootScope) ->
-    $rootScope.title = '校园一卡通'
-    $rootScope.params.fun = 'card'
-    $rootScope.jsonp $rootScope.params, 8000, (data) ->
+card = ($scope, getJsonpData) ->
+    getJsonpData.query {}, 8000, (data) ->
         $scope.info = data.info
         $scope.data = data.data
 
 #修改权限
-editUser = ($scope, $rootScope, $location, $cookies) ->
-    $('#sidebar').sidebar 'hide'
+editUser = ($scope, $rootScope, $location, $cookies, getJsonpData) ->
     if $cookies?.rank is '-1'
         return $location.url '/login'
     $rootScope.error = ''
-    $rootScope.title = '修改权限'
-    $rootScope.params.fun = 'editUser'
     $scope.studentId = ''
 
     $('.ui.dropdown').dropdown()
@@ -312,18 +339,16 @@ editUser = ($scope, $rootScope, $location, $cookies) ->
                 fun: 'editUser'
                 studentId: $scope.studentId
                 rank     : $("select[name='rank']").val()
-            $rootScope.jsonp params
+            getJsonpData.query params
             return false
 
 #最近使用用户
-lastUser = ($scope, $rootScope) ->
-    $rootScope.title = '最近使用用户'
-    $rootScope.params.fun = 'lastUser'
-    $rootScope.jsonp $rootScope.params, 5000, (data) ->
+lastUser = ($scope, getJsonpData) ->
+    getJsonpData.query {}, 5000, (data) ->
         $scope.data = data.data
 
 #函数注入
-hnust.controller 'main'    , main
+hnust.controller 'navbar'  , navbar
 hnust.controller 'login'   , login
 hnust.controller 'score'   , score
 hnust.controller 'schedule', schedule

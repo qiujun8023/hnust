@@ -27,6 +27,10 @@
 .fixed.menu .icon.item {
   font-size: 16px;
 }
+.fixed.menu .ui.dropdown {
+  padding-top: 14px;
+  padding-bottom: 13px;
+}
 
 .agreement p {
   text-indent: 2em;
