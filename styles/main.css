@@ -24,6 +24,27 @@
   }
 }
 
+@media (max-width: 767px) {
+  .hidden-xs {
+    display: none !important;
+  }
+}
+@media (min-width: 768px) and (max-width: 991px) {
+  .hidden-sm {
+    display: none !important;
+  }
+}
+@media (min-width: 992px) and (max-width: 1199px) {
+  .hidden-md {
+    display: none !important;
+  }
+}
+@media (min-width: 1200px) {
+  .hidden-lg {
+    display: none !important;
+  }
+}
+
 .fixed.menu .icon.item {
   font-size: 16px;
 }
@@ -31,7 +52,13 @@
   padding-top: 14px;
   padding-bottom: 13px;
 }
-
+.screenshot {
+  cursor: pointer;
+  z-index: 10;
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+}
 .agreement p {
   text-indent: 2em;
 }

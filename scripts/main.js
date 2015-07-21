@@ -2,38 +2,45 @@
 (function() {
   var apiUrl, book, card, credit, editUser, exam, hnust, judge, lastUser, login, navbar, schedule, score, tuition;
 
-  $('.ui.dropdown').dropdown({
-    action: 'hide'
-  });
+  $('.ui.dropdown').dropdown();
 
   apiUrl = 'http://a.hnust.sinaapp.com/index.php';
 
-  hnust = angular.module('hnust', ['ngRoute', 'ngCookies']);
-
-  hnust.run(function($location, $rootScope) {
-    return $rootScope.$on('$routeChangeSuccess', function(event, current, previous) {
-      $rootScope.fun = current.$$route.fun;
-      return $rootScope.title = current.$$route.title;
-    });
-  });
+  hnust = angular.module('hnust', ['ngRoute']);
 
   hnust.factory('getJsonpData', function($rootScope, $http, $location) {
     return {
       query: function(params, timeout, callback) {
-        var search, self;
+        var k, ref, search, self, v;
         self = this;
         $rootScope.error = '';
-        search = $location.search();
+        search = (function() {
+          var ref, results;
+          ref = $location.search();
+          results = [];
+          for (k in ref) {
+            v = ref[k];
+            results.push({
+              k: v
+            });
+          }
+          return results;
+        })();
         search.fun || (search.fun = $rootScope.fun);
         params = $.extend(search, params);
         params.callback = 'JSON_CALLBACK';
         timeout || (timeout = 8000);
-        $rootScope.loading = true;
-        return $http.jsonp(apiUrl, {
+        if ((ref = params.fun) !== 'userInfo') {
+          $rootScope.loading = true;
+        }
+        return $http.jsonp($rootScope.url, {
           params: params,
           timeout: timeout
         }).success(function(res) {
-          $rootScope.loading = false;
+          var ref1;
+          if ((ref1 = params.fun) !== 'userInfo') {
+            $rootScope.loading = false;
+          }
           if (res.code === 6) {
             params.passwd = prompt(res.msg, '');
             if (params.passwd) {
@@ -45,13 +52,16 @@
             return callback(res);
           }
         }).error(function() {
-          return $rootScope.loading = false;
+          var ref1;
+          if ((ref1 = params.fun) !== 'userInfo') {
+            return $rootScope.loading = false;
+          }
         });
       }
     };
   });
 
-  hnust.factory('checkJsonpData', function($rootScope, $cookies, $location) {
+  hnust.factory('checkJsonpData', function($rootScope, $location) {
     return {
       check: function(data) {
         switch (data.code) {
@@ -68,14 +78,18 @@
             window.history.back();
             break;
           case 3:
-            $cookies.rank = $cookies.studentId = '';
-            $cookies.referer = $location.url();
+            $rootScope.user = {
+              id: '游客',
+              name: '游客',
+              rank: -1
+            };
+            $rootScope.referer = $location.url();
             $location.url('/login');
             break;
           case 4:
-            if ($cookies.referer && $cookies.referer !== '/login') {
-              $location.url($cookies.referer);
-              $cookies.referer = '';
+            if ($rootScope.referer && $rootScope.referer !== '/login') {
+              $location.url($rootScope.referer);
+              $rootScope.referer = '';
             } else {
               $location.url('/score');
             }
@@ -91,7 +105,7 @@
     };
   });
 
-  hnust.factory('httpInterceptor', function($rootScope, $q, checkJsonpData) {
+  hnust.factory('httpInterceptor', function($q, checkJsonpData) {
     return {
       response: function(res) {
         var ref;
@@ -181,14 +195,28 @@
     });
   });
 
-  navbar = function($scope, $rootScope, $cookies, getJsonpData) {
-    $scope.$watch(function() {
-      return $cookies;
-    }, function() {
-      $scope.hideNavbar = navigator.userAgent === 'demo';
-      $rootScope.rank = $cookies.rank || '-1';
-      return $rootScope.studentId = $cookies.studentId || '游客';
-    }, true);
+  hnust.run(function($location, $rootScope, getJsonpData) {
+    $rootScope.url = apiUrl;
+    $rootScope.$on('$routeChangeSuccess', function(event, current, previous) {
+      $rootScope.fun = current.$$route.fun;
+      return $rootScope.title = current.$$route.title;
+    });
+    return $rootScope.$on('userLogin', function(event, current) {
+      return getJsonpData.query({
+        fun: 'userInfo'
+      }, 8000, function(data) {
+        return $rootScope.user = {
+          id: data.info.studentId || '游客',
+          name: data.info.name || '游客',
+          rank: data.info.rank != null ? parseInt(data.info.rank) : -1
+        };
+      });
+    });
+  });
+
+  navbar = function($scope, $rootScope, getJsonpData) {
+    $scope.hideNavbar = navigator.userAgent === 'demo';
+    $scope.$emit('userLogin');
     return $scope.logout = function() {
       return getJsonpData.query({
         fun: 'logout'
@@ -196,9 +224,10 @@
     };
   };
 
-  login = function($scope, $cookies, getJsonpData, checkJsonpData) {
+  login = function($scope, $rootScope, getJsonpData, checkJsonpData) {
+    var ref;
     $('.ui.checkbox').checkbox();
-    if (($cookies != null ? $cookies.rank : void 0) > '-1') {
+    if ((((ref = $rootScope.user) != null ? ref.rank : void 0) != null) && $rootScope.user.rank !== -1) {
       return checkJsonpData.check({
         code: 4
       });
@@ -249,9 +278,7 @@
           studentId: $scope.studentId
         };
         return getJsonpData.query(params, 8000, function(data) {
-          var ref, ref1;
-          $cookies.rank = (data != null ? (ref = data.info) != null ? ref.rank : void 0 : void 0) || '-1';
-          return $cookies.studentId = (data != null ? (ref1 = data.info) != null ? ref1.studentId : void 0 : void 0) || '游客';
+          return $scope.$emit('userLogin');
         });
       }
     });
@@ -366,8 +393,9 @@
     });
   };
 
-  editUser = function($scope, $rootScope, $location, $cookies, getJsonpData) {
-    if (($cookies != null ? $cookies.rank : void 0) === '-1') {
+  editUser = function($scope, $rootScope, $location, getJsonpData) {
+    var ref;
+    if ((((ref = $rootScope.user) != null ? ref.rank : void 0) == null) || $rootScope.user.rank === -1) {
       return $location.url('/login');
     }
     $rootScope.error = '';

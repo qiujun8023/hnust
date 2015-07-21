@@ -1,16 +1,11 @@
 #Semantic下拉菜单
-$('.ui.dropdown').dropdown action: 'hide'
+$('.ui.dropdown').dropdown()
 
 #API请求地址
 apiUrl = 'http://a.hnust.sinaapp.com/index.php'
 
 #AngularJS
-hnust = angular.module 'hnust', ['ngRoute', 'ngCookies']
-
-hnust.run ($location, $rootScope) ->
-    $rootScope.$on '$routeChangeSuccess', (event, current, previous) ->
-        $rootScope.fun = current.$$route.fun
-        $rootScope.title = current.$$route.title
+hnust = angular.module 'hnust', ['ngRoute']
 
 #加载jsonp获取数据
 hnust.factory 'getJsonpData', ($rootScope, $http, $location) ->
@@ -20,20 +15,22 @@ hnust.factory 'getJsonpData', ($rootScope, $http, $location) ->
         $rootScope.error = ''
 
         #jsonp请求参数
-        search = $location.search()
+        search = (k:v for k,v of $location.search())
         search.fun ||= $rootScope.fun
-        params = $.extend(search, params);
+        params = $.extend search, params
         params.callback = 'JSON_CALLBACK'
 
         #超时时间
         timeout ||= 8000
-
-        $rootScope.loading = true
-        $http.jsonp apiUrl, 
+        #加载中动画
+        if params.fun not in ['userInfo']
+            $rootScope.loading = true
+        $http.jsonp $rootScope.url,
             params : params
             timeout: timeout
         .success (res) ->
-            $rootScope.loading = false
+            if params.fun not in ['userInfo']
+                $rootScope.loading = false
             if res.code is 6
                 params.passwd = prompt res.msg, ''
                 if params.passwd
@@ -42,10 +39,11 @@ hnust.factory 'getJsonpData', ($rootScope, $http, $location) ->
                     $rootScope.error = '密码错误！'
             else if callback? then callback res
         .error ->
-            $rootScope.loading = false
+            if params.fun not in ['userInfo']
+                $rootScope.loading = false
 
 #检查服务器数据
-hnust.factory 'checkJsonpData', ($rootScope, $cookies, $location) ->
+hnust.factory 'checkJsonpData', ($rootScope, $location) ->
     check: (data) ->
         switch data.code
             #错误
@@ -61,14 +59,17 @@ hnust.factory 'checkJsonpData', ($rootScope, $cookies, $location) ->
                 window.history.back()
             #跳至登陆
             when 3
-                $cookies.rank = $cookies.studentId = ''
-                $cookies.referer = $location.url()
+                $rootScope.user =
+                    id : '游客'
+                    name: '游客'
+                    rank: -1
+                $rootScope.referer = $location.url()
                 $location.url '/login'
             #跳回记录页面
             when 4
-                if $cookies.referer and $cookies.referer isnt '/login'
-                    $location.url $cookies.referer
-                    $cookies.referer = ''
+                if $rootScope.referer and $rootScope.referer isnt '/login'
+                    $location.url $rootScope.referer
+                    $rootScope.referer = ''
                 else
                     $location.url '/score'
                 return true
@@ -81,7 +82,7 @@ hnust.factory 'checkJsonpData', ($rootScope, $cookies, $location) ->
         return false
 
 #http拦截器，用户检查jsonp数据
-hnust.factory 'httpInterceptor', ($rootScope, $q, checkJsonpData) ->
+hnust.factory 'httpInterceptor', ($q, checkJsonpData) ->
     response: (res) ->
         if res.config.method isnt 'JSONP'
             return res
@@ -161,28 +162,36 @@ hnust.config ($httpProvider, $routeProvider) ->
         .otherwise
             redirectTo: '/score'
 
-#导航栏控制器
-navbar = ($scope, $rootScope, $cookies, getJsonpData) ->
-    #网址监视Cookies变化
-    $scope.$watch( -> 
-        $cookies
-    , ->
-        #是否显示导航栏
-        $scope.hideNavbar = navigator.userAgent is 'demo'
-        #用户权限
-        $rootScope.rank = $cookies.rank || '-1'
-        #用户昵称
-        $rootScope.studentId = $cookies.studentId || '游客'
-    , true)
+hnust.run ($location, $rootScope, getJsonpData) ->
+    #API网址
+    $rootScope.url = apiUrl
+    #修改title
+    $rootScope.$on '$routeChangeSuccess', (event, current, previous) ->
+        $rootScope.fun = current.$$route.fun
+        $rootScope.title = current.$$route.title
 
+    #获取用户信息
+    $rootScope.$on 'userLogin', (event, current) ->
+        getJsonpData.query fun:'userInfo', 8000, (data) ->
+            $rootScope.user = 
+                id   : data.info.studentId || '游客'
+                name : data.info.name || '游客'
+                rank : if data.info.rank? then parseInt(data.info.rank) else -1
+
+#导航栏控制器
+navbar = ($scope, $rootScope, getJsonpData) ->
+    #是否隐藏导航栏
+    $scope.hideNavbar = navigator.userAgent is 'demo'
+    #获取用户信息
+    $scope.$emit 'userLogin'
     #注销登录
     $scope.logout = ->
         getJsonpData.query fun:'logout'
 
 #登录
-login = ($scope, $cookies, getJsonpData, checkJsonpData) ->
+login = ($scope, $rootScope, getJsonpData, checkJsonpData) ->
     $('.ui.checkbox').checkbox()
-    if $cookies?.rank > '-1'
+    if $rootScope.user?.rank? and $rootScope.user.rank isnt -1
         return checkJsonpData.check code:4
     $scope.studentId = $scope.passwd = ''
 
@@ -222,8 +231,8 @@ login = ($scope, $cookies, getJsonpData, checkJsonpData) ->
                 passwd : $scope.passwd
                 studentId : $scope.studentId
             getJsonpData.query params, 8000, (data) ->
-                $cookies.rank = data?.info?.rank || '-1'
-                $cookies.studentId = data?.info?.studentId || '游客'
+                #发送登录成功事件
+                $scope.$emit 'userLogin'
 
 #成绩
 score = ($scope, getJsonpData) ->
@@ -303,8 +312,8 @@ card = ($scope, getJsonpData) ->
         $scope.data = data.data
 
 #修改权限
-editUser = ($scope, $rootScope, $location, $cookies, getJsonpData) ->
-    if $cookies?.rank is '-1'
+editUser = ($scope, $rootScope, $location, getJsonpData) ->
+    if !$rootScope.user?.rank? or $rootScope.user.rank is -1
         return $location.url '/login'
     $rootScope.error = ''
     $scope.studentId = ''

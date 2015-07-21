@@ -12,8 +12,8 @@
 <body ng-cloak>
   <div class="ui fixed inverted main menu" ng-show="$hideNavbar != true" ng-controller="navbar">
     <div class="container">
-      <div class="item" ng-bind="title" ng-show="$root.rank == 0"></div>
-      <div class="ui pointing dropdown link item" ng-show="$root.rank != 0">
+      <div class="item" ng-bind="title" ng-show="$root.user.rank == 0"></div>
+      <div class="ui pointing dropdown link item" ng-show="$root.user.rank != 0">
         <div class="text">
           <span ng-bind="title"></span>
           <i class="dropdown icon" style="margin-right:0"></i>
@@ -43,16 +43,16 @@
           <a class="item" href="#/card">
             <i class="money icon"></i> 校园一卡通
           </a>
-          <a class="item" href="#/editUser" ng-if="$root.rank == 9">
+          <a class="item" href="#/editUser" ng-show="$root.user.rank == 9">
             <i class="privacy icon"></i> 修改权限
           </a>
-          <a class="item" href="#/lastUser" ng-if="$root.rank == 9">
+          <a class="item" href="#/lastUser" ng-show="$root.user.rank == 9">
             <i class="history icon"></i> 最近使用
           </a>
         </div>
       </div>
       <div class="right menu">
-        <div class="item" ng-bind="$root.studentId"></div>
+        <div class="item" ng-bind="$root.user.id"></div>
         <div class="icon pointer item" ng-click="logout()">
           <i class="sign out icon"></i>
         </div>
