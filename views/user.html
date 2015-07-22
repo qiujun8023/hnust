@@ -1,0 +1,32 @@
+<div class="container">
+  <div class="ui warning message">这个页面还没完成，操作是没有用的！</div>
+  <form class="ui attached fluid form segment">
+    <h3 class="ui dividing header">个人中心</h3>
+    <div class="field">
+      <label>学号</label>
+      <input type="text" name="id" ng-model="user.id" placeholder="您的学号" disabled>
+    </div>
+    <div class="field">
+      <label>姓名</label>
+      <input type="text" name="name" ng-model="user.name" placeholder="您的姓名" disabled>
+    </div>
+    <h4 class="ui horizontal divider">
+      <i class="setting icon"></i> 设置
+    </h4>
+    <h5 class="ui header">成绩提醒</h5>
+    <div class="field">
+      <div class="ui toggle checkbox">
+        <input type="radio" name="score_reminder" ng-model="user.score_reminder">
+        <label>有新成绩将会邮件通知您</label>
+      </div>
+    </div>
+    <div class="field">
+      <label>邮箱地址</label>
+      <input type="email" name="mail" ng-model="user.mail" placeholder="常用邮箱地址">
+    </div>
+    <div class="positive ui submit button" ng-class="{loading:$root.loading}">保存</div>
+  </form>
+  <div class="ui bottom attached warning message" ng-if="$root.error && $root.error.length">
+    <i class="info circle icon"></i> {{$root.error}}
+  </div>
+</div>

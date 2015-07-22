@@ -2,7 +2,7 @@
 <div class="container" ng-show="!$root.loading && !$root.error && data" style="padding-bottom:20px">
   <div class="ui positive message">
     <div class="header">
-      <div class="ui inline dropdown">
+      <div class="ui inline dropdown" id="term">
         <div class="text" ng-bind="info.term[0]"></div>
         <i class="dropdown icon"></i>
         <div class="menu">
@@ -12,7 +12,7 @@
       学期课表（<a ng-href="{{$root.url}}?fun=schedule&term={{info.term[0]}}&download">点击下载</a>）
     </div>
   </div>
-  <div class="ui top attached fluid seven tabular item menu">
+  <div class="ui top attached fluid seven tabular item menu" id="week">
     <a class="item" data-tab="{{$index + 1}}" ng-class="{active:!$index}" ng-repeat="day in ['周一','周二','周三','周四','周五','周六','周日']" ng-bind="day"></a>
   </div>
   <div class="ui bottom attached tab segment" ng-class="{active:!$index}" data-tab="{{day}}" ng-repeat="day in [1,2,3,4,5,6,7]">

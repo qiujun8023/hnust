@@ -13,46 +13,49 @@
   <div class="ui fixed inverted main menu" ng-show="$hideNavbar != true" ng-controller="navbar">
     <div class="container">
       <div class="item" ng-bind="title" ng-show="$root.user.rank == 0"></div>
-      <div class="ui pointing dropdown link item" ng-show="$root.user.rank != 0">
+      <div class="ui pointing dropdown link item" id="menu" ng-show="$root.user.rank != 0">
         <div class="text">
           <span ng-bind="title"></span>
           <i class="dropdown icon" style="margin-right:0"></i>
         </div>
         <div class="menu">
-          <a class="item" href="#/score">
+          <a class="item" ng-class="{actived:($root.fun == 'score')}" href="#/score">
             <i class="checkmark icon"></i> 成绩查询
           </a>
-          <a class="item" href="#/schedule">
+          <a class="item" ng-class="{actived:($root.fun == 'schedule')}" href="#/schedule">
             <i class="table icon"></i> 实时课表
           </a>
-          <a class="item" href="#/exam">
+          <a class="item" ng-class="{actived:($root.fun == 'exam')}" href="#/exam">
             <i class="browser icon"></i> 考试安排
           </a>
-          <a class="item" href="#/credit">
+          <a class="item" ng-class="{actived:($root.fun == 'credit')}" href="#/credit">
             <i class="student icon"></i> 学分绩点
           </a>
-          <a class="item" href="#/tuition">
+          <a class="item" ng-class="{actived:($root.fun == 'tuition')}" href="#/tuition">
             <i class="yen icon"></i> 学年学费
           </a>
-          <a class="item" href="#/judge">
+          <a class="item" ng-class="{actived:($root.fun == 'judge')}" href="#/judge">
             <i class="trophy icon"></i> 教学评价
           </a>
-          <a class="item" href="#/book">
+          <a class="item" ng-class="{actived:($root.fun == 'book')}" href="#/book">
             <i class="book icon"></i> 图书续借
           </a>
-          <a class="item" href="#/card">
+          <a class="item" ng-class="{actived:($root.fun == 'card')}" href="#/card">
             <i class="money icon"></i> 校园一卡通
           </a>
-          <a class="item" href="#/editUser" ng-show="$root.user.rank == 9">
+          <a class="item" ng-class="{actived:($root.fun == 'editUser')}" href="#/editUser" ng-show="$root.user.rank == 9">
             <i class="privacy icon"></i> 修改权限
           </a>
-          <a class="item" href="#/lastUser" ng-show="$root.user.rank == 9">
+          <a class="item" ng-class="{actived:($root.fun == 'lastUser')}" href="#/lastUser" ng-show="$root.user.rank == 9">
             <i class="history icon"></i> 最近使用
           </a>
         </div>
       </div>
       <div class="right menu">
-        <div class="item" ng-bind="$root.user.id"></div>
+        <a class="item" href="#/user">
+          <i class="user icon"></i>
+          <span ng-bind="$root.user.name"></span>
+        </a>
         <div class="icon pointer item" ng-click="logout()">
           <i class="sign out icon"></i>
         </div>

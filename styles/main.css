@@ -41,3 +41,7 @@
 .agreement p {
   text-indent: 2em;
 }
+#menu .item.actived {
+  color: #fff !important;
+  background: rgba(0, 181, 173, 1) !important;
+}

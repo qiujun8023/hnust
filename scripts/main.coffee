@@ -1,5 +1,8 @@
 #Semantic下拉菜单
-$('.ui.dropdown').dropdown()
+$('#menu').dropdown 
+    action:'hide'
+    transition: 'drop'
+    forceSelection: true
 
 #API请求地址
 apiUrl = 'http://a.hnust.sinaapp.com/index.php'
@@ -60,7 +63,6 @@ hnust.factory 'checkJsonpData', ($rootScope, $location) ->
             #跳至登陆
             when 3
                 $rootScope.user =
-                    id : '游客'
                     name: '游客'
                     rank: -1
                 $rootScope.referer = $location.url()
@@ -92,7 +94,7 @@ hnust.factory 'httpInterceptor', ($q, checkJsonpData) ->
     responseError: (res) ->
         checkJsonpData.check 
             code: -1
-            msg : '教务网网络异常，请稍后再试。'
+            msg : '网络异常，请稍后再试。'
         $q.reject('reject')
 
 hnust.config ($httpProvider, $routeProvider) ->
@@ -109,6 +111,11 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'agreement',
             title: '用户使用协议',
             templateUrl: 'views/agreement.html?150722'
+        .when '/user',
+            fun: 'user',
+            title: '用户中心',
+            controller: user,
+            templateUrl: 'views/user.html?150722'
         .when '/score',
             fun: 'score',
             title: '成绩查询',
@@ -167,16 +174,16 @@ hnust.run ($location, $rootScope, getJsonpData) ->
     $rootScope.url = apiUrl
     #修改title
     $rootScope.$on '$routeChangeSuccess', (event, current, previous) ->
-        $rootScope.fun = current.$$route.fun
-        $rootScope.title = current.$$route.title
+        $rootScope.fun = current.$$route?.fun || ''
+        $rootScope.title = current.$$route?.title || ''
 
     #获取用户信息
     $rootScope.$on 'userLogin', (event, current) ->
         getJsonpData.query fun:'userInfo', 8000, (data) ->
-            $rootScope.user = 
-                id   : data.info.studentId || '游客'
-                name : data.info.name || '游客'
-                rank : if data.info.rank? then parseInt(data.info.rank) else -1
+            data.info.id = data.info.studentId || ''
+            data.info.name ||= '游客'
+            data.info.rank = if data.info.rank? then parseInt(data.info.rank) else -1
+            $rootScope.user = data.info
 
 #导航栏控制器
 navbar = ($scope, $rootScope, getJsonpData) ->
@@ -187,6 +194,13 @@ navbar = ($scope, $rootScope, getJsonpData) ->
     #注销登录
     $scope.logout = ->
         getJsonpData.query fun:'logout'
+
+#用户中心
+user = ($scope, $rootScope, $location, getJsonpData) ->
+    if !$rootScope.user?.rank? or $rootScope.user.rank is -1
+        return $location.url '/login'
+    $('.ui.checkbox').checkbox()
+    $scope.user = $rootScope.user
 
 #登录
 login = ($scope, $rootScope, getJsonpData, checkJsonpData) ->
@@ -246,7 +260,7 @@ schedule = ($scope, getJsonpData) ->
         $scope.data = data.data
         $scope.info = data.info
         $('.menu .item').tab()
-        $('.ui.dropdown').dropdown()
+        $('#term').dropdown()
 
 #考试
 exam = ($scope, getJsonpData) ->
@@ -323,7 +337,7 @@ editUser = ($scope, $rootScope, $location, getJsonpData) ->
     $rootScope.error = ''
     $scope.studentId = ''
 
-    $('.ui.dropdown').dropdown()
+    $('#rank').dropdown()
     $('.ui.form').form
         studentId: 
             identifier: 'studentId'
@@ -364,6 +378,7 @@ lastUser = ($scope, getJsonpData) ->
 #函数注入
 hnust.controller 'navbar'  , navbar
 hnust.controller 'login'   , login
+hnust.controller 'user'    , user
 hnust.controller 'score'   , score
 hnust.controller 'schedule', schedule
 hnust.controller 'exam'    , exam
