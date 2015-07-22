@@ -124,61 +124,61 @@
       fun: 'login',
       title: '用户登录',
       controller: login,
-      templateUrl: 'views/login.html'
+      templateUrl: 'views/login.html?150722'
     }).when('/agreement', {
       fun: 'agreement',
       title: '用户使用协议',
-      templateUrl: 'views/agreement.html'
+      templateUrl: 'views/agreement.html?150722'
     }).when('/score', {
       fun: 'score',
       title: '成绩查询',
       controller: score,
-      templateUrl: 'views/score.html'
+      templateUrl: 'views/score.html?150722'
     }).when('/schedule', {
       fun: 'schedule',
       title: '实时课表',
       controller: schedule,
-      templateUrl: 'views/schedule.html'
+      templateUrl: 'views/schedule.html?150722'
     }).when('/exam', {
       fun: 'exam',
       title: '考试安排',
       controller: exam,
-      templateUrl: 'views/exam.html'
+      templateUrl: 'views/exam.html?150722'
     }).when('/credit', {
       fun: 'credit',
       title: '学分绩点',
       controller: credit,
-      templateUrl: 'views/credit.html'
+      templateUrl: 'views/credit.html?150722'
     }).when('/tuition', {
       fun: 'tuition',
       title: '学年学费',
       controller: tuition,
-      templateUrl: 'views/tuition.html'
+      templateUrl: 'views/tuition.html?150722'
     }).when('/judge', {
       fun: 'judge',
       title: '教学评价',
       controller: judge,
-      templateUrl: 'views/judge.html'
+      templateUrl: 'views/judge.html?150722'
     }).when('/book', {
       fun: 'book',
       title: '图书续借',
       controller: book,
-      templateUrl: 'views/book.html'
+      templateUrl: 'views/book.html?150722'
     }).when('/card', {
       fun: 'card',
       title: '校园一卡通',
       controller: card,
-      templateUrl: 'views/card.html'
+      templateUrl: 'views/card.html?150722'
     }).when('/editUser', {
       fun: 'editUser',
       title: '修改权限',
       controller: editUser,
-      templateUrl: 'views/editUser.html'
+      templateUrl: 'views/editUser.html?150722'
     }).when('/lastUser', {
       fun: 'lastUser',
       title: '最近使用用户',
       controller: lastUser,
-      templateUrl: 'views/lastUser.html'
+      templateUrl: 'views/lastUser.html?150722'
     }).otherwise({
       redirectTo: '/score'
     });
