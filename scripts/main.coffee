@@ -15,7 +15,7 @@ hnust.factory 'getJsonpData', ($rootScope, $http, $location) ->
         $rootScope.error = ''
 
         #jsonp请求参数
-        search = (k:v for k,v of $location.search())
+        search = angular.copy($location.search())
         search.fun ||= $rootScope.fun
         params = $.extend search, params
         params.callback = 'JSON_CALLBACK'
@@ -246,6 +246,7 @@ schedule = ($scope, getJsonpData) ->
         $scope.data = data.data
         $scope.info = data.info
         $('.menu .item').tab()
+        $('.ui.dropdown').dropdown()
 
 #考试
 exam = ($scope, getJsonpData) ->
@@ -260,10 +261,13 @@ credit = ($scope, getJsonpData) ->
 #学费
 tuition = ($scope, getJsonpData) ->
     getJsonpData.query {}, 8000, (data) ->
-        $scope.total = data.data[0]
+        $scope.total = data.data?.total
+        delete data.data?.total
+        $scope.data = data.data
+        $scope.terms = (k for k,v of $scope.data).reverse()
 
 #教学评价
-judge = ($scope, $rootScope, $location, getJsonpData) ->
+judge = ($scope, $rootScope, $location, $anchorScroll, getJsonpData) ->
     getJsonpData.query {}, 10000, (data) ->
         $scope.data = data.data
 
@@ -271,6 +275,7 @@ judge = ($scope, $rootScope, $location, getJsonpData) ->
         $('.ui.checkbox').checkbox()
         $('.ui.form').form 'clear'
         $scope.judging = item
+        $anchorScroll()
 
     $scope.submit = ->
         $rootScope.error = ''

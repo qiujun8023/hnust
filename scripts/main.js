@@ -11,21 +11,10 @@
   hnust.factory('getJsonpData', function($rootScope, $http, $location) {
     return {
       query: function(params, timeout, callback) {
-        var k, ref, search, self, v;
+        var ref, search, self;
         self = this;
         $rootScope.error = '';
-        search = (function() {
-          var ref, results;
-          ref = $location.search();
-          results = [];
-          for (k in ref) {
-            v = ref[k];
-            results.push({
-              k: v
-            });
-          }
-          return results;
-        })();
+        search = angular.copy($location.search());
         search.fun || (search.fun = $rootScope.fun);
         params = $.extend(search, params);
         params.callback = 'JSON_CALLBACK';
@@ -305,7 +294,8 @@
     return getJsonpData.query({}, 8000, function(data) {
       $scope.data = data.data;
       $scope.info = data.info;
-      return $('.menu .item').tab();
+      $('.menu .item').tab();
+      return $('.ui.dropdown').dropdown();
     });
   };
 
@@ -323,18 +313,34 @@
 
   tuition = function($scope, getJsonpData) {
     return getJsonpData.query({}, 8000, function(data) {
-      return $scope.total = data.data[0];
+      var k, ref, ref1, v;
+      $scope.total = (ref = data.data) != null ? ref.total : void 0;
+      if ((ref1 = data.data) != null) {
+        delete ref1.total;
+      }
+      $scope.data = data.data;
+      return $scope.terms = ((function() {
+        var ref2, results;
+        ref2 = $scope.data;
+        results = [];
+        for (k in ref2) {
+          v = ref2[k];
+          results.push(k);
+        }
+        return results;
+      })()).reverse();
     });
   };
 
-  judge = function($scope, $rootScope, $location, getJsonpData) {
+  judge = function($scope, $rootScope, $location, $anchorScroll, getJsonpData) {
     getJsonpData.query({}, 10000, function(data) {
       return $scope.data = data.data;
     });
     $scope.judge = function(item) {
       $('.ui.checkbox').checkbox();
       $('.ui.form').form('clear');
-      return $scope.judging = item;
+      $scope.judging = item;
+      return $anchorScroll();
     };
     return $scope.submit = function() {
       var data, flag, i, j, params;
