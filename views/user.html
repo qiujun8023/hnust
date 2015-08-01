@@ -1,5 +1,4 @@
 <div class="container">
-  <div class="ui warning message">这个页面还没完成，操作是没有用的！</div>
   <form class="ui attached fluid form segment">
     <h3 class="ui dividing header">个人中心</h3>
     <div class="field">
@@ -11,16 +10,33 @@
       <input type="text" name="name" ng-model="user.name" placeholder="您的姓名" disabled>
     </div>
     <h4 class="ui horizontal divider">
+      <i class="setting icon"></i> 我的权限
+    </h4>
+    <div class="field">
+      <a class="ui green label" ng-if="user.rank >= 1">
+        <i class="icon checkmark"></i>查个人
+      </a>
+      <a class="ui green label" ng-if="user.rank >= 2">
+        <i class="icon checkmark"></i>查全班
+      </a>
+      <a class="ui green label" ng-if="user.rank >= 3">
+        <i class="icon checkmark"></i>查统计
+      </a>
+      <a class="ui green label" ng-if="user.rank >= 9">
+        <i class="icon checkmark"></i>管理
+      </a>
+    </div>
+    <h4 class="ui horizontal divider">
       <i class="setting icon"></i> 设置
     </h4>
     <h5 class="ui header">成绩提醒</h5>
-    <div class="field">
+    <div class="field" ng-click="scoreRemind()">
       <div class="ui toggle checkbox">
-        <input type="radio" name="score_reminder" ng-model="user.score_reminder">
+        <input type="radio" name="scoreRemind">
         <label>有新成绩将会邮件通知您</label>
       </div>
     </div>
-    <div class="field">
+    <div class="field" id="mailField">
       <label>邮箱地址</label>
       <input type="email" name="mail" ng-model="user.mail" placeholder="常用邮箱地址">
     </div>

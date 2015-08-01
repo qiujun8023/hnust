@@ -1,7 +1,7 @@
 #Semantic下拉菜单
 $('#menu').dropdown 
     action:'hide'
-    transition: 'drop'
+    transition: 'slide down'
 
 #API请求地址
 apiUrl = 'http://a.hnust.sinaapp.com/index.php'
@@ -17,7 +17,7 @@ hnust.factory 'getJsonpData', ($rootScope, $http, $location) ->
         $rootScope.error = ''
 
         #jsonp请求参数
-        search = angular.copy($location.search())
+        search = angular.copy $location.search()
         search.fun ||= $rootScope.fun
         params = $.extend search, params
         params.callback = 'JSON_CALLBACK'
@@ -25,13 +25,13 @@ hnust.factory 'getJsonpData', ($rootScope, $http, $location) ->
         #超时时间
         timeout ||= 8000
         #加载中动画
-        if params.fun not in ['userInfo']
+        if params.fun not in ['user']
             $rootScope.loading = true
         $http.jsonp $rootScope.url,
             params : params
             timeout: timeout
         .success (res) ->
-            if params.fun not in ['userInfo']
+            if params.fun not in ['user']
                 $rootScope.loading = false
             if res.code is 6
                 params.passwd = prompt res.msg, ''
@@ -41,7 +41,7 @@ hnust.factory 'getJsonpData', ($rootScope, $http, $location) ->
                     $rootScope.error = '密码错误！'
             else if callback? then callback res
         .error ->
-            if params.fun not in ['userInfo']
+            if params.fun not in ['user']
                 $rootScope.loading = false
 
 #检查服务器数据
@@ -114,12 +114,17 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'user',
             title: '用户中心',
             controller: user,
-            templateUrl: 'views/user.html?150723'
+            templateUrl: 'views/user.html?150801'
         .when '/score',
             fun: 'score',
             title: '成绩查询',
             controller: score,
             templateUrl: 'views/score.html?150723'
+        .when '/scoreClass',
+            fun: 'scoreClass',
+            title: '全班成绩',
+            controller: scoreClass,
+            templateUrl: 'views/scoreClass.html?150801'
         .when '/schedule',
             fun: 'schedule',
             title: '实时课表',
@@ -154,7 +159,7 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'card',
             title: '校园一卡通',
             controller: card,
-            templateUrl: 'views/card.html?150723'
+            templateUrl: 'views/card.html?150801'
         .when '/editUser', 
             fun: 'editUser',
             title: '修改权限',
@@ -177,11 +182,12 @@ hnust.run ($location, $rootScope, getJsonpData) ->
         $rootScope.title = current.$$route?.title || ''
 
     #获取用户信息
-    $rootScope.$on 'userLogin', (event, current) ->
-        getJsonpData.query fun:'userInfo', 8000, (data) ->
+    $rootScope.$on 'updateUserInfo', (event, current) ->
+        getJsonpData.query fun:'user', 8000, (data) ->
             data.info.id = data.info.studentId || ''
             data.info.name ||= '游客'
             data.info.rank = if data.info.rank? then parseInt(data.info.rank) else -1
+            data.info.scoreRemind = !!parseInt(data.info.scoreRemind)
             $rootScope.user = data.info
 
 #导航栏控制器
@@ -189,17 +195,55 @@ navbar = ($scope, $rootScope, getJsonpData) ->
     #是否隐藏导航栏
     $scope.hideNavbar = navigator.userAgent is 'demo'
     #获取用户信息
-    $scope.$emit 'userLogin'
+    $scope.$emit 'updateUserInfo'
     #注销登录
     $scope.logout = ->
         getJsonpData.query fun:'logout'
 
 #用户中心
 user = ($scope, $rootScope, $location, getJsonpData) ->
-    if !$rootScope.user?.rank? or $rootScope.user.rank is -1
-        return $location.url '/login'
-    $('.ui.checkbox').checkbox()
-    $scope.user = $rootScope.user
+    $('.ui.checkbox').checkbox 'check'
+    $rootScope.error = ''
+    $scope.scoreRemind = (isCheck) ->
+        $scope.user.scoreRemind = if isCheck? then isCheck else !$scope.user?.scoreRemind
+        if $scope.user.scoreRemind is true
+            $('.ui.checkbox').checkbox 'check'
+            $('#mailField').transition 'fade down in'
+            $scope.user.mail = $rootScope.user.mail
+        else
+            $('.ui.checkbox').checkbox 'uncheck'
+            $('#mailField').transition 'fade down out'
+            $scope.user.mail = ''
+
+    watch = $scope.$watch ->
+        $rootScope.user
+    , ->
+        if $rootScope.user?.rank? and $rootScope.user.rank isnt -1
+            $scope.user = angular.copy $rootScope.user
+            $scope.scoreRemind $scope.user.scoreRemind
+            watch()
+    , true
+
+    $('.ui.form').form
+        mail: 
+            identifier: 'mail'
+            optional   : true,
+            rules: [
+                type  : 'email'
+                prompt: '请输入正确的邮件地址。'
+            ]
+        ,
+    ,
+        inline: true
+        on    : 'blur'
+        onSuccess: ->
+            params =
+                fun: 'userUpdate'
+                scoreRemind: if $scope.user.scoreRemind then '1' else '0'
+                mail: $scope.user.mail
+            getJsonpData.query params, 8000, (data) ->
+                $scope.$emit 'updateUserInfo'
+            return false
 
 #登录
 login = ($scope, $rootScope, getJsonpData, checkJsonpData) ->
@@ -245,13 +289,21 @@ login = ($scope, $rootScope, getJsonpData, checkJsonpData) ->
                 studentId : $scope.studentId
             getJsonpData.query params, 8000, (data) ->
                 #发送登录成功事件
-                $scope.$emit 'userLogin'
+                $scope.$emit 'updateUserInfo'
 
 #成绩
 score = ($scope, getJsonpData) ->
     getJsonpData.query {}, 8000, (data) ->
         $scope.data = data.data
         $scope.terms = (k for k,v of $scope.data).reverse()
+
+#全班成绩
+scoreClass = ($scope, $location, getJsonpData) ->
+    if !$location.search().course
+        return $location.url '/score'
+    getJsonpData.query {}, 8000, (data) ->
+        $scope.info = data.info
+        $scope.data = data.data
 
 #课表
 schedule = ($scope, getJsonpData) ->
@@ -331,8 +383,6 @@ card = ($scope, getJsonpData) ->
 
 #修改权限
 editUser = ($scope, $rootScope, $location, getJsonpData) ->
-    if !$rootScope.user?.rank? or $rootScope.user.rank is -1
-        return $location.url '/login'
     $rootScope.error = ''
     $scope.studentId = ''
 
@@ -374,17 +424,39 @@ lastUser = ($scope, getJsonpData) ->
     getJsonpData.query {}, 5000, (data) ->
         $scope.data = data.data
 
+#排序
+sortBy = ->
+    (items, predicate, reverse) ->
+        items = _.sortBy items, (item) ->
+            if item[predicate] is '优'
+                95.02
+            else if item[predicate] is '良'
+                84.02
+            else if item[predicate] is '中'
+                74.02
+            else if item[predicate] is '及格'
+                60.02
+            else if item[predicate] is '不及格'
+                0
+            else if !isNaN(item[predicate]) && item[predicate]
+                parseFloat(item[predicate])
+            else
+                item[predicate]
+        if reverse then items else items.reverse()
+
 #函数注入
-hnust.controller 'navbar'  , navbar
-hnust.controller 'login'   , login
-hnust.controller 'user'    , user
-hnust.controller 'score'   , score
-hnust.controller 'schedule', schedule
-hnust.controller 'exam'    , exam
-hnust.controller 'credit'  , credit
-hnust.controller 'tuition' , tuition
-hnust.controller 'judge'   , judge
-hnust.controller 'book'    , book
-hnust.controller 'card'    , card
-hnust.controller 'editUser', editUser
-hnust.controller 'lastUser', lastUser
+hnust.controller 'navbar'     , navbar
+hnust.controller 'login'      , login
+hnust.controller 'user'       , user
+hnust.controller 'score'      , score
+hnust.controller 'scoreClass' , scoreClass
+hnust.controller 'schedule'   , schedule
+hnust.controller 'exam'       , exam
+hnust.controller 'credit'     , credit
+hnust.controller 'tuition'    , tuition
+hnust.controller 'judge'      , judge
+hnust.controller 'book'       , book
+hnust.controller 'card'       , card
+hnust.controller 'editUser'   , editUser
+hnust.controller 'lastUser'   , lastUser
+hnust.filter     'sortBy'     , sortBy
