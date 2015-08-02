@@ -7,3 +7,16 @@
   </div>
 </div>
 <div ng-include="'views/loading.html'"></div>
+<div class="container" style="padding-bottom:20px" ng-if="!$root.loading && data && data.length">
+  <div class="ui styled fluid accordion">
+    <div ng-repeat="item in data">
+      <div class="title" style="font-weight: 500;color: rgba(0,0,0,.8);" ng-click="bookInfo(item)">
+        <i class="dropdown icon"></i>
+        <span ng-bind="item.title"></span>
+      </div>
+      <div class="content">
+        <div class="ui active centered inline text loader" ng-if="item.loading">开发中...不急...乖...</div>
+      </div>
+    </div>
+  </div>
+</div>

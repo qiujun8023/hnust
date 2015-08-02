@@ -25,13 +25,13 @@ hnust.factory 'getJsonpData', ($rootScope, $http, $location) ->
         #超时时间
         timeout ||= 8000
         #加载中动画
-        if params.fun not in ['user', 'failRateKey']
+        if params.fun not in ['user', 'failRateKey', 'bookInfo']
             $rootScope.loading = true
         $http.jsonp $rootScope.url,
             params : params
             timeout: timeout
         .success (res) ->
-            if params.fun not in ['user', 'failRateKey']
+            if params.fun not in ['user', 'failRateKey', 'bookInfo']
                 $rootScope.loading = false
             if res.code is 6
                 params.passwd = prompt res.msg, ''
@@ -41,7 +41,7 @@ hnust.factory 'getJsonpData', ($rootScope, $http, $location) ->
                     $rootScope.error = '密码错误！'
             else if callback? then callback res
         .error ->
-            if params.fun not in ['user', 'failRateKey']
+            if params.fun not in ['user', 'failRateKey', 'bookInfo']
                 $rootScope.loading = false
 
 #检查服务器数据
@@ -84,12 +84,14 @@ hnust.factory 'checkJsonpData', ($rootScope, $location) ->
 
 #http拦截器，用户检查jsonp数据
 hnust.factory 'httpInterceptor', ($q, checkJsonpData) ->
+    #response回调
     response: (res) ->
         if res.config.method isnt 'JSONP'
             return res
         res.data.code = parseInt(res.data?.code)
         if checkJsonpData.check res.data then res else $q.reject('reject')
 
+    #错误回调
     responseError: (res) ->
         checkJsonpData.check 
             code: -1
@@ -154,7 +156,7 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'bookList',
             title: '图书检索',
             controller: bookList,
-            templateUrl: 'views/bookList.html?150801'
+            templateUrl: 'views/bookList.html?150802'
         .when '/tuition', 
             fun: 'tuition',
             title: '学年学费',
@@ -169,7 +171,7 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'failRate',
             title: '挂科率统计',
             controller: failRate,
-            templateUrl: 'views/failRate.html?150801'
+            templateUrl: 'views/failRate.html?150802'
         .when '/editUser', 
             fun: 'editUser',
             title: '修改权限',
@@ -214,6 +216,8 @@ navbar = ($scope, $rootScope, getJsonpData) ->
 user = ($scope, $rootScope, $location, getJsonpData) ->
     $('.ui.checkbox').checkbox 'check'
     $rootScope.error = ''
+
+    #邮件输入框的显示与不显示
     $scope.scoreRemind = (isCheck) ->
         $scope.user.scoreRemind = if isCheck? then isCheck else !$scope.user?.scoreRemind
         if $scope.user.scoreRemind is true
@@ -225,6 +229,7 @@ user = ($scope, $rootScope, $location, getJsonpData) ->
             $('#mailField').transition 'slide down out'
             $scope.user.mail = ''
 
+    #监视有无获取用户信息
     watch = $scope.$watch ->
         $rootScope.user
     , ->
@@ -234,6 +239,7 @@ user = ($scope, $rootScope, $location, getJsonpData) ->
             watch()
     , true
 
+    #邮件校验
     $('.ui.form').form
         mail: 
             identifier: 'mail'
@@ -262,6 +268,7 @@ login = ($scope, $rootScope, getJsonpData, checkJsonpData) ->
         return checkJsonpData.check code:4
     $scope.studentId = $scope.passwd = ''
 
+    #用户名及密码等表单校验
     $('.ui.form').form
         studentId: 
             identifier: 'studentId'
@@ -338,12 +345,14 @@ judge = ($scope, $rootScope, $location, $anchorScroll, getJsonpData) ->
     getJsonpData.query {}, 10000, (data) ->
         $scope.data = data.data
 
+    #评教
     $scope.judge = (item) ->
         $('.ui.checkbox').checkbox()
         $('.ui.form').form 'clear'
         $scope.judging = item
         $anchorScroll()
 
+    #提交评价
     $scope.submit = ->
         $rootScope.error = ''
         data = params: $scope.judging.params
@@ -368,6 +377,7 @@ judge = ($scope, $rootScope, $location, $anchorScroll, getJsonpData) ->
 
 #图书续借
 book = ($scope, getJsonpData) ->
+    #获取图书列表
     getJsonpData.query {}, 8000, (data) ->
         $scope.data = data.data
 
@@ -378,17 +388,32 @@ book = ($scope, getJsonpData) ->
             $scope.data = data.data
 
 #图书检索
-bookList = ($scope, $rootScope, getJsonpData) ->
+bookList = ($scope, $rootScope, $timeout, getJsonpData) ->
+    #回车键Submit
     $('.ui.form').form {}, 
         onSuccess: ->
             $scope.search()
     $rootScope.error = ''
+
+    #搜索书列表
     $scope.search = (key) ->
         if key then $scope.key = key
         if !$scope.key?.length then return
         getJsonpData.query {key:$scope.key}, 8000, (data) ->
             $scope.data = data.data
-            console.log $scope.data
+            $timeout ->
+                $('.ui.accordion').accordion()
+
+    #查找详细信息
+    $scope.bookInfo = (item) ->
+        if item.data or item.loading
+            return
+        item.loading = true
+        return
+        getJsonpData.query {fun:'bookInfo', key:item.id}, 8000, (data) ->
+            item.loading = false
+            item.data = data.data
+            console.log data
 
 #学费
 tuition = ($scope, getJsonpData) ->
@@ -413,6 +438,10 @@ failRate = ($scope, $rootScope, $timeout, getJsonpData) ->
     $('.ui.search.dropdown').dropdown
         onChange: (value)->
             $scope.search(value)
+
+    #抵消失焦时Semantic对值的清空
+    $scope.filling = ->
+        $("[ng-model='key'")[0].value = $scope.key
 
     #检查输入框值的变化
     $scope.check = (key) ->
@@ -439,6 +468,7 @@ failRate = ($scope, $rootScope, $timeout, getJsonpData) ->
         $('.ui.search.dropdown').dropdown('set text', '')
         if key then $scope.key = key
         if !$scope.key?.length then return
+        $("[ng-model='key'")[0].value = $scope.key
         $scope.data = []
         #请求服务器数据
         getJsonpData.query {key:$scope.key}, 8000, (data) ->
@@ -454,7 +484,7 @@ failRate = ($scope, $rootScope, $timeout, getJsonpData) ->
                 for item in data.data
                     total.all  += parseInt(item.all)
                     total.fail += parseInt(item.fail)
-                total.rate = total.fail / total.all
+                total.rate = total.fail / total.all * 100
                 $scope.data.unshift(total)
             #进度条显示
             $timeout ->
@@ -522,6 +552,7 @@ lastUser = ($scope, getJsonpData) ->
 sortBy = ->
     (items, predicate, reverse) ->
         items = _.sortBy items, (item) ->
+            #将优中良差转为对应的数值进行比较
             if item[predicate] is '优'
                 95.02
             else if item[predicate] is '良'

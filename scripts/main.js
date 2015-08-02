@@ -22,7 +22,7 @@
         params = $.extend(search, params);
         params.callback = 'JSON_CALLBACK';
         timeout || (timeout = 8000);
-        if ((ref = params.fun) !== 'user' && ref !== 'failRateKey') {
+        if ((ref = params.fun) !== 'user' && ref !== 'failRateKey' && ref !== 'bookInfo') {
           $rootScope.loading = true;
         }
         return $http.jsonp($rootScope.url, {
@@ -30,7 +30,7 @@
           timeout: timeout
         }).success(function(res) {
           var ref1;
-          if ((ref1 = params.fun) !== 'user' && ref1 !== 'failRateKey') {
+          if ((ref1 = params.fun) !== 'user' && ref1 !== 'failRateKey' && ref1 !== 'bookInfo') {
             $rootScope.loading = false;
           }
           if (res.code === 6) {
@@ -45,7 +45,7 @@
           }
         }).error(function() {
           var ref1;
-          if ((ref1 = params.fun) !== 'user' && ref1 !== 'failRateKey') {
+          if ((ref1 = params.fun) !== 'user' && ref1 !== 'failRateKey' && ref1 !== 'bookInfo') {
             return $rootScope.loading = false;
           }
         });
@@ -175,7 +175,7 @@
       fun: 'bookList',
       title: '图书检索',
       controller: bookList,
-      templateUrl: 'views/bookList.html?150801'
+      templateUrl: 'views/bookList.html?150802'
     }).when('/tuition', {
       fun: 'tuition',
       title: '学年学费',
@@ -190,7 +190,7 @@
       fun: 'failRate',
       title: '挂科率统计',
       controller: failRate,
-      templateUrl: 'views/failRate.html?150801'
+      templateUrl: 'views/failRate.html?150802'
     }).when('/editUser', {
       fun: 'editUser',
       title: '修改权限',
@@ -461,14 +461,14 @@
     };
   };
 
-  bookList = function($scope, $rootScope, getJsonpData) {
+  bookList = function($scope, $rootScope, $timeout, getJsonpData) {
     $('.ui.form').form({}, {
       onSuccess: function() {
         return $scope.search();
       }
     });
     $rootScope.error = '';
-    return $scope.search = function(key) {
+    $scope.search = function(key) {
       var ref;
       if (key) {
         $scope.key = key;
@@ -480,7 +480,24 @@
         key: $scope.key
       }, 8000, function(data) {
         $scope.data = data.data;
-        return console.log($scope.data);
+        return $timeout(function() {
+          return $('.ui.accordion').accordion();
+        });
+      });
+    };
+    return $scope.bookInfo = function(item) {
+      if (item.data || item.loading) {
+        return;
+      }
+      item.loading = true;
+      return;
+      return getJsonpData.query({
+        fun: 'bookInfo',
+        key: item.id
+      }, 8000, function(data) {
+        item.loading = false;
+        item.data = data.data;
+        return console.log(data);
       });
     };
   };
@@ -521,6 +538,9 @@
         return $scope.search(value);
       }
     });
+    $scope.filling = function() {
+      return $("[ng-model='key'")[0].value = $scope.key;
+    };
     $scope.check = function(key) {
       return $timeout(function() {
         if (key === $scope.key && key === '') {
@@ -551,6 +571,7 @@
       if (!((ref = $scope.key) != null ? ref.length : void 0)) {
         return;
       }
+      $("[ng-model='key'")[0].value = $scope.key;
       $scope.data = [];
       return getJsonpData.query({
         key: $scope.key
@@ -571,7 +592,7 @@
             total.all += parseInt(item.all);
             total.fail += parseInt(item.fail);
           }
-          total.rate = total.fail / total.all;
+          total.rate = total.fail / total.all * 100;
           $scope.data.unshift(total);
         }
         return $timeout(function() {

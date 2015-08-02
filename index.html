@@ -7,14 +7,14 @@
   <title ng-bind="(title? (title + '-') : '') + '查水表小分队'"></title>
   <!-- css -->
   <link rel="stylesheet" href="http://7u2n9p.com1.z0.glb.clouddn.com/semantic-ui/1.12.3/semantic.min.css">
-  <link rel="stylesheet" href="styles/main.css?150801">
+  <link rel="stylesheet" href="styles/main.css?150802">
 </head>
 <body ng-cloak>
   <div style="padding-top:40px;" ng-show="hideNavbar != true" ng-controller="navbar">
     <div class="ui fixed inverted main menu">
       <div class="container">
-        <div class="item" ng-bind="title" ng-show="$root.user.rank == 0"></div>
-        <div class="ui pointing dropdown link item" id="menu" ng-show="$root.user.rank != 0">
+        <div class="item" style="float:left" ng-bind="title" ng-show="$root.user.rank == 0"></div>
+        <div class="ui pointing dropdown link item" style="float:left" id="menu" ng-show="$root.user.rank != 0">
           <div class="text">
             <span ng-bind="title"></span>
             <i class="dropdown icon" style="margin-right:0"></i>
@@ -103,6 +103,6 @@
   <script src="http://7u2n9p.com1.z0.glb.clouddn.com/underscore.js/1.6.0/underscore-min.js"></script>
   <script src="http://7u2n9p.com1.z0.glb.clouddn.com/angular.js/1.2.28/angular.min.js"></script>
   <script src="http://7u2n9p.com1.z0.glb.clouddn.com/angular.js/1.2.28/angular-route.min.js"></script>
-  <script src="scripts/main.js?150801"></script>
+  <script src="scripts/main.js?150802"></script>
 </body>
 </html>
