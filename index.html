@@ -7,7 +7,7 @@
   <title ng-bind="(title? (title + '-') : '') + '查水表小分队'"></title>
   <!-- css -->
   <link rel="stylesheet" href="http://7u2n9p.com1.z0.glb.clouddn.com/semantic-ui/1.12.3/semantic.min.css">
-  <link rel="stylesheet" href="styles/main.css?150723">
+  <link rel="stylesheet" href="styles/main.css?150801">
 </head>
 <body ng-cloak>
   <div style="padding-top:40px;" ng-show="hideNavbar != true" ng-controller="navbar">
@@ -32,24 +32,54 @@
             <a class="item" ng-class="{actived:($root.fun == 'credit')}" href="#/credit">
               <i class="student icon"></i> 学分绩点
             </a>
-            <a class="item" ng-class="{actived:($root.fun == 'tuition')}" href="#/tuition">
-              <i class="yen icon"></i> 学年学费
+            <a class="item" ng-class="{actived:($root.fun == 'classroom')}" href="#/classroom" ng-hide="true">
+              <i class="building outline icon"></i> 空闲教室
+            </a>
+            <a class="item" ng-class="{actived:($root.fun == 'elective')}" href="#/elective" ng-hide="true">
+              <i class="lab icon"></i> 选课平台
             </a>
             <a class="item" ng-class="{actived:($root.fun == 'judge')}" href="#/judge">
               <i class="trophy icon"></i> 教学评价
             </a>
-            <a class="item" ng-class="{actived:($root.fun == 'book')}" href="#/book">
-              <i class="book icon"></i> 图书续借
+            <div class="item" ng-class="{actived:['book', 'bookList'].indexOf($root.fun) != -1}">
+              <i class="dropdown icon"></i>
+              <div class="text">
+                <i class="bookmark icon"></i> 
+                <span style="margin-left: 6px;">图书借阅</span>
+              </div>
+              <div class="menu">
+                <a class="item" ng-class="{actived:($root.fun == 'bookList')}" href="#/bookList">
+                  <i class="search icon"></i> 图书检索
+                </a>
+                <a class="item" ng-class="{actived:($root.fun == 'book')}" href="#/book">
+                  <i class="book icon"></i> 图书续借
+                </a>
+              </div>
+            </div>
+            <a class="item" ng-class="{actived:($root.fun == 'tuition')}" href="#/tuition">
+              <i class="yen icon"></i> 学年学费
             </a>
             <a class="item" ng-class="{actived:($root.fun == 'card')}" href="#/card">
               <i class="money icon"></i> 校园一卡通
             </a>
-            <a class="item" ng-class="{actived:($root.fun == 'editUser')}" href="#/editUser" ng-show="$root.user.rank == 9">
-              <i class="privacy icon"></i> 修改权限
+            <a class="item" ng-class="{actived:($root.fun == 'failRate')}" href="#/failRate" ng-show="$root.user.rank >= 3">
+              <i class="pie chart icon"></i> 挂科率统计
             </a>
-            <a class="item" ng-class="{actived:($root.fun == 'lastUser')}" href="#/lastUser" ng-show="$root.user.rank == 9">
-              <i class="history icon"></i> 最近使用
-            </a>
+            <div class="item" ng-class="{actived:['editUser', 'lastUser'].indexOf($root.fun) != -1}" ng-show="$root.user.rank == 9">
+              <i class="dropdown icon"></i>
+              <div class="text">
+                <i class="dashboard icon"></i> 
+                <span style="margin-left: 6px;">后台管理</span>
+              </div>
+              <div class="menu">
+                <a class="item" ng-class="{actived:($root.fun == 'editUser')}" href="#/editUser">
+                  <i class="privacy icon"></i> 修改权限
+                </a>
+                <a class="item" ng-class="{actived:($root.fun == 'lastUser')}" href="#/lastUser">
+                  <i class="history icon"></i> 最近使用
+                </a>
+              </div>
+            </div>
           </div>
         </div>
         <div class="right menu">

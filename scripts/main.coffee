@@ -25,13 +25,13 @@ hnust.factory 'getJsonpData', ($rootScope, $http, $location) ->
         #超时时间
         timeout ||= 8000
         #加载中动画
-        if params.fun not in ['user']
+        if params.fun not in ['user', 'failRateKey']
             $rootScope.loading = true
         $http.jsonp $rootScope.url,
             params : params
             timeout: timeout
         .success (res) ->
-            if params.fun not in ['user']
+            if params.fun not in ['user', 'failRateKey']
                 $rootScope.loading = false
             if res.code is 6
                 params.passwd = prompt res.msg, ''
@@ -41,7 +41,7 @@ hnust.factory 'getJsonpData', ($rootScope, $http, $location) ->
                     $rootScope.error = '密码错误！'
             else if callback? then callback res
         .error ->
-            if params.fun not in ['user']
+            if params.fun not in ['user', 'failRateKey']
                 $rootScope.loading = false
 
 #检查服务器数据
@@ -140,11 +140,6 @@ hnust.config ($httpProvider, $routeProvider) ->
             title: '学分绩点',
             controller: credit,
             templateUrl: 'views/credit.html?150723'
-        .when '/tuition', 
-            fun: 'tuition',
-            title: '学年学费',
-            controller: tuition,
-            templateUrl: 'views/tuition.html?150723'
         .when '/judge', 
             fun: 'judge',
             title: '教学评价',
@@ -155,11 +150,26 @@ hnust.config ($httpProvider, $routeProvider) ->
             title: '图书续借',
             controller: book,
             templateUrl: 'views/book.html?150723'
+        .when '/bookList', 
+            fun: 'bookList',
+            title: '图书检索',
+            controller: bookList,
+            templateUrl: 'views/bookList.html?150801'
+        .when '/tuition', 
+            fun: 'tuition',
+            title: '学年学费',
+            controller: tuition,
+            templateUrl: 'views/tuition.html?150723'
         .when '/card', 
             fun: 'card',
             title: '校园一卡通',
             controller: card,
             templateUrl: 'views/card.html?150801'
+        .when '/failRate', 
+            fun: 'failRate',
+            title: '挂科率统计',
+            controller: failRate,
+            templateUrl: 'views/failRate.html?150801'
         .when '/editUser', 
             fun: 'editUser',
             title: '修改权限',
@@ -208,11 +218,11 @@ user = ($scope, $rootScope, $location, getJsonpData) ->
         $scope.user.scoreRemind = if isCheck? then isCheck else !$scope.user?.scoreRemind
         if $scope.user.scoreRemind is true
             $('.ui.checkbox').checkbox 'check'
-            $('#mailField').transition 'fade down in'
+            $('#mailField').transition 'slide down in'
             $scope.user.mail = $rootScope.user.mail
         else
             $('.ui.checkbox').checkbox 'uncheck'
-            $('#mailField').transition 'fade down out'
+            $('#mailField').transition 'slide down out'
             $scope.user.mail = ''
 
     watch = $scope.$watch ->
@@ -323,14 +333,6 @@ credit = ($scope, getJsonpData) ->
     getJsonpData.query {}, 10000, (data) ->
         $scope.data = data.data
 
-#学费
-tuition = ($scope, getJsonpData) ->
-    getJsonpData.query {}, 8000, (data) ->
-        $scope.total = data.data?.total
-        delete data.data?.total
-        $scope.data = data.data
-        $scope.terms = (k for k,v of $scope.data).reverse()
-
 #教学评价
 judge = ($scope, $rootScope, $location, $anchorScroll, getJsonpData) ->
     getJsonpData.query {}, 10000, (data) ->
@@ -375,18 +377,110 @@ book = ($scope, getJsonpData) ->
         getJsonpData.query params, 8000, (data) ->
             $scope.data = data.data
 
+#图书检索
+bookList = ($scope, $rootScope, getJsonpData) ->
+    $('.ui.form').form {}, 
+        onSuccess: ->
+            $scope.search()
+    $rootScope.error = ''
+    $scope.search = (key) ->
+        if key then $scope.key = key
+        if !$scope.key?.length then return
+        getJsonpData.query {key:$scope.key}, 8000, (data) ->
+            $scope.data = data.data
+            console.log $scope.data
+
+#学费
+tuition = ($scope, getJsonpData) ->
+    getJsonpData.query {}, 8000, (data) ->
+        $scope.total = data.data?.total
+        delete data.data?.total
+        $scope.data = data.data
+        $scope.terms = (k for k,v of $scope.data).reverse()
+
 #校园一卡通
 card = ($scope, getJsonpData) ->
     getJsonpData.query {}, 8000, (data) ->
         $scope.info = data.info
         $scope.data = data.data
 
+#挂科率统计
+failRate = ($scope, $rootScope, $timeout, getJsonpData) ->
+    $rootScope.error = ''
+    $scope.keys = []
+
+    #自动补全设置
+    $('.ui.search.dropdown').dropdown
+        onChange: (value)->
+            $scope.search(value)
+
+    #检查输入框值的变化
+    $scope.check = (key) ->
+        $timeout ->
+            if key is $scope.key and key is ''
+                $scope.keys = []
+            else if key is $scope.key
+                $scope.completion key
+        , 300
+
+    #自动补全
+    $scope.completion = (key) ->
+        getJsonpData.query {fun:'failRateKey', key:key}, 8000, (data) ->
+            $scope.keys = data.data
+            #显示下拉框（自动补全）
+            $timeout ->
+                $('.ui.search.dropdown').dropdown 'show'
+
+    #搜索
+    $scope.search = (key) ->
+        #隐藏下拉框
+        $('.ui.search.dropdown').dropdown 'hide'
+        #去字体重复
+        $('.ui.search.dropdown').dropdown('set text', '')
+        if key then $scope.key = key
+        if !$scope.key?.length then return
+        $scope.data = []
+        #请求服务器数据
+        getJsonpData.query {key:$scope.key}, 8000, (data) ->
+            #排序
+            $scope.data = _.sortBy data.data, (item) ->
+                -parseFloat(item.rate)
+            #计算全校挂科率
+            if $scope.data.length > 1 and $scope.data[0].name isnt $scope.data[0].course
+                total = 
+                    'name': '湖南科技大学'
+                    'all' : 0
+                    'fail': 0
+                for item in data.data
+                    total.all  += parseInt(item.all)
+                    total.fail += parseInt(item.fail)
+                total.rate = total.fail / total.all
+                $scope.data.unshift(total)
+            #进度条显示
+            $timeout ->
+                $('.progress').progress()
+
+    #进度条颜色
+    $scope.progressColor = (rate)->
+        if rate <= 2
+            ['teal']
+        else if rate <= 6
+            ['green']
+        else if rate <= 12
+            ['pink']
+        else if rate <= 20
+            ['orange']
+        else
+            ['red']
+
 #修改权限
 editUser = ($scope, $rootScope, $location, getJsonpData) ->
     $rootScope.error = ''
     $scope.studentId = ''
 
+    #权限下拉框
     $('#rank').dropdown()
+    #表单验证
     $('.ui.form').form
         studentId: 
             identifier: 'studentId'
@@ -453,10 +547,12 @@ hnust.controller 'scoreClass' , scoreClass
 hnust.controller 'schedule'   , schedule
 hnust.controller 'exam'       , exam
 hnust.controller 'credit'     , credit
-hnust.controller 'tuition'    , tuition
 hnust.controller 'judge'      , judge
 hnust.controller 'book'       , book
+hnust.controller 'bookList'   , bookList
+hnust.controller 'tuition'    , tuition
 hnust.controller 'card'       , card
+hnust.controller 'failRate'   , failRate
 hnust.controller 'editUser'   , editUser
 hnust.controller 'lastUser'   , lastUser
 hnust.filter     'sortBy'     , sortBy

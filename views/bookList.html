@@ -1,0 +1,9 @@
+<div class="container" style="padding-bottom:20px">
+  <div class="ui form">
+    <div class="field" style="padding-right:80px">
+      <input type="text" placeholder="请输入关键词" ng-model="key">
+    </div>
+    <button class="ui submit positive button" style="position:absolute;top:1px;right:0px;" ng-click="search(key)">搜索</button>
+  </div>
+</div>
+<div ng-include="'views/loading.html'"></div>

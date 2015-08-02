@@ -1,0 +1,28 @@
+<div class="container" style="padding-bottom:20px">
+  <form class="ui form">
+    <div class="field" style="padding-right:80px">
+      <div class="ui fluid search selection dropdown">
+        <input type="hidden" name="country">
+        <div class="default text">请输入课程名称</div>
+        <input class="search" ng-model="key" ng-change="check(key)">
+        <div class="menu">
+          <div class="item" style="display: block !important;" ng-repeat="item in keys track by $index" ng-bind="item.course">
+          </div>
+        </div>
+      </div>
+      <button class="ui positive button" style="position:absolute;top:1px;right:0px;" ng-click="search()">搜索</button>
+    </div>
+  </form>
+</div>
+<div ng-include="'views/loading.html'"></div>
+<div class="container" style="padding-bottom:20px" ng-if="!$root.loading && data && data.length">
+  <div class="ui segment" ng-repeat="item in data">
+    <h4 class="ui header" ng-bind="item.name"></h4>
+    <div class="ui green horizontal label" style="width:28%;max-width:120px" ng-bind="'总计' + item.all"></div>
+    <div class="ui red horizontal label" style="width:25%;max-width:120px" ng-bind="'挂科' + item.fail"></div>
+    <div class="ui teal horizontal label" style="width:38%;max-width:150px" ng-bind="'挂科率' + (item.rate | number:2) + '%'"></div>
+    <div class="ui bottom attached progress" ng-class="progressColor(item.rate)" data-percent="{{item.rate | number:0}}">
+      <div class="bar"></div>
+    </div>
+  </div>
+</div>
