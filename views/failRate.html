@@ -4,13 +4,13 @@
       <div class="ui fluid search selection dropdown">
         <input type="hidden" name="country">
         <div class="default text">请输入课程名称</div>
-        <input class="search" id="search" ng-model="key" ng-change="check(key)" ng-blur="filling()">
+        <input class="search" ng-model="key" ng-change="check(key)" ng-blur="filling()">
         <div class="menu" ng-click="filling()">
           <div class="item" style="display: block !important;" ng-repeat="item in keys track by $index" ng-bind="item.course">
           </div>
         </div>
       </div>
-      <button class="ui positive button" style="position:absolute;top:1px;right:0px;" ng-click="search()">搜索</button>
+      <button class="ui positive search button" ng-click="search()">搜索</button>
     </div>
   </form>
 </div>

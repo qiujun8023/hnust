@@ -2,11 +2,6 @@
 (function() {
   var apiUrl, book, bookList, card, credit, editUser, exam, failRate, hnust, judge, lastUser, login, navbar, schedule, score, scoreClass, sortBy, tuition, user;
 
-  $('#menu').dropdown({
-    action: 'hide',
-    transition: 'slide down'
-  });
-
   apiUrl = 'http://a.hnust.sinaapp.com/index.php';
 
   hnust = angular.module('hnust', ['ngRoute']);
@@ -175,7 +170,7 @@
       fun: 'bookList',
       title: '图书检索',
       controller: bookList,
-      templateUrl: 'views/bookList.html?150802'
+      templateUrl: 'views/bookList.html?150803'
     }).when('/tuition', {
       fun: 'tuition',
       title: '学年学费',
@@ -190,7 +185,7 @@
       fun: 'failRate',
       title: '挂科率统计',
       controller: failRate,
-      templateUrl: 'views/failRate.html?150802'
+      templateUrl: 'views/failRate.html?150803'
     }).when('/editUser', {
       fun: 'editUser',
       title: '修改权限',
@@ -228,6 +223,29 @@
   });
 
   navbar = function($scope, $rootScope, getJsonpData) {
+    $scope.isPhone = document.body.offsetWidth < 720;
+    $scope.sidebar = $('.ui.sidebar');
+    $scope.$watch(function() {
+      var ref;
+      return (ref = $rootScope.user) != null ? ref.rank : void 0;
+    }, function() {
+      if ($scope.isPhone) {
+        return $scope.sidebar.sidebar('attach events', '#menu');
+      } else {
+        $scope.sidebar.sidebar({
+          closable: false,
+          dimPage: false,
+          scrollLock: true,
+          transition: 'overlay'
+        });
+        return $scope.sidebar.sidebar('attach events', '#menu');
+      }
+    });
+    $scope.sidebarHide = function() {
+      if ($scope.isPhone) {
+        $scope.sidebar.sidebar('hide');
+      }
+    };
     $scope.hideNavbar = navigator.userAgent === 'demo';
     $scope.$emit('updateUserInfo');
     return $scope.logout = function() {
@@ -385,7 +403,7 @@
       $scope.data = data.data;
       $scope.info = data.info;
       $('.menu .item').tab();
-      return $('#term').dropdown();
+      return $('.ui.inline.dropdown').dropdown();
     });
   };
 
@@ -461,10 +479,13 @@
     };
   };
 
-  bookList = function($scope, $rootScope, $timeout, getJsonpData) {
+  bookList = function($scope, $rootScope, $timeout, $location, getJsonpData) {
+    var search;
     $('.ui.form').form({}, {
       onSuccess: function() {
-        return $scope.search();
+        return $scope.$apply(function() {
+          return $scope.search();
+        });
       }
     });
     $rootScope.error = '';
@@ -476,30 +497,42 @@
       if (!((ref = $scope.key) != null ? ref.length : void 0)) {
         return;
       }
-      return getJsonpData.query({
-        key: $scope.key
-      }, 8000, function(data) {
-        $scope.data = data.data;
-        return $timeout(function() {
-          return $('.ui.accordion').accordion();
-        });
+      return $location.search({
+        key: $scope.key,
+        page: 1,
+        rand: Math.random()
       });
     };
-    return $scope.bookInfo = function(item) {
+    $scope.bookInfo = function(item) {
       if (item.data || item.loading) {
         return;
       }
       item.loading = true;
-      return;
       return getJsonpData.query({
         fun: 'bookInfo',
         key: item.id
       }, 8000, function(data) {
         item.loading = false;
-        item.data = data.data;
-        return console.log(data);
+        return item.data = data.data;
       });
     };
+    if ($location.search().key) {
+      search = $location.search();
+      $scope.key = search.key;
+      return getJsonpData.query({
+        key: search.key,
+        page: search.page
+      }, 8000, function(data) {
+        $scope.info = data.info;
+        $scope.data = data.data;
+        return $timeout(function() {
+          return $('.ui.accordion').accordion({
+            duration: 200,
+            exclusive: false
+          });
+        });
+      });
+    }
   };
 
   tuition = function($scope, getJsonpData) {
@@ -539,7 +572,7 @@
       }
     });
     $scope.filling = function() {
-      return $("[ng-model='key'")[0].value = $scope.key;
+      return $("[ng-model='key']")[0].value = $scope.key || '';
     };
     $scope.check = function(key) {
       return $timeout(function() {
@@ -571,7 +604,7 @@
       if (!((ref = $scope.key) != null ? ref.length : void 0)) {
         return;
       }
-      $("[ng-model='key'")[0].value = $scope.key;
+      $("[ng-model='key']")[0].value = $scope.key;
       $scope.data = [];
       return getJsonpData.query({
         key: $scope.key
@@ -618,7 +651,7 @@
   editUser = function($scope, $rootScope, $location, getJsonpData) {
     $rootScope.error = '';
     $scope.studentId = '';
-    $('#rank').dropdown();
+    $('.ui.dropdown').dropdown();
     return $('.ui.form').form({
       studentId: {
         identifier: 'studentId',

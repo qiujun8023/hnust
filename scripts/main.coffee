@@ -1,8 +1,3 @@
-#Semantic下拉菜单
-$('#menu').dropdown 
-    action:'hide'
-    transition: 'slide down'
-
 #API请求地址
 apiUrl = 'http://a.hnust.sinaapp.com/index.php'
 
@@ -156,7 +151,7 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'bookList',
             title: '图书检索',
             controller: bookList,
-            templateUrl: 'views/bookList.html?150802'
+            templateUrl: 'views/bookList.html?150803'
         .when '/tuition', 
             fun: 'tuition',
             title: '学年学费',
@@ -171,7 +166,7 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'failRate',
             title: '挂科率统计',
             controller: failRate,
-            templateUrl: 'views/failRate.html?150802'
+            templateUrl: 'views/failRate.html?150803'
         .when '/editUser', 
             fun: 'editUser',
             title: '修改权限',
@@ -204,6 +199,26 @@ hnust.run ($location, $rootScope, getJsonpData) ->
 
 #导航栏控制器
 navbar = ($scope, $rootScope, getJsonpData) ->
+    $scope.isPhone = document.body.offsetWidth < 720
+    $scope.sidebar = $('.ui.sidebar')
+    #侧栏
+    $scope.$watch ->
+        $rootScope.user?.rank
+    , ->
+        if $scope.isPhone
+            $scope.sidebar.sidebar 'attach events', '#menu'
+        else 
+            $scope.sidebar.sidebar
+                closable: false
+                dimPage: false
+                scrollLock: true
+                transition: 'overlay'
+            $scope.sidebar.sidebar 'attach events', '#menu'
+    #影藏导航栏
+    $scope.sidebarHide = ->
+        if $scope.isPhone then $scope.sidebar.sidebar 'hide'
+        return
+
     #是否隐藏导航栏
     $scope.hideNavbar = navigator.userAgent is 'demo'
     #获取用户信息
@@ -328,7 +343,7 @@ schedule = ($scope, getJsonpData) ->
         $scope.data = data.data
         $scope.info = data.info
         $('.menu .item').tab()
-        $('#term').dropdown()
+        $('.ui.inline.dropdown').dropdown()
 
 #考试
 exam = ($scope, getJsonpData) ->
@@ -388,32 +403,43 @@ book = ($scope, getJsonpData) ->
             $scope.data = data.data
 
 #图书检索
-bookList = ($scope, $rootScope, $timeout, getJsonpData) ->
+bookList = ($scope, $rootScope, $timeout, $location, getJsonpData) ->
     #回车键Submit
     $('.ui.form').form {}, 
         onSuccess: ->
-            $scope.search()
+            $scope.$apply ->
+                $scope.search()
     $rootScope.error = ''
 
     #搜索书列表
     $scope.search = (key) ->
         if key then $scope.key = key
         if !$scope.key?.length then return
-        getJsonpData.query {key:$scope.key}, 8000, (data) ->
-            $scope.data = data.data
-            $timeout ->
-                $('.ui.accordion').accordion()
+        $location.search
+            key : $scope.key
+            page: 1
+            rand: Math.random()
 
     #查找详细信息
     $scope.bookInfo = (item) ->
         if item.data or item.loading
             return
         item.loading = true
-        return
         getJsonpData.query {fun:'bookInfo', key:item.id}, 8000, (data) ->
             item.loading = false
             item.data = data.data
-            console.log data
+
+    #加载数据
+    if $location.search().key
+        search = $location.search()
+        $scope.key = search.key
+        getJsonpData.query {key:search.key, page:search.page}, 8000, (data) ->
+            $scope.info = data.info
+            $scope.data = data.data
+            $timeout ->
+                $('.ui.accordion').accordion
+                    duration: 200
+                    exclusive: false
 
 #学费
 tuition = ($scope, getJsonpData) ->
@@ -441,7 +467,7 @@ failRate = ($scope, $rootScope, $timeout, getJsonpData) ->
 
     #抵消失焦时Semantic对值的清空
     $scope.filling = ->
-        $("[ng-model='key'")[0].value = $scope.key
+        $("[ng-model='key']")[0].value = $scope.key || ''
 
     #检查输入框值的变化
     $scope.check = (key) ->
@@ -468,7 +494,7 @@ failRate = ($scope, $rootScope, $timeout, getJsonpData) ->
         $('.ui.search.dropdown').dropdown('set text', '')
         if key then $scope.key = key
         if !$scope.key?.length then return
-        $("[ng-model='key'")[0].value = $scope.key
+        $("[ng-model='key']")[0].value = $scope.key
         $scope.data = []
         #请求服务器数据
         getJsonpData.query {key:$scope.key}, 8000, (data) ->
@@ -509,7 +535,7 @@ editUser = ($scope, $rootScope, $location, getJsonpData) ->
     $scope.studentId = ''
 
     #权限下拉框
-    $('#rank').dropdown()
+    $('.ui.dropdown').dropdown()
     #表单验证
     $('.ui.form').form
         studentId: 
