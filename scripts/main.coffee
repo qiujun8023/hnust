@@ -206,14 +206,18 @@ navbar = ($scope, $rootScope, getJsonpData) ->
         $rootScope.user?.rank
     , ->
         if $scope.isPhone
-            $scope.sidebar.sidebar 'attach events', '#menu'
+            $scope.sidebar
+                .sidebar 'attach events', '#menu-1'
+                .sidebar 'attach events', '#menu-2'
         else 
-            $scope.sidebar.sidebar
-                closable: false
-                dimPage: false
-                scrollLock: true
-                transition: 'overlay'
-            $scope.sidebar.sidebar 'attach events', '#menu'
+            $scope.sidebar
+                .sidebar
+                    closable: false
+                    dimPage: false
+                    scrollLock: true
+                    transition: 'overlay'
+                .sidebar 'attach events', '#menu-1'
+                .sidebar 'attach events', '#menu-2'
     #影藏导航栏
     $scope.sidebarHide = ->
         if $scope.isPhone then $scope.sidebar.sidebar 'hide'

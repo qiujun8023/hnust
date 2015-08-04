@@ -230,15 +230,14 @@
       return (ref = $rootScope.user) != null ? ref.rank : void 0;
     }, function() {
       if ($scope.isPhone) {
-        return $scope.sidebar.sidebar('attach events', '#menu');
+        return $scope.sidebar.sidebar('attach events', '#menu-1').sidebar('attach events', '#menu-2');
       } else {
-        $scope.sidebar.sidebar({
+        return $scope.sidebar.sidebar({
           closable: false,
           dimPage: false,
           scrollLock: true,
           transition: 'overlay'
-        });
-        return $scope.sidebar.sidebar('attach events', '#menu');
+        }).sidebar('attach events', '#menu-1').sidebar('attach events', '#menu-2');
       }
     });
     $scope.sidebarHide = function() {

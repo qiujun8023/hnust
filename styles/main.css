@@ -24,6 +24,18 @@
   }
 }
 
+#menu-2 {
+  z-index: 100;
+  position: fixed;
+  right: 50px;
+  bottom: 50px;
+}
+
+#menu-2 .icon {
+  cursor: pointer; 
+  font-size: 1.2em;
+  vertical-align: middle;
+}
 
 .left.item {
   padding-top: 14px !important;
