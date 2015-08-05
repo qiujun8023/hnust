@@ -28,7 +28,7 @@
           if ((ref1 = params.fun) !== 'user' && ref1 !== 'failRateKey' && ref1 !== 'bookInfo') {
             $rootScope.loading = false;
           }
-          if (res.code === 6) {
+          if (res.code === 4) {
             params.passwd = prompt(res.msg, '');
             if (params.passwd) {
               return self.query(params, timeout, callback);
@@ -51,20 +51,13 @@
   hnust.factory('checkJsonpData', function($rootScope, $location) {
     return {
       check: function(data) {
+        if (!angular.isObject(data)) {
+          data = {
+            code: -1
+          };
+        }
         switch (data.code) {
-          case -1:
-            $rootScope.error = data.msg || '网络连接超时 OR 服务器错误。';
-            break;
-          case 1:
-            layer.msg(data.msg);
-            return true;
-          case 2:
-            layer.msg(data.msg, {
-              shift: 6
-            });
-            window.history.back();
-            break;
-          case 3:
+          case -2:
             $rootScope.user = {
               name: '游客',
               rank: -1
@@ -72,21 +65,31 @@
             $rootScope.referer = $location.url();
             $location.url('/login');
             break;
-          case 4:
+          case -1:
+            $rootScope.error = data.msg || '网络连接超时 OR 服务器错误。';
+            break;
+          case 1:
+            layer.msg(data.msg);
+            break;
+          case 2:
+            layer.open({
+              title: data.msg,
+              content: data.data
+            });
+            break;
+          case 3:
             if ($rootScope.referer && $rootScope.referer !== '/login') {
               $location.url($rootScope.referer);
               $rootScope.referer = '';
             } else {
               $location.url('/score');
             }
-            return true;
-          case 5:
-            $rootScope.error = data.msg;
-            break;
-          default:
-            return true;
         }
-        return false;
+        if (data.code >= 0) {
+          return true;
+        } else {
+          return false;
+        }
       }
     };
   });
@@ -120,7 +123,7 @@
     return $routeProvider.when('/login', {
       fun: 'login',
       title: '用户登录',
-      controller: login,
+      controller: 'login',
       templateUrl: 'views/login.html?150723'
     }).when('/agreement', {
       fun: 'agreement',
@@ -129,72 +132,72 @@
     }).when('/user', {
       fun: 'user',
       title: '用户中心',
-      controller: user,
+      controller: 'user',
       templateUrl: 'views/user.html?150801'
     }).when('/score', {
       fun: 'score',
       title: '成绩查询',
-      controller: score,
+      controller: 'score',
       templateUrl: 'views/score.html?150723'
     }).when('/scoreClass', {
       fun: 'scoreClass',
       title: '全班成绩',
-      controller: scoreClass,
+      controller: 'scoreClass',
       templateUrl: 'views/scoreClass.html?150801'
     }).when('/schedule', {
       fun: 'schedule',
       title: '实时课表',
-      controller: schedule,
+      controller: 'schedule',
       templateUrl: 'views/schedule.html?150723'
     }).when('/exam', {
       fun: 'exam',
       title: '考试安排',
-      controller: exam,
+      controller: 'exam',
       templateUrl: 'views/exam.html?150723'
     }).when('/credit', {
       fun: 'credit',
       title: '学分绩点',
-      controller: credit,
+      controller: 'credit',
       templateUrl: 'views/credit.html?150723'
     }).when('/judge', {
       fun: 'judge',
       title: '教学评价',
-      controller: judge,
+      controller: 'judge',
       templateUrl: 'views/judge.html?150723'
     }).when('/book', {
       fun: 'book',
       title: '图书续借',
-      controller: book,
+      controller: 'book',
       templateUrl: 'views/book.html?150723'
     }).when('/bookList', {
       fun: 'bookList',
       title: '图书检索',
-      controller: bookList,
+      controller: 'bookList',
       templateUrl: 'views/bookList.html?150803'
     }).when('/tuition', {
       fun: 'tuition',
       title: '学年学费',
-      controller: tuition,
+      controller: 'tuition',
       templateUrl: 'views/tuition.html?150723'
     }).when('/card', {
       fun: 'card',
       title: '校园一卡通',
-      controller: card,
+      controller: 'card',
       templateUrl: 'views/card.html?150801'
     }).when('/failRate', {
       fun: 'failRate',
       title: '挂科率统计',
-      controller: failRate,
+      controller: 'failRate',
       templateUrl: 'views/failRate.html?150803'
     }).when('/editUser', {
       fun: 'editUser',
       title: '修改权限',
-      controller: editUser,
+      controller: 'editUser',
       templateUrl: 'views/editUser.html?150723'
     }).when('/lastUser', {
       fun: 'lastUser',
       title: '最近使用用户',
-      controller: lastUser,
+      controller: 'lastUser',
       templateUrl: 'views/lastUser.html?150723'
     }).otherwise({
       redirectTo: '/score'
@@ -230,14 +233,14 @@
       return (ref = $rootScope.user) != null ? ref.rank : void 0;
     }, function() {
       if ($scope.isPhone) {
-        return $scope.sidebar.sidebar('attach events', '#menu-1').sidebar('attach events', '#menu-2');
+        return $scope.sidebar.sidebar('attach events', '#menu');
       } else {
         return $scope.sidebar.sidebar({
           closable: false,
           dimPage: false,
           scrollLock: true,
           transition: 'overlay'
-        }).sidebar('attach events', '#menu-1').sidebar('attach events', '#menu-2');
+        }).sidebar('attach events', '#menu');
       }
     });
     $scope.sidebarHide = function() {

@@ -28,7 +28,7 @@ hnust.factory 'getJsonpData', ($rootScope, $http, $location) ->
         .success (res) ->
             if params.fun not in ['user', 'failRateKey', 'bookInfo']
                 $rootScope.loading = false
-            if res.code is 6
+            if res.code is 4
                 params.passwd = prompt res.msg, ''
                 if params.passwd
                     self.query params, timeout, callback
@@ -42,40 +42,35 @@ hnust.factory 'getJsonpData', ($rootScope, $http, $location) ->
 #检查服务器数据
 hnust.factory 'checkJsonpData', ($rootScope, $location) ->
     check: (data) ->
+        if !angular.isObject(data)
+            data = code:-1
         switch data.code
-            #错误
-            when -1
-                $rootScope.error = data.msg || '网络连接超时 OR 服务器错误。'
-            #弹窗
-            when 1
-                layer.msg data.msg
-                return true
-            #返回上一页
-            when 2
-                layer.msg data.msg, shift:6
-                window.history.back()
-            #跳至登陆
-            when 3
+            #跳转到登录
+            when -2
                 $rootScope.user =
                     name: '游客'
                     rank: -1
                 $rootScope.referer = $location.url()
                 $location.url '/login'
-            #跳回记录页面
-            when 4
+            #错误提示
+            when -1
+                $rootScope.error = data.msg || '网络连接超时 OR 服务器错误。'
+            #弹出提示框
+            when 1
+                layer.msg data.msg
+            #确认框
+            when 2
+                layer.open
+                    title: data.msg
+                    content:data.data
+            #跳转到登录前页面
+            when 3
                 if $rootScope.referer and $rootScope.referer isnt '/login'
                     $location.url $rootScope.referer
                     $rootScope.referer = ''
                 else
                     $location.url '/score'
-                return true
-            #错误提示
-            when 5
-                $rootScope.error = data.msg
-            #正常
-            else 
-                return true
-        return false
+        return if data.code >= 0 then true else false
 
 #http拦截器，用户检查jsonp数据
 hnust.factory 'httpInterceptor', ($q, checkJsonpData) ->
@@ -101,7 +96,7 @@ hnust.config ($httpProvider, $routeProvider) ->
         .when '/login',
             fun: 'login',
             title: '用户登录',
-            controller: login,
+            controller: 'login',
             templateUrl: 'views/login.html?150723'
         .when '/agreement',
             fun: 'agreement',
@@ -110,72 +105,72 @@ hnust.config ($httpProvider, $routeProvider) ->
         .when '/user',
             fun: 'user',
             title: '用户中心',
-            controller: user,
+            controller: 'user',
             templateUrl: 'views/user.html?150801'
         .when '/score',
             fun: 'score',
             title: '成绩查询',
-            controller: score,
+            controller: 'score',
             templateUrl: 'views/score.html?150723'
         .when '/scoreClass',
             fun: 'scoreClass',
             title: '全班成绩',
-            controller: scoreClass,
+            controller: 'scoreClass',
             templateUrl: 'views/scoreClass.html?150801'
         .when '/schedule',
             fun: 'schedule',
             title: '实时课表',
-            controller: schedule,
+            controller: 'schedule',
             templateUrl: 'views/schedule.html?150723'
         .when '/exam',
             fun: 'exam',
             title: '考试安排',
-            controller: exam,
+            controller: 'exam',
             templateUrl: 'views/exam.html?150723'
         .when '/credit', 
             fun: 'credit',
             title: '学分绩点',
-            controller: credit,
+            controller: 'credit',
             templateUrl: 'views/credit.html?150723'
         .when '/judge', 
             fun: 'judge',
             title: '教学评价',
-            controller: judge,
+            controller: 'judge',
             templateUrl: 'views/judge.html?150723'
         .when '/book', 
             fun: 'book',
             title: '图书续借',
-            controller: book,
+            controller: 'book',
             templateUrl: 'views/book.html?150723'
         .when '/bookList', 
             fun: 'bookList',
             title: '图书检索',
-            controller: bookList,
+            controller: 'bookList',
             templateUrl: 'views/bookList.html?150803'
         .when '/tuition', 
             fun: 'tuition',
             title: '学年学费',
-            controller: tuition,
+            controller: 'tuition',
             templateUrl: 'views/tuition.html?150723'
         .when '/card', 
             fun: 'card',
             title: '校园一卡通',
-            controller: card,
+            controller: 'card',
             templateUrl: 'views/card.html?150801'
         .when '/failRate', 
             fun: 'failRate',
             title: '挂科率统计',
-            controller: failRate,
+            controller: 'failRate',
             templateUrl: 'views/failRate.html?150803'
         .when '/editUser', 
             fun: 'editUser',
             title: '修改权限',
-            controller: editUser,
+            controller: 'editUser',
             templateUrl: 'views/editUser.html?150723'
         .when '/lastUser', 
             fun: 'lastUser',
             title: '最近使用用户',
-            controller: lastUser,
+            controller: 'lastUser',
             templateUrl: 'views/lastUser.html?150723'
         .otherwise
             redirectTo: '/score'
@@ -207,8 +202,7 @@ navbar = ($scope, $rootScope, getJsonpData) ->
     , ->
         if $scope.isPhone
             $scope.sidebar
-                .sidebar 'attach events', '#menu-1'
-                .sidebar 'attach events', '#menu-2'
+                .sidebar 'attach events', '#menu'
         else 
             $scope.sidebar
                 .sidebar
@@ -216,8 +210,7 @@ navbar = ($scope, $rootScope, getJsonpData) ->
                     dimPage: false
                     scrollLock: true
                     transition: 'overlay'
-                .sidebar 'attach events', '#menu-1'
-                .sidebar 'attach events', '#menu-2'
+                .sidebar 'attach events', '#menu'
     #影藏导航栏
     $scope.sidebarHide = ->
         if $scope.isPhone then $scope.sidebar.sidebar 'hide'
