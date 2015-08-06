@@ -13,7 +13,7 @@
       <tr ng-repeat="item in data[term] track by $index" ng-class="{error: ((item.mark < 60) || (item.mark == '不及格') || !item.mark)}">
         <td class="center aligned" ng-bind="item.course" ng-if="$root.user.rank < 2"></td>
         <td class="center aligned" ng-if="$root.user.rank >= 2">
-          <a ng-href="#/scoreClass?course={{item.course}}" ng-bind="item.course"></a>
+          <a ng-href="#/scoreAll?course={{item.course}}" ng-bind="item.course"></a>
         </td>
         <td class="center aligned" ng-bind="item.credit"></td>
         <td class="center aligned" ng-bind="item.mark"></td>

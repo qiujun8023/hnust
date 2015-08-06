@@ -1,43 +1,5 @@
-#API请求地址
-apiUrl = 'http://a.hnust.sinaapp.com/index.php'
-
 #AngularJS
 hnust = angular.module 'hnust', ['ngRoute']
-
-#加载jsonp获取数据
-hnust.factory 'getJsonpData', ($rootScope, $http, $location) ->
-    query: (params, timeout, callback) ->
-        self = this
-        #置错误为空
-        $rootScope.error = ''
-
-        #jsonp请求参数
-        search = angular.copy $location.search()
-        search.fun ||= $rootScope.fun
-        params = $.extend search, params
-        params.callback = 'JSON_CALLBACK'
-
-        #超时时间
-        timeout ||= 8000
-        #加载中动画
-        if params.fun not in ['user', 'failRateKey', 'bookInfo']
-            $rootScope.loading = true
-        $http.jsonp $rootScope.url,
-            params : params
-            timeout: timeout
-        .success (res) ->
-            if params.fun not in ['user', 'failRateKey', 'bookInfo']
-                $rootScope.loading = false
-            if res.code is 4
-                params.passwd = prompt res.msg, ''
-                if params.passwd
-                    self.query params, timeout, callback
-                else
-                    $rootScope.error = '密码错误！'
-            else if callback? then callback res
-        .error ->
-            if params.fun not in ['user', 'failRateKey', 'bookInfo']
-                $rootScope.loading = false
 
 #检查服务器数据
 hnust.factory 'checkJsonpData', ($rootScope, $location) ->
@@ -72,25 +34,51 @@ hnust.factory 'checkJsonpData', ($rootScope, $location) ->
                     $location.url '/score'
         return if data.code >= 0 then true else false
 
-#http拦截器，用户检查jsonp数据
-hnust.factory 'httpInterceptor', ($q, checkJsonpData) ->
-    #response回调
-    response: (res) ->
-        if res.config.method isnt 'JSONP'
-            return res
-        res.data.code = parseInt(res.data?.code)
-        if checkJsonpData.check res.data then res else $q.reject('reject')
+#加载jsonp获取数据
+hnust.factory 'getJsonpData', ($rootScope, $http, $location, checkJsonpData) ->
+    query: (params, timeout, callback) ->
+        self = this
+        #置错误为空
+        $rootScope.error = ''
 
-    #错误回调
-    responseError: (res) ->
-        checkJsonpData.check 
-            code: -1
-            msg : '网络异常，请稍后再试。'
-        $q.reject('reject')
+        #jsonp请求参数
+        search = angular.copy $location.search()
+        search.fun ||= $rootScope.fun
+        params = $.extend search, params
+        params.callback = 'JSON_CALLBACK'
+
+        #后台加载的数据
+        bgjsonp = ['user', 'failRateKey', 'bookInfo']
+
+        #超时时间
+        timeout ||= 8000
+        #加载中动画
+        if params.fun not in bgjsonp
+            $rootScope.loading = true
+        $http.jsonp $rootScope.url,
+            params : params
+            timeout: timeout
+        .success (res) ->
+            if params.fun not in bgjsonp
+                $rootScope.loading = false
+            res.code = parseInt(res.code)
+            if !checkJsonpData.check res
+                return
+            else if res.code is 4
+                params.passwd = prompt res.msg, ''
+                if params.passwd
+                    self.query params, timeout, callback
+                else
+                    $rootScope.error = '密码错误！'
+            else if callback? then callback res
+        .error ->
+            if params.fun not in bgjsonp
+                $rootScope.loading = false
+            checkJsonpData.check 
+                code: -1
+                msg : '网络异常，请稍后再试。'
 
 hnust.config ($httpProvider, $routeProvider) ->
-    #添加拦截器
-    $httpProvider.interceptors.push 'httpInterceptor'
     #设置路由
     $routeProvider
         .when '/login',
@@ -111,12 +99,12 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'score',
             title: '成绩查询',
             controller: 'score',
-            templateUrl: 'views/score.html?150723'
-        .when '/scoreClass',
-            fun: 'scoreClass',
+            templateUrl: 'views/score.html?150806'
+        .when '/scoreAll',
+            fun: 'scoreAll',
             title: '全班成绩',
-            controller: 'scoreClass',
-            templateUrl: 'views/scoreClass.html?150801'
+            controller: 'scoreAll',
+            templateUrl: 'views/scoreAll.html?150801'
         .when '/schedule',
             fun: 'schedule',
             title: '实时课表',
@@ -177,7 +165,7 @@ hnust.config ($httpProvider, $routeProvider) ->
 
 hnust.run ($location, $rootScope, getJsonpData) ->
     #API网址
-    $rootScope.url = apiUrl
+    $rootScope.url = 'http://a.hnust.sinaapp.com/index.php'
     #修改title
     $rootScope.$on '$routeChangeSuccess', (event, current, previous) ->
         $rootScope.fun = current.$$route?.fun || ''
@@ -193,7 +181,7 @@ hnust.run ($location, $rootScope, getJsonpData) ->
             $rootScope.user = data.info
 
 #导航栏控制器
-navbar = ($scope, $rootScope, getJsonpData) ->
+navbarController = ($scope, $rootScope, getJsonpData) ->
     $scope.isPhone = document.body.offsetWidth < 720
     $scope.sidebar = $('.ui.sidebar')
     #侧栏
@@ -225,7 +213,7 @@ navbar = ($scope, $rootScope, getJsonpData) ->
         getJsonpData.query fun:'logout'
 
 #用户中心
-user = ($scope, $rootScope, $location, getJsonpData) ->
+userController = ($scope, $rootScope, $location, getJsonpData) ->
     $('.ui.checkbox').checkbox 'check'
     $rootScope.error = ''
 
@@ -274,7 +262,7 @@ user = ($scope, $rootScope, $location, getJsonpData) ->
             return false
 
 #登录
-login = ($scope, $rootScope, getJsonpData, checkJsonpData) ->
+loginController = ($scope, $rootScope, getJsonpData, checkJsonpData) ->
     $('.ui.checkbox').checkbox()
     if $rootScope.user?.rank? and $rootScope.user.rank isnt -1
         return checkJsonpData.check code:4
@@ -321,13 +309,13 @@ login = ($scope, $rootScope, getJsonpData, checkJsonpData) ->
                 $scope.$emit 'updateUserInfo'
 
 #成绩
-score = ($scope, getJsonpData) ->
+scoreController = ($scope, getJsonpData) ->
     getJsonpData.query {}, 8000, (data) ->
         $scope.data = data.data
         $scope.terms = (k for k,v of $scope.data).reverse()
 
 #全班成绩
-scoreClass = ($scope, $location, getJsonpData) ->
+scoreAllController = ($scope, $location, getJsonpData) ->
     if !$location.search().course
         return $location.url '/score'
     getJsonpData.query {}, 8000, (data) ->
@@ -335,7 +323,7 @@ scoreClass = ($scope, $location, getJsonpData) ->
         $scope.data = data.data
 
 #课表
-schedule = ($scope, getJsonpData) ->
+scheduleController = ($scope, getJsonpData) ->
     getJsonpData.query {}, 8000, (data) ->
         $scope.data = data.data
         $scope.info = data.info
@@ -343,17 +331,17 @@ schedule = ($scope, getJsonpData) ->
         $('.ui.inline.dropdown').dropdown()
 
 #考试
-exam = ($scope, getJsonpData) ->
+examController = ($scope, getJsonpData) ->
     getJsonpData.query {}, 10000, (data) ->
         $scope.data = data.data
 
 #学分绩点
-credit = ($scope, getJsonpData) ->
+creditController = ($scope, getJsonpData) ->
     getJsonpData.query {}, 10000, (data) ->
         $scope.data = data.data
 
 #教学评价
-judge = ($scope, $rootScope, $location, $anchorScroll, getJsonpData) ->
+judgeController = ($scope, $rootScope, $location, $anchorScroll, getJsonpData) ->
     getJsonpData.query {}, 10000, (data) ->
         $scope.data = data.data
 
@@ -388,7 +376,7 @@ judge = ($scope, $rootScope, $location, $anchorScroll, getJsonpData) ->
                 $scope.data = data.data
 
 #图书续借
-book = ($scope, getJsonpData) ->
+bookController = ($scope, getJsonpData) ->
     #获取图书列表
     getJsonpData.query {}, 8000, (data) ->
         $scope.data = data.data
@@ -400,7 +388,7 @@ book = ($scope, getJsonpData) ->
             $scope.data = data.data
 
 #图书检索
-bookList = ($scope, $rootScope, $timeout, $location, getJsonpData) ->
+bookListController = ($scope, $rootScope, $timeout, $location, getJsonpData) ->
     #回车键Submit
     $('.ui.form').form {}, 
         onSuccess: ->
@@ -439,7 +427,7 @@ bookList = ($scope, $rootScope, $timeout, $location, getJsonpData) ->
                     exclusive: false
 
 #学费
-tuition = ($scope, getJsonpData) ->
+tuitionController = ($scope, getJsonpData) ->
     getJsonpData.query {}, 8000, (data) ->
         $scope.total = data.data?.total
         delete data.data?.total
@@ -447,13 +435,13 @@ tuition = ($scope, getJsonpData) ->
         $scope.terms = (k for k,v of $scope.data).reverse()
 
 #校园一卡通
-card = ($scope, getJsonpData) ->
+cardController = ($scope, getJsonpData) ->
     getJsonpData.query {}, 8000, (data) ->
         $scope.info = data.info
         $scope.data = data.data
 
 #挂科率统计
-failRate = ($scope, $rootScope, $timeout, getJsonpData) ->
+failRateController = ($scope, $rootScope, $timeout, getJsonpData) ->
     $rootScope.error = ''
     $scope.keys = []
 
@@ -527,7 +515,7 @@ failRate = ($scope, $rootScope, $timeout, getJsonpData) ->
             ['red']
 
 #修改权限
-editUser = ($scope, $rootScope, $location, getJsonpData) ->
+editUserController = ($scope, $rootScope, $location, getJsonpData) ->
     $rootScope.error = ''
     $scope.studentId = ''
 
@@ -567,12 +555,12 @@ editUser = ($scope, $rootScope, $location, getJsonpData) ->
             return false
 
 #最近使用用户
-lastUser = ($scope, getJsonpData) ->
+lastUserController = ($scope, getJsonpData) ->
     getJsonpData.query {}, 5000, (data) ->
         $scope.data = data.data
 
 #排序
-sortBy = ->
+sortByFilter = ->
     (items, predicate, reverse) ->
         items = _.sortBy items, (item) ->
             #将优中良差转为对应的数值进行比较
@@ -593,20 +581,20 @@ sortBy = ->
         if reverse then items else items.reverse()
 
 #函数注入
-hnust.controller 'navbar'     , navbar
-hnust.controller 'login'      , login
-hnust.controller 'user'       , user
-hnust.controller 'score'      , score
-hnust.controller 'scoreClass' , scoreClass
-hnust.controller 'schedule'   , schedule
-hnust.controller 'exam'       , exam
-hnust.controller 'credit'     , credit
-hnust.controller 'judge'      , judge
-hnust.controller 'book'       , book
-hnust.controller 'bookList'   , bookList
-hnust.controller 'tuition'    , tuition
-hnust.controller 'card'       , card
-hnust.controller 'failRate'   , failRate
-hnust.controller 'editUser'   , editUser
-hnust.controller 'lastUser'   , lastUser
-hnust.filter     'sortBy'     , sortBy
+hnust.controller 'navbar'     , navbarController
+hnust.controller 'login'      , loginController
+hnust.controller 'user'       , userController
+hnust.controller 'score'      , scoreController
+hnust.controller 'scoreAll'   , scoreAllController
+hnust.controller 'schedule'   , scheduleController
+hnust.controller 'exam'       , examController
+hnust.controller 'credit'     , creditController
+hnust.controller 'judge'      , judgeController
+hnust.controller 'book'       , bookController
+hnust.controller 'bookList'   , bookListController
+hnust.controller 'tuition'    , tuitionController
+hnust.controller 'card'       , cardController
+hnust.controller 'failRate'   , failRateController
+hnust.controller 'editUser'   , editUserController
+hnust.controller 'lastUser'   , lastUserController
+hnust.filter     'sortBy'     , sortByFilter
