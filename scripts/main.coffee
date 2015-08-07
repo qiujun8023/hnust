@@ -269,6 +269,7 @@ loginController = ($scope, $rootScope, getJsonpData, checkJsonpData) ->
     $scope.studentId = $scope.passwd = ''
 
     #用户名及密码等表单校验
+    $('.ui.form').attr 'action', $rootScope.url
     $('.ui.form').form
         studentId: 
             identifier: 'studentId'

@@ -14,7 +14,10 @@
       <tr ng-repeat="item in data" ng-class="{error: ((item.score < 60) || (item.score == '不及格') || !item.score)}">
         <td class="center aligned" ng-bind="item.course"></td>
         <td class="center aligned" ng-bind="item.credit"></td>
-        <td class="center aligned" ng-bind="item.score + (item.resit? '*':'')"></td>
+        <td class="center aligned" ng-bind="item.score" ng-if="!item.resit"></td>
+        <td class="center aligned" ng-if="item.resit">
+          <span class="ui orange circular label" ng-bind="item.score"></span>
+        </td>
         <td class="center aligned" ng-bind="item.point"></td>
         <td class="center aligned" ng-bind="item.gpa"></td>
       </tr>

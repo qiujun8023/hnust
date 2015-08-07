@@ -304,6 +304,7 @@
       });
     }
     $scope.studentId = $scope.passwd = '';
+    $('.ui.form').attr('action', $rootScope.url);
     return $('.ui.form').form({
       studentId: {
         identifier: 'studentId',

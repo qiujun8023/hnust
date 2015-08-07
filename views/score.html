@@ -1,6 +1,6 @@
 <div ng-include="'views/loading.html'"></div>
 <div class="container" ng-show="!$root.loading && !$root.error">
-  <table class="ui five column teal striped unstackable attached table" style="margin-bottom:30px" ng-repeat="term in terms">
+  <table class="ui teal striped unstackable attached table" style="margin-bottom:30px" ng-repeat="term in terms">
     <thead>
       <tr><th colspan="3" class="center aligned" ng-bind="'学年学期：' + term"></th></tr>
     </thead>
@@ -16,7 +16,10 @@
           <a ng-href="#/scoreAll?course={{item.course}}" ng-bind="item.course"></a>
         </td>
         <td class="center aligned" ng-bind="item.credit"></td>
-        <td class="center aligned" ng-bind="item.mark"></td>
+        <td class="center aligned" ng-bind="item.mark" ng-if="!item.resit"></td>
+        <td class="center aligned" ng-if="item.resit">
+          <span class="ui orange circular label" ng-bind="item.mark"></span>
+        </td>
       </tr>
     </tbody>
   </table>

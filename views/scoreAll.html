@@ -14,8 +14,8 @@
             学号 <i class="sort icon"></i>
           </span>
         </th>
-        <th class="six wide center aligned">姓名</th>
-        <th class="four wide center aligned">
+        <th class="five wide center aligned">姓名</th>
+        <th class="five wide center aligned">
           <span class="pointer" ng-click="by = (name == 'score')? !by:false; name = 'score';">
             分数 <i class="sort icon"></i>
           </span>
@@ -26,7 +26,10 @@
       <tr ng-repeat="item in data | sortBy:name:by" ng-class="{error: ((item.score < 60) || (item.score == '不及格') || !item.score)}">
         <td class="center aligned" ng-bind="item.studentId"></td>
         <td class="center aligned" ng-bind="item.name"></td>
-        <td class="center aligned" ng-bind="item.score + (item.resit? '*':'')"></td>
+        <td class="center aligned" ng-bind="item.score" ng-if="!item.resit"></td>
+        <td class="center aligned" ng-if="item.resit">
+          <span class="ui orange circular label" ng-bind="item.score"></span>
+        </td>
       </tr>
     </tbody>
   </table>
