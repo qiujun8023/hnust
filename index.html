@@ -75,7 +75,7 @@
         <span ng-bind="title"></span>
       </div>
       <div class="right menu">
-        <a class="item" href="#/user">
+        <a class="item" ng-href="{{($root.user.rank && ($root.user.rank > 0))? '#/user':''}}">
           <i class="user icon"></i>
           <span ng-bind="$root.user.name"></span>
         </a>
