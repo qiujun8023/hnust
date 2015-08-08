@@ -1,7 +1,9 @@
 <div ng-include="'views/loading.html'"></div>
-<div class="container" ng-show="!$root.loading && !$root.error && total" style="padding-bottom:20px">
-  <div class="ui segment">
-    <h4 class="ui header">收费总计</h4>
+<div class="container" ng-show="!$root.loading && !$root.error && total">
+  <div class="ui positive message">
+    <div class="header" ng-bind="'您当前欠缴的学费为' + total.owing"></div>
+  </div>
+  <div class="ui flowing popup">
     <div class="ui divided selection list">
       <div class="item">
         <div class="ui orange horizontal label">应缴</div>
@@ -23,13 +25,6 @@
         <div class="ui red horizontal label">欠缴</div>
         <span style="color:#333" ng-bind="total.owing"></span>
       </div>
-    </div>
-  </div>
-  <div class="ui positive message">
-    <div class="header" style="text-align:center">
-      <i class="pointing down icon"></i>
-      详细收费项目如下所示
-      <i class="pointing down icon"></i>
     </div>
   </div>
   <table class="ui teal striped unstackable attached table" style="margin-bottom:30px" ng-repeat="term in terms">

@@ -435,6 +435,10 @@ tuitionController = ($scope, getJsonpData) ->
         $scope.data = data.data
         $scope.terms = (k for k,v of $scope.data).reverse()
 
+    $('.ui.positive.message').popup
+        popup : $('.ui.flowing.popup')
+        on    : 'hover'
+
 #校园一卡通
 cardController = ($scope, getJsonpData) ->
     getJsonpData.query {}, 8000, (data) ->
@@ -446,42 +450,35 @@ failRateController = ($scope, $rootScope, $timeout, getJsonpData) ->
     $rootScope.error = ''
     $scope.keys = []
 
-    #自动补全设置
-    $('.ui.search.dropdown').dropdown
-        onChange: (value)->
-            $scope.search(value)
-
-    #抵消失焦时Semantic对值的清空
-    $scope.filling = ->
-        $("[ng-model='key']")[0].value = $scope.key || ''
+    $scope.dropdown = (method) ->
+        dropdown = $('.ui.search.dropdown .menu')
+        styles   = dropdown.attr('class')
+        if method is 'hide'
+            if styles.indexOf('hidden') is -1
+                dropdown.transition 'slide down out'
+        else if styles.indexOf('visible') is -1
+            dropdown.transition 'slide down in'
+        return
 
     #检查输入框值的变化
     $scope.check = (key) ->
         $timeout ->
-            if key is $scope.key and key is ''
-                $scope.keys = []
-            else if key is $scope.key
+            if key is $scope.key
                 $scope.completion key
         , 300
 
     #自动补全
     $scope.completion = (key) ->
+        if !key then return $scope.keys = []
         getJsonpData.query {fun:'failRateKey', key:key}, 8000, (data) ->
             $scope.keys = data.data
-            #显示下拉框（自动补全）
-            $timeout ->
-                $('.ui.search.dropdown').dropdown 'show'
+            $scope.dropdown 'show'
 
     #搜索
     $scope.search = (key) ->
-        #隐藏下拉框
-        $('.ui.search.dropdown').dropdown 'hide'
-        #去字体重复
-        $('.ui.search.dropdown').dropdown('set text', '')
-        if key then $scope.key = key
-        if !$scope.key?.length then return
-        $("[ng-model='key']")[0].value = $scope.key
+        $scope.dropdown 'hide'
         $scope.data = []
+        if key then $scope.key = key
         #请求服务器数据
         getJsonpData.query {key:$scope.key}, 8000, (data) ->
             #排序

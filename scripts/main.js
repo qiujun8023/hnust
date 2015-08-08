@@ -521,7 +521,7 @@
   };
 
   tuitionController = function($scope, getJsonpData) {
-    return getJsonpData.query({}, 8000, function(data) {
+    getJsonpData.query({}, 8000, function(data) {
       var k, ref, ref1, v;
       $scope.total = (ref = data.data) != null ? ref.total : void 0;
       if ((ref1 = data.data) != null) {
@@ -539,6 +539,10 @@
         return results;
       })()).reverse();
     });
+    return $('.ui.positive.message').popup({
+      popup: $('.ui.flowing.popup'),
+      on: 'hover'
+    });
   };
 
   cardController = function($scope, getJsonpData) {
@@ -551,50 +555,47 @@
   failRateController = function($scope, $rootScope, $timeout, getJsonpData) {
     $rootScope.error = '';
     $scope.keys = [];
-    $('.ui.search.dropdown').dropdown({
-      onChange: function(value) {
-        return $scope.search(value);
+    $scope.dropdown = function(method) {
+      var dropdown, styles;
+      dropdown = $('.ui.search.dropdown .menu');
+      styles = dropdown.attr('class');
+      if (method === 'hide') {
+        if (styles.indexOf('hidden') === -1) {
+          dropdown.transition('slide down out');
+        }
+      } else if (styles.indexOf('visible') === -1) {
+        dropdown.transition('slide down in');
       }
-    });
-    $scope.filling = function() {
-      return $("[ng-model='key']")[0].value = $scope.key || '';
     };
     $scope.check = function(key) {
       return $timeout(function() {
-        if (key === $scope.key && key === '') {
-          return $scope.keys = [];
-        } else if (key === $scope.key) {
+        if (key === $scope.key) {
           return $scope.completion(key);
         }
       }, 300);
     };
     $scope.completion = function(key) {
+      if (!key) {
+        return $scope.keys = [];
+      }
       return getJsonpData.query({
         fun: 'failRateKey',
         key: key
       }, 8000, function(data) {
         $scope.keys = data.data;
-        return $timeout(function() {
-          return $('.ui.search.dropdown').dropdown('show');
-        });
+        return $scope.dropdown('show');
       });
     };
     $scope.search = function(key) {
-      var ref;
-      $('.ui.search.dropdown').dropdown('hide');
-      $('.ui.search.dropdown').dropdown('set text', '');
+      $scope.dropdown('hide');
+      $scope.data = [];
       if (key) {
         $scope.key = key;
       }
-      if (!((ref = $scope.key) != null ? ref.length : void 0)) {
-        return;
-      }
-      $("[ng-model='key']")[0].value = $scope.key;
-      $scope.data = [];
       return getJsonpData.query({
         key: $scope.key
       }, 8000, function(data) {
-        var item, j, len, ref1, total;
+        var item, j, len, ref, total;
         $scope.data = _.sortBy(data.data, function(item) {
           return -parseFloat(item.rate);
         });
@@ -604,9 +605,9 @@
             'all': 0,
             'fail': 0
           };
-          ref1 = data.data;
-          for (j = 0, len = ref1.length; j < len; j++) {
-            item = ref1[j];
+          ref = data.data;
+          for (j = 0, len = ref.length; j < len; j++) {
+            item = ref[j];
             total.all += parseInt(item.all);
             total.fail += parseInt(item.fail);
           }

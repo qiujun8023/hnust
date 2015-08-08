@@ -7,7 +7,7 @@
   </div>
 </div>
 <div ng-include="'views/loading.html'"></div>
-<div class="container" style="padding-bottom:20px" ng-if="!$root.loading && !$root.error && data && data.length">
+<div class="container" ng-if="!$root.loading && !$root.error && data && data.length">
   <div class="ui styled fluid accordion">
     <div ng-repeat="item in data">
       <div class="book title" ng-click="bookInfo(item)">
@@ -15,46 +15,46 @@
         <span ng-bind="item.title"></span>
       </div>
       <div class="content">
-        <table class="ui teal striped unstackable attached table" ng-if="item.data">
+        <table class="ui teal striped unstackable attached bookList table" ng-if="item.data">
           <tr ng-show="item.data.ISBN">
-            <td class="four wide right aligned">ISBN</td>
-            <td class="twelve wide left aligned" ng-bind="item.data.ISBN"></td>
+            <td class="right aligned">ISBN</td>
+            <td class="left aligned" ng-bind="item.data.ISBN"></td>
           </tr>
           <tr ng-show="item.data.publisher">
-            <td class="four wide right aligned">出版社</td>
-            <td class="twelve wide left aligned" ng-bind="item.data.publisher"></td>
+            <td class="right aligned">出版社</td>
+            <td class="left aligned" ng-bind="item.data.publisher"></td>
           </tr>
           <tr ng-show="item.data.series">
-            <td class="four wide right aligned">丛编</td>
-            <td class="twelve wide left aligned" ng-bind="item.data.series"></td>
+            <td class="right aligned">丛编</td>
+            <td class="left aligned" ng-bind="item.data.series"></td>
           </tr>
           <tr ng-show="item.data.intro">
-            <td class="four wide right aligned">简介</td>
-            <td class="twelve wide left aligned" ng-bind="item.data.intro"></td>
+            <td class="right aligned">简介</td>
+            <td class="left aligned" ng-bind="item.data.intro"></td>
           </tr>
           <tr ng-show="item.data.statement">
-            <td class="four wide right aligned">说明</td>
-            <td class="twelve wide left aligned" ng-bind="item.data.statement"></td>
+            <td class="right aligned">说明</td>
+            <td class="left aligned" ng-bind="item.data.statement"></td>
           </tr>
           <tr ng-show="item.data.unified_title">
-            <td class="four wide right aligned">题名</td>
-            <td class="twelve wide left aligned" ng-bind="item.data.unified_title"></td>
+            <td class="right aligned">题名</td>
+            <td class="left aligned" ng-bind="item.data.unified_title"></td>
           </tr>
           <tr ng-show="item.data.describe">
-            <td class="four wide right aligned">形态</td>
-            <td class="twelve wide left aligned" ng-bind="item.data.describe"></td>
+            <td class="right aligned">形态</td>
+            <td class="left aligned" ng-bind="item.data.describe"></td>
           </tr>
           <tr ng-show="item.data.author">
-            <td class="four wide right aligned">责任者</td>
-            <td class="twelve wide left aligned" ng-bind="item.data.author"></td>
+            <td class="right aligned">责任者</td>
+            <td class="left aligned" ng-bind="item.data.author"></td>
           </tr>
           <tr ng-show="item.data.CLC">
-            <td class="four wide right aligned">分类号</td>
-            <td class="twelve wide left aligned" ng-bind="item.data.CLC"></td>
+            <td class="right aligned">分类号</td>
+            <td class="left aligned" ng-bind="item.data.CLC"></td>
           </tr>
           <tr ng-show="item.data.subject">
-            <td class="four wide right aligned">主题</td>
-            <td class="twelve wide left aligned" ng-bind="item.data.subject"></td>
+            <td class="right aligned">主题</td>
+            <td class="left aligned" ng-bind="item.data.subject"></td>
           </tr>
         </table>
         <div class="ui segment" ng-if="item.data.list">

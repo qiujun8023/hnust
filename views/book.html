@@ -1,5 +1,5 @@
 <div ng-include="'views/loading.html'"></div>
-<div class="container" ng-show="!$root.loading && !$root.error" style="padding-bottom:20px">
+<div class="container" ng-show="!$root.loading && !$root.error">
   <div class="ui segment" ng-repeat="item in data track by $index">
     <h4 class="ui header" ng-bind="item.title"></h4>
     <div class="ui divided selection list">
