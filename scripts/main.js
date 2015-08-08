@@ -106,81 +106,81 @@
       fun: 'login',
       title: '用户登录',
       controller: 'login',
-      templateUrl: 'views/login.html?150723'
+      templateUrl: 'views/login.html?150808'
     }).when('/agreement', {
       fun: 'agreement',
       title: '用户使用协议',
-      templateUrl: 'views/agreement.html?150723'
+      templateUrl: 'views/agreement.html?150808'
     }).when('/user', {
       fun: 'user',
       title: '用户中心',
       controller: 'user',
-      templateUrl: 'views/user.html?150801'
+      templateUrl: 'views/user.html?150808'
     }).when('/score', {
       fun: 'score',
       title: '成绩查询',
       controller: 'score',
-      templateUrl: 'views/score.html?150806'
+      templateUrl: 'views/score.html?150808'
     }).when('/scoreAll', {
       fun: 'scoreAll',
       title: '全班成绩',
       controller: 'scoreAll',
-      templateUrl: 'views/scoreAll.html?150801'
+      templateUrl: 'views/scoreAll.html?150808'
     }).when('/schedule', {
       fun: 'schedule',
       title: '实时课表',
       controller: 'schedule',
-      templateUrl: 'views/schedule.html?150723'
+      templateUrl: 'views/schedule.html?150808'
     }).when('/exam', {
       fun: 'exam',
       title: '考试安排',
       controller: 'exam',
-      templateUrl: 'views/exam.html?150723'
+      templateUrl: 'views/exam.html?150808'
     }).when('/credit', {
       fun: 'credit',
       title: '学分绩点',
       controller: 'credit',
-      templateUrl: 'views/credit.html?150723'
+      templateUrl: 'views/credit.html?150808'
     }).when('/judge', {
       fun: 'judge',
       title: '教学评价',
       controller: 'judge',
-      templateUrl: 'views/judge.html?150723'
+      templateUrl: 'views/judge.html?150808'
     }).when('/book', {
       fun: 'book',
       title: '图书续借',
       controller: 'book',
-      templateUrl: 'views/book.html?150723'
+      templateUrl: 'views/book.html?150808'
     }).when('/bookList', {
       fun: 'bookList',
       title: '图书检索',
       controller: 'bookList',
-      templateUrl: 'views/bookList.html?150803'
+      templateUrl: 'views/bookList.html?150808'
     }).when('/tuition', {
       fun: 'tuition',
       title: '学年学费',
       controller: 'tuition',
-      templateUrl: 'views/tuition.html?150723'
+      templateUrl: 'views/tuition.html?150808'
     }).when('/card', {
       fun: 'card',
       title: '校园一卡通',
       controller: 'card',
-      templateUrl: 'views/card.html?150801'
+      templateUrl: 'views/card.html?150808'
     }).when('/failRate', {
       fun: 'failRate',
       title: '挂科率统计',
       controller: 'failRate',
-      templateUrl: 'views/failRate.html?150803'
+      templateUrl: 'views/failRate.html?150808'
     }).when('/editUser', {
       fun: 'editUser',
       title: '修改权限',
       controller: 'editUser',
-      templateUrl: 'views/editUser.html?150723'
+      templateUrl: 'views/editUser.html?150808'
     }).when('/lastUser', {
       fun: 'lastUser',
       title: '最近使用用户',
       controller: 'lastUser',
-      templateUrl: 'views/lastUser.html?150723'
+      templateUrl: 'views/lastUser.html?150808'
     }).otherwise({
       redirectTo: '/score'
     });
