@@ -120,6 +120,11 @@ hnust.config ($httpProvider, $routeProvider) ->
             title: '学分绩点',
             controller: 'credit',
             templateUrl: 'views/credit.html?150808'
+        .when '/classroom', 
+            fun: 'classroom',
+            title: '空闲教室',
+            controller: 'classroom',
+            templateUrl: 'views/classroom.html?150809'
         .when '/judge', 
             fun: 'judge',
             title: '教学评价',
@@ -249,7 +254,6 @@ userController = ($scope, $rootScope, $location, getJsonpData) ->
                 type  : 'email'
                 prompt: '请输入正确的邮件地址。'
             ]
-        ,
     ,
         inline: true
         on    : 'blur'
@@ -284,15 +288,13 @@ loginController = ($scope, $rootScope, getJsonpData, checkJsonpData) ->
                 type  : 'maxLength[10]'
                 prompt: '学号不能大于10位！'
             ]
-        ,
-        passwd: 
+        , passwd: 
             identifier: 'passwd'
             rules: [
                 type  : 'empty'
                 prompt: '密码不能为空！'
             ]
-        ,
-        agreement: 
+        , agreement: 
             identifier: 'agreement'
             rules: [
                 type  : 'checked'
@@ -342,6 +344,187 @@ examController = ($scope, getJsonpData) ->
 creditController = ($scope, getJsonpData) ->
     getJsonpData.query {}, 10000, (data) ->
         $scope.data = data.data
+
+#空闲教室
+classroomConller = ($scope, $rootScope, $timeout, getJsonpData) ->
+    #阿拉伯转汉字
+    $scope.nums = 
+        '1'  : '一'
+        '2'  : '二'
+        '3'  : '三'
+        '4'  : '四'
+        '5'  : '五'
+        '6'  : '六'
+        '7'  : '七'
+        '8'  : '八'
+        '9'  : '九'
+        '10' : '十'
+        '11' : '十一'
+        '12' : '十二'
+        '13' : '十三'
+        '14' : '十四'
+        '15' : '十五'
+        '16' : '十六'
+        '17' : '十七'
+        '18' : '十八'
+        '19' : '十九'
+        '20' : '二十'
+
+    #教学楼代码
+    $scope.builds = [
+        ['103', '第一教学楼']
+        ['102', '第二教学楼']
+        ['104', '第三教学楼']
+        ['105', '第四教学楼']
+        ['107', '第五教学楼']
+        ['110', '第八教学楼']
+        ['111', '第九教学楼']
+        ['212', '第十教学楼']
+        ['213', '第十教附一楼']
+        ['214', '第十教附二楼']
+    ]
+
+    #周次代码
+    $scope.weeks = []
+    for i in [1..20]
+        $scope.weeks.push [i, "第#{$scope.nums[i]}周"]
+
+    #星期代码
+    $scope.days = []
+    for i in [1...7]
+        $scope.days.push [i, "星期#{$scope.nums[i]}"]
+    $scope.days.push [7, '星期日']
+
+    #开始节数
+    $scope.beginSessions = []
+    for i in [1..5]
+        $scope.beginSessions.push [i, "#{$scope.nums[i * 2 -1]}#{$scope.nums[i * 2]}节"]
+
+    #结束节数
+    $scope.endSessions = []
+    for i in [1..5]
+        $scope.endSessions.push [i, "至#{$scope.nums[i * 2 -1]}#{$scope.nums[i * 2]}节"]
+
+    #获取当前时间日期
+    date   = new Date()
+    week   = $rootScope.user?.week || 0
+    month  = date.getMonth() + 1
+    day    = date.getDay()
+    day    = if day is 0 then 7 else day
+    hour   = date.getHours()
+    minute = date.getMinutes()
+    #判断夏季作息时间表
+    isSummer = if month >= 5 and month < 10 then true else false
+    if hour < 8 or hour is 8 and isSummer and minute < 30
+        $scope.beginSession = 1
+        $scope.endSession   = 1
+    else if hour < 10 or hour is 10 and isSummer and minute < 30
+        $scope.beginSession = 2
+        $scope.endSession   = 2
+    else if hour < 14 or hour is 14 and isSummer and minute < 30
+        $scope.beginSession = 3
+        $scope.endSession   = 3
+    else if hour < 16 or hour is 16 and isSummer and minute < 30
+        $scope.beginSession = 4
+        $scope.endSession   = 4
+    else if hour < 19 or hour is 19 and isSummer and minute < 30
+        $scope.beginSession = 5
+        $scope.endSession   = 5
+    else
+        $scope.beginSession = 1
+        $scope.endSession   = 1
+        week = if day is 7 then week + 1 else week
+        day = if day is 7 then 1 else day + 1
+    if !week
+        $scope.week = 1
+    else if week > 20
+        $scope.week = 20
+    else 
+        $scope.week = week
+    $scope.day = day
+    $scope.build = '103'
+
+    #Semantic 下拉框
+    $timeout ->
+        $('.ui.build.dropdown')
+            .dropdown 'set selected', '103'
+            .dropdown
+                onChange: (value) ->
+                    $scope.$apply ->
+                        $scope.build = value
+        $('.ui.week.dropdown')
+            .dropdown 'set selected', $scope.week
+            .dropdown
+                onChange: (value) ->
+                    $scope.$apply ->
+                        $scope.week = value
+        $('.ui.day.dropdown')
+            .dropdown 'set selected', $scope.day
+            .dropdown
+                onChange: (value) ->
+                    $scope.$apply ->
+                        $scope.day = value
+        $('.ui.beginSession.dropdown')
+            .dropdown 'set selected', $scope.beginSession
+            .dropdown
+                onChange: (value) ->
+                    $scope.$apply ->
+                        $scope.beginSession = value
+                    $scope.endSession = $scope.beginSession
+                    $timeout ->
+                        $('.ui.endSession.dropdown').dropdown 'set selected', $scope.endSession
+        $('.ui.endSession.dropdown')
+            .dropdown 'set selected', $scope.endSession
+            .dropdown
+                onChange: (value) ->
+                    $scope.$apply ->
+                        $scope.endSession = value
+
+    #表单提交
+    $('.ui.form').form
+        build: 
+            identifier: 'build'
+            rules: [
+                type  : 'empty'
+                prompt: '请选择教学楼！'
+            ]
+        , week: 
+            identifier: 'week'
+            rules: [
+                type  : 'empty'
+                prompt: '请选择周次'
+            ]
+        , day: 
+            identifier: 'day'
+            rules: [
+                type  : 'empty'
+                prompt: '请选择星期！'
+            ]
+        , beginSession: 
+            identifier: 'beginSession'
+            rules: [
+                type  : 'empty'
+                prompt: '请选择开始节次！'
+            ]
+        , endSession: 
+            identifier: 'endSession'
+            rules: [
+                type  : 'empty'
+                prompt: '请选择结束节次！'
+            ]
+    , 
+        inline: true
+        on    : 'blur'
+        onSuccess: ->
+            params = 
+                build: $scope.build
+                week : $scope.week
+                day  : $scope.day
+                beginSession: $scope.beginSession
+                endSession  : $scope.endSession
+            getJsonpData.query params, 8000, (data) ->
+                $scope.data = data.data
+            return false
 
 #教学评价
 judgeController = ($scope, $rootScope, $location, $anchorScroll, getJsonpData) ->
@@ -536,8 +719,7 @@ editUserController = ($scope, $rootScope, $location, getJsonpData) ->
                 type  : 'maxLength[10]'
                 prompt: '学号不能大于10位！'
             ]
-        ,
-        rank: 
+        , rank: 
             identifier: 'rank'
             rules: [
                 type  : 'empty'
@@ -590,6 +772,7 @@ hnust.controller 'scoreAll'   , scoreAllController
 hnust.controller 'schedule'   , scheduleController
 hnust.controller 'exam'       , examController
 hnust.controller 'credit'     , creditController
+hnust.controller 'classroom'  , classroomConller
 hnust.controller 'judge'      , judgeController
 hnust.controller 'book'       , bookController
 hnust.controller 'bookList'   , bookListController
