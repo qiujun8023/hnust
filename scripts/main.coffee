@@ -182,7 +182,7 @@ hnust.run ($location, $rootScope, getJsonpData) ->
 
 #导航栏控制器
 navbarController = ($scope, $rootScope, getJsonpData) ->
-    $scope.isPhone = document.body.offsetWidth < 720
+    $scope.isPhone = document.body.offsetWidth < 1360
     $scope.sidebar = $('.ui.sidebar')
     #侧栏
     $scope.$watch ->
@@ -190,13 +190,14 @@ navbarController = ($scope, $rootScope, getJsonpData) ->
     , ->
         if $scope.isPhone
             $scope.sidebar
+                .sidebar
+                    scrollLock: true
                 .sidebar 'attach events', '#menu'
         else 
             $scope.sidebar
                 .sidebar
                     closable: false
                     dimPage: false
-                    scrollLock: true
                     transition: 'overlay'
                 .sidebar 'attach events', '#menu'
     #影藏导航栏
@@ -313,7 +314,8 @@ loginController = ($scope, $rootScope, getJsonpData, checkJsonpData) ->
 scoreController = ($scope, getJsonpData) ->
     getJsonpData.query {}, 8000, (data) ->
         $scope.data = data.data
-        $scope.terms = (k for k,v of $scope.data).reverse()
+        $scope.terms = (k for k,v of $scope.data).sort (a, b) ->
+            a < b
 
 #全班成绩
 scoreAllController = ($scope, $location, getJsonpData) ->
@@ -433,7 +435,8 @@ tuitionController = ($scope, getJsonpData) ->
         $scope.total = data.data?.total
         delete data.data?.total
         $scope.data = data.data
-        $scope.terms = (k for k,v of $scope.data).reverse()
+        $scope.terms = (k for k,v of $scope.data).sort (a, b) ->
+            a < b
 
     $('.ui.positive.message').popup
         popup : $('.ui.flowing.popup')

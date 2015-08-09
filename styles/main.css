@@ -1,3 +1,8 @@
+.html {
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
 .pointer {
   cursor: pointer;
 }

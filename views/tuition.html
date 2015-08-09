@@ -27,7 +27,7 @@
       </div>
     </div>
   </div>
-  <table class="ui teal striped unstackable attached table" style="margin-bottom:30px" ng-repeat="term in terms">
+  <table class="ui teal striped unstackable attached table" ng-style="{'margin-bottom':$last? '0':'30px'}" ng-repeat="term in terms">
     <thead>
     <tr><th colspan="3" class="center aligned" ng-bind="'学年学期：' + term"></th></tr>
     </thead>

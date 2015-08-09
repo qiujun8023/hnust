@@ -208,19 +208,20 @@
   });
 
   navbarController = function($scope, $rootScope, getJsonpData) {
-    $scope.isPhone = document.body.offsetWidth < 720;
+    $scope.isPhone = document.body.offsetWidth < 1360;
     $scope.sidebar = $('.ui.sidebar');
     $scope.$watch(function() {
       var ref;
       return (ref = $rootScope.user) != null ? ref.rank : void 0;
     }, function() {
       if ($scope.isPhone) {
-        return $scope.sidebar.sidebar('attach events', '#menu');
+        return $scope.sidebar.sidebar({
+          scrollLock: true
+        }).sidebar('attach events', '#menu');
       } else {
         return $scope.sidebar.sidebar({
           closable: false,
           dimPage: false,
-          scrollLock: true,
           transition: 'overlay'
         }).sidebar('attach events', '#menu');
       }
@@ -369,7 +370,9 @@
           results.push(k);
         }
         return results;
-      })()).reverse();
+      })()).sort(function(a, b) {
+        return a < b;
+      });
     });
   };
 
@@ -537,7 +540,9 @@
           results.push(k);
         }
         return results;
-      })()).reverse();
+      })()).sort(function(a, b) {
+        return a < b;
+      });
     });
     return $('.ui.positive.message').popup({
       popup: $('.ui.flowing.popup'),
