@@ -3,11 +3,13 @@
   <div class="ui positive message" ng-if="info">
     <div class="header">
       <div class="ui green horizontal label">
-        <span ng-bind="'卡号：' + info.cardId"></span>
+        余额<div class="detail" ng-bind="info.balance"></div>
       </div>
-      <div class="ui green horizontal label">
-        <span ng-bind="'余额：' + info.balance"></span>
+      <div class="ui horizontal label" ng-class="{true:'green', false:'orange'}[info.status != '挂失']">
+        状态<div class="detail" ng-bind="info.status"></div>
       </div>
+      <div class="ui orange horizontal pointer label" ng-click="card('cardLoss')" ng-if="info.status != '挂失'">挂失</div>
+      <div class="ui green horizontal pointer label" ng-click="card('cardReLoss')" ng-if="info.status == '挂失'">解挂</div>
     </div>
   </div>
   <table class="ui teal celled striped unstackable attached table" ng-if="data && data.length">

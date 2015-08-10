@@ -187,27 +187,22 @@ hnust.run ($location, $rootScope, getJsonpData) ->
 
 #导航栏控制器
 navbarController = ($scope, $rootScope, getJsonpData) ->
-    $scope.isPhone = document.body.offsetWidth < 1360
-    $scope.sidebar = $('.ui.sidebar')
+    isPhone = document.body.offsetWidth < 1360
+    sidebarElement = $('.ui.sidebar')
     #侧栏
     $scope.$watch ->
         $rootScope.user?.rank
     , ->
-        if $scope.isPhone
-            $scope.sidebar
-                .sidebar
-                    scrollLock: true
-                .sidebar 'attach events', '#menu'
-        else 
-            $scope.sidebar
-                .sidebar
-                    closable: false
-                    dimPage: false
-                    transition: 'overlay'
-                .sidebar 'attach events', '#menu'
+        sidebarElement.sidebar 'attach events', '#menu'
+        if !isPhone
+            sidebarElement.sidebar
+                closable: false
+                dimPage: false
+                transition: 'overlay'
+                
     #影藏导航栏
     $scope.sidebarHide = ->
-        if $scope.isPhone then $scope.sidebar.sidebar 'hide'
+        if isPhone then sidebarElement.sidebar 'hide'
         return
 
     #是否隐藏导航栏
@@ -347,6 +342,7 @@ creditController = ($scope, getJsonpData) ->
 
 #空闲教室
 classroomConller = ($scope, $rootScope, $timeout, getJsonpData) ->
+    $rootScope.error = ''
     #阿拉伯转汉字
     $scope.nums = 
         '1'  : '一'
@@ -383,6 +379,7 @@ classroomConller = ($scope, $rootScope, $timeout, getJsonpData) ->
         ['213', '第十教附一楼']
         ['214', '第十教附二楼']
     ]
+    $scope.build = '103'
 
     #周次代码
     $scope.weeks = []
@@ -409,8 +406,7 @@ classroomConller = ($scope, $rootScope, $timeout, getJsonpData) ->
     date   = new Date()
     week   = $rootScope.user?.week || 0
     month  = date.getMonth() + 1
-    day    = date.getDay()
-    day    = if day is 0 then 7 else day
+    day    = if date.getDay() is 0 then 7 else date.getDay()
     hour   = date.getHours()
     minute = date.getMinutes()
     #判断夏季作息时间表
@@ -435,6 +431,7 @@ classroomConller = ($scope, $rootScope, $timeout, getJsonpData) ->
         $scope.endSession   = 1
         week = if day is 7 then week + 1 else week
         day = if day is 7 then 1 else day + 1
+
     if !week
         $scope.week = 1
     else if week > 20
@@ -442,89 +439,19 @@ classroomConller = ($scope, $rootScope, $timeout, getJsonpData) ->
     else 
         $scope.week = week
     $scope.day = day
-    $scope.build = '103'
 
-    #Semantic 下拉框
-    $timeout ->
-        $('.ui.build.dropdown')
-            .dropdown 'set selected', '103'
-            .dropdown
-                onChange: (value) ->
-                    $scope.$apply ->
-                        $scope.build = value
-        $('.ui.week.dropdown')
-            .dropdown 'set selected', $scope.week
-            .dropdown
-                onChange: (value) ->
-                    $scope.$apply ->
-                        $scope.week = value
-        $('.ui.day.dropdown')
-            .dropdown 'set selected', $scope.day
-            .dropdown
-                onChange: (value) ->
-                    $scope.$apply ->
-                        $scope.day = value
-        $('.ui.beginSession.dropdown')
-            .dropdown 'set selected', $scope.beginSession
-            .dropdown
-                onChange: (value) ->
-                    $scope.$apply ->
-                        $scope.beginSession = value
-                    $scope.endSession = $scope.beginSession
-                    $timeout ->
-                        $('.ui.endSession.dropdown').dropdown 'set selected', $scope.endSession
-        $('.ui.endSession.dropdown')
-            .dropdown 'set selected', $scope.endSession
-            .dropdown
-                onChange: (value) ->
-                    $scope.$apply ->
-                        $scope.endSession = value
-
-    #表单提交
-    $('.ui.form').form
-        build: 
-            identifier: 'build'
-            rules: [
-                type  : 'empty'
-                prompt: '请选择教学楼！'
-            ]
-        , week: 
-            identifier: 'week'
-            rules: [
-                type  : 'empty'
-                prompt: '请选择周次'
-            ]
-        , day: 
-            identifier: 'day'
-            rules: [
-                type  : 'empty'
-                prompt: '请选择星期！'
-            ]
-        , beginSession: 
-            identifier: 'beginSession'
-            rules: [
-                type  : 'empty'
-                prompt: '请选择开始节次！'
-            ]
-        , endSession: 
-            identifier: 'endSession'
-            rules: [
-                type  : 'empty'
-                prompt: '请选择结束节次！'
-            ]
-    , 
-        inline: true
-        on    : 'blur'
-        onSuccess: ->
-            params = 
-                build: $scope.build
-                week : $scope.week
-                day  : $scope.day
-                beginSession: $scope.beginSession
-                endSession  : $scope.endSession
-            getJsonpData.query params, 8000, (data) ->
-                $scope.data = data.data
-            return false
+    $scope.search = ->
+        $rootScope.error = ''
+        if !$scope.build or !$scope.week or !$scope.day or !$scope.beginSession or !$scope.endSession
+            return $rootScope.error = '请填写完整表单'
+        params = 
+            build: $scope.build
+            week : $scope.week
+            day  : $scope.day
+            beginSession: $scope.beginSession
+            endSession  : $scope.endSession
+        getJsonpData.query params, 8000, (data) ->
+            $scope.data = data.data
 
 #教学评价
 judgeController = ($scope, $rootScope, $location, $anchorScroll, getJsonpData) ->
@@ -630,6 +557,17 @@ cardController = ($scope, getJsonpData) ->
     getJsonpData.query {}, 8000, (data) ->
         $scope.info = data.info
         $scope.data = data.data
+
+    #挂失与解挂
+    $scope.card = (fun) ->
+        msg = '您确定要' + if fun is 'cardLoss' then '挂失' else '解挂' + '吗？';
+        if !confirm(msg)
+            return
+        params = 
+            fun   : fun
+            cardId: $scope.info.cardId
+        getJsonpData.query params, 8000, (data) ->
+            $scope.info = data.info
 
 #挂科率统计
 failRateController = ($scope, $rootScope, $timeout, getJsonpData) ->

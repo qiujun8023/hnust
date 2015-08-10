@@ -2,63 +2,38 @@
   <form class="ui attached fluid form segment">
     <div class="field">
       <label>教学楼</label>
-      <div class="ui build selection dropdown">
-        <input type="hidden" name="build">
-        <div class="default text">请选择教学楼</div>
-        <i class="dropdown icon"></i>
-        <div class="menu">
-          <div class="item" data-value="{{item[0]}}" ng-bind="item[1]" ng-click="build = item[0]" ng-repeat="item in builds"></div>
-        </div>
-      </div>
+      <select class="ui search dropdown" ng-model="build">
+        <option class="item" value="{{item[0]}}" ng-selected="build == item[0]" ng-bind="item[1]" ng-repeat="item in builds"></option>
+      </select>
     </div>
     <div class="field">
       <label>周次</label>
-      <div class="ui week selection dropdown">
-        <input type="hidden" name="week">
-        <div class="default text">请选择周次</div>
-        <i class="dropdown icon"></i>
-        <div class="menu">
-          <div class="item" data-value="{{item[0]}}" ng-bind="item[1]" ng-repeat="item in weeks"></div>
-        </div>
-      </div>
+      <select class="ui search dropdown" ng-model="week">
+        <option class="item" value="{{item[0]}}" ng-selected="week == item[0]" ng-bind="item[1]" ng-repeat="item in weeks"></option>
+      </select>
     </div>
     <div class="field">
       <label>星期</label>
-      <div class="ui day selection dropdown">
-        <input type="hidden" name="day">
-        <div class="default text">请选择周次</div>
-        <i class="dropdown icon"></i>
-        <div class="menu">
-          <div class="item" data-value="{{item[0]}}" ng-bind="item[1]" ng-repeat="item in days"></div>
-        </div>
-      </div>
+      <select class="ui search dropdown" ng-model="day">
+        <option class="item" value="{{item[0]}}" ng-selected="day == item[0]" ng-bind="item[1]" ng-repeat="item in days"></option>
+      </select>
     </div>
     <div class="field">
       <label>节次</label>
       <div class="two fields">
         <div class="field" style="width:50% !important;padding-right: .5em;">
-          <div class="ui beginSession selection upward dropdown" style="min-width:100px">
-            <input type="hidden" name="beginSession">
-            <div class="default text">请选择开始节次</div>
-            <i class="dropdown icon"></i>
-            <div class="menu">
-              <div class="item" data-value="{{item[0]}}" ng-bind="item[1]" ng-repeat="item in beginSessions"></div>
-            </div>
-          </div>
+          <select class="ui search dropdown" ng-model="beginSession" ng-change="endSession = beginSession" style="min-width:100px">
+            <option class="item" value="{{item[0]}}" ng-selected="beginSession == item[0]" ng-bind="item[1]" ng-repeat="item in beginSessions"></option>
+          </select>
         </div>
         <div class="field" style="width:50% !important;padding-left: .5em;">
-          <div class="ui endSession selection upward dropdown" style="min-width:100px">
-            <input type="hidden" name="endSession">
-            <div class="default text">请选择结束节次</div>
-            <i class="dropdown icon"></i>
-            <div class="menu">
-              <div class="item" data-value="{{item[0]}}" ng-bind="item[1]" ng-repeat="item in endSessions" ng-if="!beginSession || item[0] >= beginSession"></div>
-            </div>
-          </div>
+          <select class="ui search dropdown" ng-model="endSession" style="min-width:100px">
+            <option class="item" value="{{item[0]}}" ng-selected="endSession == item[0]" ng-bind="item[1]" ng-repeat="item in endSessions" ng-if="!beginSession || item[0] >= beginSession"></option>
+          </select>
         </div>
       </div>
     </div>
-    <div class="ui positive submit button" ng-class="{loading:$root.loading}">查询</div>
+    <div class="ui positive submit button" ng-class="{loading:$root.loading}" ng-click="search()">查询</div>
   </form>
   <div class="ui bottom attached error message" ng-if="$root.error && $root.error.length">
     <i class="info circle icon"></i> {{$root.error}}

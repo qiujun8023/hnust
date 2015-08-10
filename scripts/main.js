@@ -213,27 +213,25 @@
   });
 
   navbarController = function($scope, $rootScope, getJsonpData) {
-    $scope.isPhone = document.body.offsetWidth < 1360;
-    $scope.sidebar = $('.ui.sidebar');
+    var isPhone, sidebarElement;
+    isPhone = document.body.offsetWidth < 1360;
+    sidebarElement = $('.ui.sidebar');
     $scope.$watch(function() {
       var ref;
       return (ref = $rootScope.user) != null ? ref.rank : void 0;
     }, function() {
-      if ($scope.isPhone) {
-        return $scope.sidebar.sidebar({
-          scrollLock: true
-        }).sidebar('attach events', '#menu');
-      } else {
-        return $scope.sidebar.sidebar({
+      sidebarElement.sidebar('attach events', '#menu');
+      if (!isPhone) {
+        return sidebarElement.sidebar({
           closable: false,
           dimPage: false,
           transition: 'overlay'
-        }).sidebar('attach events', '#menu');
+        });
       }
     });
     $scope.sidebarHide = function() {
-      if ($scope.isPhone) {
-        $scope.sidebar.sidebar('hide');
+      if (isPhone) {
+        sidebarElement.sidebar('hide');
       }
     };
     $scope.hideNavbar = navigator.userAgent === 'demo';
@@ -414,6 +412,7 @@
 
   classroomConller = function($scope, $rootScope, $timeout, getJsonpData) {
     var date, day, hour, i, isSummer, j, l, m, minute, month, n, ref, week;
+    $rootScope.error = '';
     $scope.nums = {
       '1': '一',
       '2': '二',
@@ -437,6 +436,7 @@
       '20': '二十'
     };
     $scope.builds = [['103', '第一教学楼'], ['102', '第二教学楼'], ['104', '第三教学楼'], ['105', '第四教学楼'], ['107', '第五教学楼'], ['110', '第八教学楼'], ['111', '第九教学楼'], ['212', '第十教学楼'], ['213', '第十教附一楼'], ['214', '第十教附二楼']];
+    $scope.build = '103';
     $scope.weeks = [];
     for (i = j = 1; j <= 20; i = ++j) {
       $scope.weeks.push([i, "第" + $scope.nums[i] + "周"]);
@@ -457,8 +457,7 @@
     date = new Date();
     week = ((ref = $rootScope.user) != null ? ref.week : void 0) || 0;
     month = date.getMonth() + 1;
-    day = date.getDay();
-    day = day === 0 ? 7 : day;
+    day = date.getDay() === 0 ? 7 : date.getDay();
     hour = date.getHours();
     minute = date.getMinutes();
     isSummer = month >= 5 && month < 10 ? true : false;
@@ -491,112 +490,23 @@
       $scope.week = week;
     }
     $scope.day = day;
-    $scope.build = '103';
-    $timeout(function() {
-      $('.ui.build.dropdown').dropdown('set selected', '103').dropdown({
-        onChange: function(value) {
-          return $scope.$apply(function() {
-            return $scope.build = value;
-          });
-        }
-      });
-      $('.ui.week.dropdown').dropdown('set selected', $scope.week).dropdown({
-        onChange: function(value) {
-          return $scope.$apply(function() {
-            return $scope.week = value;
-          });
-        }
-      });
-      $('.ui.day.dropdown').dropdown('set selected', $scope.day).dropdown({
-        onChange: function(value) {
-          return $scope.$apply(function() {
-            return $scope.day = value;
-          });
-        }
-      });
-      $('.ui.beginSession.dropdown').dropdown('set selected', $scope.beginSession).dropdown({
-        onChange: function(value) {
-          $scope.$apply(function() {
-            return $scope.beginSession = value;
-          });
-          $scope.endSession = $scope.beginSession;
-          return $timeout(function() {
-            return $('.ui.endSession.dropdown').dropdown('set selected', $scope.endSession);
-          });
-        }
-      });
-      return $('.ui.endSession.dropdown').dropdown('set selected', $scope.endSession).dropdown({
-        onChange: function(value) {
-          return $scope.$apply(function() {
-            return $scope.endSession = value;
-          });
-        }
-      });
-    });
-    return $('.ui.form').form({
-      build: {
-        identifier: 'build',
-        rules: [
-          {
-            type: 'empty',
-            prompt: '请选择教学楼！'
-          }
-        ]
-      },
-      week: {
-        identifier: 'week',
-        rules: [
-          {
-            type: 'empty',
-            prompt: '请选择周次'
-          }
-        ]
-      },
-      day: {
-        identifier: 'day',
-        rules: [
-          {
-            type: 'empty',
-            prompt: '请选择星期！'
-          }
-        ]
-      },
-      beginSession: {
-        identifier: 'beginSession',
-        rules: [
-          {
-            type: 'empty',
-            prompt: '请选择开始节次！'
-          }
-        ]
-      },
-      endSession: {
-        identifier: 'endSession',
-        rules: [
-          {
-            type: 'empty',
-            prompt: '请选择结束节次！'
-          }
-        ]
+    return $scope.search = function() {
+      var params;
+      $rootScope.error = '';
+      if (!$scope.build || !$scope.week || !$scope.day || !$scope.beginSession || !$scope.endSession) {
+        return $rootScope.error = '请填写完整表单';
       }
-    }, {
-      inline: true,
-      on: 'blur',
-      onSuccess: function() {
-        var params;
-        params = {
-          build: $scope.build,
-          week: $scope.week,
-          day: $scope.day,
-          beginSession: $scope.beginSession,
-          endSession: $scope.endSession
-        };
-        getJsonpData.query(params, 8000, function(data) {
-          return $scope.data = data.data;
-        });
-        return false;
-      }
-    });
+      params = {
+        build: $scope.build,
+        week: $scope.week,
+        day: $scope.day,
+        beginSession: $scope.beginSession,
+        endSession: $scope.endSession
+      };
+      return getJsonpData.query(params, 8000, function(data) {
+        return $scope.data = data.data;
+      });
+    };
   };
 
   judgeController = function($scope, $rootScope, $location, $anchorScroll, getJsonpData) {
@@ -743,10 +653,24 @@
   };
 
   cardController = function($scope, getJsonpData) {
-    return getJsonpData.query({}, 8000, function(data) {
+    getJsonpData.query({}, 8000, function(data) {
       $scope.info = data.info;
       return $scope.data = data.data;
     });
+    return $scope.card = function(fun) {
+      var msg, params;
+      msg = '您确定要' + (fun === 'cardLoss' ? '挂失' : '解挂' + '吗？');
+      if (!confirm(msg)) {
+        return;
+      }
+      params = {
+        fun: fun,
+        cardId: $scope.info.cardId
+      };
+      return getJsonpData.query(params, 8000, function(data) {
+        return $scope.info = data.info;
+      });
+    };
   };
 
   failRateController = function($scope, $rootScope, $timeout, getJsonpData) {

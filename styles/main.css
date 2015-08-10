@@ -1,8 +1,3 @@
-.html {
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-}
-
 .pointer {
   cursor: pointer;
 }
@@ -61,7 +56,7 @@
 }
 .ui.search.dropdown .menu ,
 .ui.selection.dropdown .menu {
-  max-height: 9em;
+  max-height: 15em;
 }
 
 /* 加载动画 */
