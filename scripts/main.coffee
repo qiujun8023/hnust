@@ -124,7 +124,7 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'classroom',
             title: '空闲教室',
             controller: 'classroom',
-            templateUrl: 'views/classroom.html?150809'
+            templateUrl: 'views/classroom.html?150810'
         .when '/judge', 
             fun: 'judge',
             title: '教学评价',
@@ -149,7 +149,7 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'card',
             title: '校园一卡通',
             controller: 'card',
-            templateUrl: 'views/card.html?150808'
+            templateUrl: 'views/card.html?150810'
         .when '/failRate', 
             fun: 'failRate',
             title: '挂科率统计',
