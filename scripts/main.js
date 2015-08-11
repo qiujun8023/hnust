@@ -514,7 +514,7 @@
     };
   };
 
-  electiveConller = function($scope, $timeout, getJsonpData) {
+  electiveConller = function($scope, $rootScope, $timeout, getJsonpData) {
     $('.tabular .item').tab();
     $scope.elective = function() {
       $scope.person = {
@@ -534,7 +534,9 @@
           if (data.code !== 0) {
             $scope.elective();
           }
-          return $scope.queue();
+          if ($rootScope.fun === 'elective') {
+            return $scope.queue();
+          }
         });
       }, 3000);
     };

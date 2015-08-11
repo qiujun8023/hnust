@@ -454,7 +454,7 @@ classroomConller = ($scope, $rootScope, $timeout, getJsonpData) ->
             $scope.data = data.data
 
 #选课平台
-electiveConller = ($scope, $timeout, getJsonpData) ->
+electiveConller = ($scope, $rootScope, $timeout, getJsonpData) ->
     $('.tabular .item').tab()
 
     #个人信息
@@ -470,7 +470,7 @@ electiveConller = ($scope, $timeout, getJsonpData) ->
         $timeout ->
             getJsonpData.query fun:'electiveQueue', 8000, (data) ->
                 if data.code isnt 0 then $scope.elective()
-                $scope.queue()
+                if $rootScope.fun is 'elective' then $scope.queue()
         , 3000
 
     #选/退
