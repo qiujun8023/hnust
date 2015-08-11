@@ -148,7 +148,7 @@
       templateUrl: 'views/classroom.html?150810'
     }).when('/elective', {
       fun: 'elective',
-      title: '空闲教室',
+      title: '选课平台',
       controller: 'elective',
       templateUrl: 'views/elective.html?150811'
     }).when('/judge', {
@@ -188,7 +188,7 @@
       templateUrl: 'views/editUser.html?150808'
     }).when('/lastUser', {
       fun: 'lastUser',
-      title: '最近使用用户',
+      title: '最近活跃用户',
       controller: 'lastUser',
       templateUrl: 'views/lastUser.html?150808'
     }).otherwise({
@@ -200,6 +200,7 @@
     $rootScope.url = 'http://hnust.sinaapp.com/api/index.php';
     $rootScope.$on('$routeChangeSuccess', function(event, current, previous) {
       var ref, ref1;
+      $rootScope.error = '';
       $rootScope.fun = ((ref = current.$$route) != null ? ref.fun : void 0) || '';
       return $rootScope.title = ((ref1 = current.$$route) != null ? ref1.title : void 0) || '';
     });
@@ -221,22 +222,22 @@
     var isPhone, sidebarElement;
     isPhone = document.body.offsetWidth < 1360;
     sidebarElement = $('.ui.sidebar');
-    $('.ui.sidebar a').click(function() {
-      if (isPhone) {
-        return sidebarElement.sidebar('hide');
-      }
-    });
     $scope.$watch(function() {
       var ref;
       return (ref = $rootScope.user) != null ? ref.rank : void 0;
     }, function() {
-      sidebarElement.sidebar('attach events', '#menu');
       if (!isPhone) {
-        return sidebarElement.sidebar({
+        sidebarElement.sidebar({
           closable: false,
           dimPage: false,
           transition: 'overlay'
         });
+      }
+      return sidebarElement.sidebar('attach events', '#menu');
+    });
+    $scope.$on('$routeChangeSuccess', function() {
+      if (isPhone) {
+        return sidebarElement.sidebar('hide');
       }
     });
     $scope.hideNavbar = navigator.userAgent === 'demo';
@@ -251,7 +252,6 @@
   userController = function($scope, $rootScope, $location, getJsonpData) {
     var watch;
     $('.ui.checkbox').checkbox('check');
-    $rootScope.error = '';
     $scope.scoreRemind = function(isCheck) {
       var ref;
       $scope.user.scoreRemind = isCheck != null ? isCheck : !((ref = $scope.user) != null ? ref.scoreRemind : void 0);
@@ -417,7 +417,6 @@
 
   classroomConller = function($scope, $rootScope, $timeout, getJsonpData) {
     var date, day, hour, i, isSummer, j, l, m, minute, month, n, ref, week;
-    $rootScope.error = '';
     $scope.nums = {
       '1': '一',
       '2': '二',
@@ -681,7 +680,6 @@
         });
       }
     });
-    $rootScope.error = '';
     $scope.search = function(key) {
       var ref;
       if (key) {
@@ -777,7 +775,6 @@
   };
 
   failRateController = function($scope, $rootScope, $timeout, getJsonpData) {
-    $rootScope.error = '';
     $scope.keys = [];
     $scope.dropdown = function(method) {
       var dropdown, styles;
@@ -841,7 +838,6 @@
   };
 
   editUserController = function($scope, $rootScope, $location, getJsonpData) {
-    $rootScope.error = '';
     $scope.studentId = '';
     $('.ui.dropdown').dropdown();
     return $('.ui.form').form({

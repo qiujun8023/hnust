@@ -38,7 +38,6 @@ hnust.factory 'checkJsonpData', ($rootScope, $location) ->
 hnust.factory 'getJsonpData', ($rootScope, $http, $location, checkJsonpData) ->
     query: (params, timeout, callback) ->
         self = this
-
         #后台加载的数据
         bgjsonp = ['user', 'failRateKey', 'bookInfo', 'electiveKey', 'electiveQueue']
         if params.fun not in bgjsonp
@@ -124,7 +123,7 @@ hnust.config ($httpProvider, $routeProvider) ->
             templateUrl: 'views/classroom.html?150810'
         .when '/elective', 
             fun: 'elective',
-            title: '空闲教室',
+            title: '选课平台',
             controller: 'elective',
             templateUrl: 'views/elective.html?150811'
         .when '/judge', 
@@ -164,7 +163,7 @@ hnust.config ($httpProvider, $routeProvider) ->
             templateUrl: 'views/editUser.html?150808'
         .when '/lastUser', 
             fun: 'lastUser',
-            title: '最近使用用户',
+            title: '最近活跃用户',
             controller: 'lastUser',
             templateUrl: 'views/lastUser.html?150808'
         .otherwise
@@ -175,7 +174,8 @@ hnust.run ($location, $rootScope, getJsonpData) ->
     $rootScope.url = 'http://hnust.sinaapp.com/api/index.php'
     #修改title
     $rootScope.$on '$routeChangeSuccess', (event, current, previous) ->
-        $rootScope.fun = current.$$route?.fun || ''
+        $rootScope.error = ''
+        $rootScope.fun   = current.$$route?.fun   || ''
         $rootScope.title = current.$$route?.title || ''
 
     #获取用户信息
@@ -191,19 +191,20 @@ hnust.run ($location, $rootScope, getJsonpData) ->
 navbarController = ($scope, $rootScope, getJsonpData) ->
     isPhone = document.body.offsetWidth < 1360
     sidebarElement = $('.ui.sidebar')
-    #隐藏侧栏
-    $('.ui.sidebar a').click ->
-        if isPhone then sidebarElement.sidebar 'hide'
+
     #监视权限
     $scope.$watch ->
         $rootScope.user?.rank
     , ->
-        sidebarElement.sidebar 'attach events', '#menu'
         if !isPhone
             sidebarElement.sidebar
                 closable: false
                 dimPage: false
                 transition: 'overlay'
+        sidebarElement.sidebar 'attach events', '#menu'
+
+    $scope.$on '$routeChangeSuccess', ->
+        if isPhone then sidebarElement.sidebar 'hide'
 
     #是否隐藏导航栏
     $scope.hideNavbar = navigator.userAgent is 'demo'
@@ -216,7 +217,6 @@ navbarController = ($scope, $rootScope, getJsonpData) ->
 #用户中心
 userController = ($scope, $rootScope, $location, getJsonpData) ->
     $('.ui.checkbox').checkbox 'check'
-    $rootScope.error = ''
 
     #邮件输入框的显示与不显示
     $scope.scoreRemind = (isCheck) ->
@@ -342,7 +342,6 @@ creditController = ($scope, getJsonpData) ->
 
 #空闲教室
 classroomConller = ($scope, $rootScope, $timeout, getJsonpData) ->
-    $rootScope.error = ''
     #阿拉伯转汉字
     $scope.nums = 
         '1'  : '一'
@@ -581,7 +580,6 @@ bookListController = ($scope, $rootScope, $timeout, $location, getJsonpData) ->
         onSuccess: ->
             $scope.$apply ->
                 $scope.search()
-    $rootScope.error = ''
 
     #搜索书列表
     $scope.search = (key) ->
@@ -645,7 +643,6 @@ cardController = ($scope, getJsonpData) ->
 
 #挂科率统计
 failRateController = ($scope, $rootScope, $timeout, getJsonpData) ->
-    $rootScope.error = ''
     $scope.keys = []
 
     $scope.dropdown = (method) ->
@@ -699,7 +696,6 @@ failRateController = ($scope, $rootScope, $timeout, getJsonpData) ->
 
 #修改权限
 editUserController = ($scope, $rootScope, $location, getJsonpData) ->
-    $rootScope.error = ''
     $scope.studentId = ''
 
     #权限下拉框
