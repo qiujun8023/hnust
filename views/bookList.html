@@ -1,4 +1,4 @@
-<div class="container" style="padding-bottom:10px">
+<div class="container">
   <div class="ui form">
     <div class="field" style="padding-right:80px">
       <input type="text" placeholder="请输入关键词" ng-model="key">
@@ -8,7 +8,7 @@
 </div>
 <div ng-include="'views/loading.html'"></div>
 <div class="container" ng-if="!$root.loading && !$root.error && data && data.length">
-  <div class="ui styled fluid accordion">
+  <div class="ui styled fluid accordion" style="box-shadow: 0 0 2px rgba(39,41,43,.15);">
     <div ng-repeat="item in data">
       <div class="book title" ng-click="bookInfo(item)">
         <i class="dropdown icon"></i>
@@ -86,7 +86,7 @@
       </div>
     </div>
   </div>
-  <div style="text-align: center;padding-top:20px">
+  <div style="text-align: center;padding-top:20px" ng-if="info.page != 1 || data.length >= 15">
     <div class="ui buttons">
       <a class="ui orange button" ng-class="{disabled:info.page <= 1}" ng-href="#/bookList?key={{info.key}}&page={{info.page - 1}}">
         <i class="left chevron icon"></i>上页

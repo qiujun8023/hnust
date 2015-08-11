@@ -1,11 +1,11 @@
 <div class="container" style="padding-bottom:10px">
   <form class="ui form">
     <div class="field" style="padding-right:80px">
-      <div class="ui fluid search selection dropdown active visible" ng-mouseenter="completion(key)" ng-mouseleave="dropdown('hide')">
+      <div class="ui fluid search selection dropdown active visible" style="border-color: rgba(39,41,43,.15);" ng-mouseenter="completion(key)" ng-mouseleave="dropdown('hide')">
         <input type="hidden" name="country">
         <div class="default text"></div>
         <input class="search" placeholder="请输入课程名称" ng-model="key" ng-change="check(key)">
-        <div class="menu">
+        <div class="menu" style="border-color: rgba(39,41,43,.15);">
           <div class="item" ng-repeat="item in keys track by $index" ng-bind="item.course" ng-click="search(item.course)"></div>
         </div>
       </div>
@@ -15,7 +15,7 @@
 </div>
 <div ng-include="'views/loading.html'"></div>
 <div class="container" ng-if="!$root.loading && data && data.length">
-  <div class="ui segment" ng-repeat="item in data">
+  <div class="ui segment" ng-repeat="item in data | sortBy:'rate':false">
     <h4 class="ui header" ng-bind="item.name"></h4>
     <div class="ui green horizontal label" style="width:28%;max-width:120px" ng-bind="'总计' + item.all"></div>
     <div class="ui red horizontal label" style="width:25%;max-width:120px" ng-bind="'挂科' + item.fail"></div>

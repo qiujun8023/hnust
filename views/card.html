@@ -8,8 +8,8 @@
       <div class="ui horizontal label" ng-class="{true:'green', false:'orange'}[info.status != '挂失']">
         状态<div class="detail" ng-bind="info.status"></div>
       </div>
-      <div class="ui orange horizontal pointer label" ng-click="card('cardLoss')" ng-if="info.status != '挂失'">挂失</div>
-      <div class="ui green horizontal pointer label" ng-click="card('cardReLoss')" ng-if="info.status == '挂失'">解挂</div>
+      <div class="ui orange horizontal pointer label" style="float:right" ng-click="card('cardLoss')" ng-if="info.status != '挂失'">挂失</div>
+      <div class="ui green horizontal pointer label" style="float:right" ng-click="card('cardReLoss')" ng-if="info.status == '挂失'">解挂</div>
     </div>
   </div>
   <table class="ui teal celled striped unstackable attached table" ng-if="data && data.length">

@@ -38,23 +38,20 @@ hnust.factory 'checkJsonpData', ($rootScope, $location) ->
 hnust.factory 'getJsonpData', ($rootScope, $http, $location, checkJsonpData) ->
     query: (params, timeout, callback) ->
         self = this
-        #置错误为空
-        $rootScope.error = ''
+
+        #后台加载的数据
+        bgjsonp = ['user', 'failRateKey', 'bookInfo', 'electiveKey', 'electiveQueue']
+        if params.fun not in bgjsonp
+            $rootScope.error = ''
+            $rootScope.loading = true
 
         #jsonp请求参数
         search = angular.copy $location.search()
         search.fun ||= $rootScope.fun
         params = $.extend search, params
         params.callback = 'JSON_CALLBACK'
-
-        #后台加载的数据
-        bgjsonp = ['user', 'failRateKey', 'bookInfo']
-
-        #超时时间
         timeout ||= 8000
-        #加载中动画
-        if params.fun not in bgjsonp
-            $rootScope.loading = true
+        #jsonp
         $http.jsonp $rootScope.url,
             params : params
             timeout: timeout
@@ -94,7 +91,7 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'user',
             title: '用户中心',
             controller: 'user',
-            templateUrl: 'views/user.html?150808'
+            templateUrl: 'views/user.html?150811'
         .when '/score',
             fun: 'score',
             title: '成绩查询',
@@ -125,6 +122,11 @@ hnust.config ($httpProvider, $routeProvider) ->
             title: '空闲教室',
             controller: 'classroom',
             templateUrl: 'views/classroom.html?150810'
+        .when '/elective', 
+            fun: 'elective',
+            title: '空闲教室',
+            controller: 'elective',
+            templateUrl: 'views/elective.html?150811'
         .when '/judge', 
             fun: 'judge',
             title: '教学评价',
@@ -139,7 +141,7 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'bookList',
             title: '图书检索',
             controller: 'bookList',
-            templateUrl: 'views/bookList.html?150808'
+            templateUrl: 'views/bookList.html?150811'
         .when '/tuition', 
             fun: 'tuition',
             title: '学年学费',
@@ -149,12 +151,12 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'card',
             title: '校园一卡通',
             controller: 'card',
-            templateUrl: 'views/card.html?150810'
+            templateUrl: 'views/card.html?150811'
         .when '/failRate', 
             fun: 'failRate',
             title: '挂科率统计',
             controller: 'failRate',
-            templateUrl: 'views/failRate.html?150808'
+            templateUrl: 'views/failRate.html?150811'
         .when '/editUser', 
             fun: 'editUser',
             title: '修改权限',
@@ -170,7 +172,7 @@ hnust.config ($httpProvider, $routeProvider) ->
 
 hnust.run ($location, $rootScope, getJsonpData) ->
     #API网址
-    $rootScope.url = 'http://a.hnust.sinaapp.com/index.php'
+    $rootScope.url = 'http://hnust.sinaapp.com/api/index.php'
     #修改title
     $rootScope.$on '$routeChangeSuccess', (event, current, previous) ->
         $rootScope.fun = current.$$route?.fun || ''
@@ -189,7 +191,10 @@ hnust.run ($location, $rootScope, getJsonpData) ->
 navbarController = ($scope, $rootScope, getJsonpData) ->
     isPhone = document.body.offsetWidth < 1360
     sidebarElement = $('.ui.sidebar')
-    #侧栏
+    #隐藏侧栏
+    $('.ui.sidebar a').click ->
+        if isPhone then sidebarElement.sidebar 'hide'
+    #监视权限
     $scope.$watch ->
         $rootScope.user?.rank
     , ->
@@ -199,11 +204,6 @@ navbarController = ($scope, $rootScope, getJsonpData) ->
                 closable: false
                 dimPage: false
                 transition: 'overlay'
-                
-    #影藏导航栏
-    $scope.sidebarHide = ->
-        if isPhone then sidebarElement.sidebar 'hide'
-        return
 
     #是否隐藏导航栏
     $scope.hideNavbar = navigator.userAgent is 'demo'
@@ -453,6 +453,80 @@ classroomConller = ($scope, $rootScope, $timeout, getJsonpData) ->
         getJsonpData.query params, 8000, (data) ->
             $scope.data = data.data
 
+#选课平台
+electiveConller = ($scope, $timeout, getJsonpData) ->
+    $('.tabular .item').tab()
+
+    #个人信息
+    $scope.elective = ->
+        $scope.person = loading:true
+        getJsonpData.query {}, 30000, (data) ->
+            $scope.person.logs    = data.data.logs
+            $scope.person.courses = data.data.courses
+            $scope.person.loading = false
+
+    #消息队列
+    $scope.queue = ->
+        $timeout ->
+            getJsonpData.query fun:'electiveQueue', 8000, (data) ->
+                if data.code isnt 0 then $scope.elective()
+                $scope.queue()
+        , 3000
+
+    #选/退
+    $scope.action = (title, url) ->
+        if !confirm('您确定要' + title + '吗？') then return
+        params =
+            fun  :'electiveAction'
+            title:title
+            url  :url
+        getJsonpData.query params, 8000, (data) ->
+            if angular.isObject data.data and !angular.isArray data.data
+                $scope.person.logs.push data.data
+
+    #自动补全框
+    $scope.dropdown = (method) ->
+        dropdown = $('.ui.search.dropdown .menu')
+        styles   = dropdown.attr('class')
+        if method is 'hide'
+            if styles.indexOf('hidden') is -1
+                dropdown.transition 'slide down out'
+        else if styles.indexOf('visible') is -1
+            dropdown.transition 'slide down in'
+        return
+
+    #检查输入框值的变化
+    $scope.check = (key) ->
+        $timeout ->
+            if key is $scope.key
+                $scope.completion key
+        , 300
+
+    #自动补全
+    $scope.completion = (key) ->
+        if !key then return $scope.keys = []
+        getJsonpData.query {fun:'electiveKey', key:key}, 8000, (data) ->
+            $scope.keys = data.data
+            $scope.dropdown 'show'
+
+    #选课列表
+    $scope.electiveList = (key, page) ->
+        $scope.dropdown 'hide'
+        if key then $scope.key = key
+        $scope.list = loading:true
+        params = 
+            fun  : 'electiveList'
+            key  : $scope.key
+            page : if page and page > 0 then page else 1
+        getJsonpData.query params, 8000, (data) ->
+            $scope.list.info = data.info
+            $scope.list.data = data.data
+            $scope.list.loading = false
+
+    $scope.queue()
+    $scope.elective()
+    $scope.electiveList()
+
 #教学评价
 judgeController = ($scope, $rootScope, $location, $anchorScroll, getJsonpData) ->
     getJsonpData.query {}, 10000, (data) ->
@@ -605,20 +679,7 @@ failRateController = ($scope, $rootScope, $timeout, getJsonpData) ->
         if key then $scope.key = key
         #请求服务器数据
         getJsonpData.query {key:$scope.key}, 8000, (data) ->
-            #排序
-            $scope.data = _.sortBy data.data, (item) ->
-                -parseFloat(item.rate)
-            #计算全校挂科率
-            if $scope.data.length > 1 and $scope.data[0].name isnt $scope.data[0].course
-                total = 
-                    'name': '湖南科技大学'
-                    'all' : 0
-                    'fail': 0
-                for item in data.data
-                    total.all  += parseInt(item.all)
-                    total.fail += parseInt(item.fail)
-                total.rate = total.fail / total.all * 100
-                $scope.data.unshift(total)
+            $scope.data = data.data
             #进度条显示
             $timeout ->
                 $('.progress').progress()
@@ -711,6 +772,7 @@ hnust.controller 'schedule'   , scheduleController
 hnust.controller 'exam'       , examController
 hnust.controller 'credit'     , creditController
 hnust.controller 'classroom'  , classroomConller
+hnust.controller 'elective'   , electiveConller
 hnust.controller 'judge'      , judgeController
 hnust.controller 'book'       , bookController
 hnust.controller 'bookList'   , bookListController
