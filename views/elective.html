@@ -92,7 +92,7 @@
           </div>
         </div>
       </div>
-      <div style="text-align: center;padding-top:20px" ng-if="list.info.totalPage != 1">
+      <div style="text-align: center;padding-top:20px" ng-if="list.info.totalPage > 1">
         <div class="ui buttons">
           <a class="ui orange button" ng-class="{disabled:list.info.page <= 1}" ng-click="electiveList(key, list.info.page - 1)">
             <i class="left chevron icon"></i>上页
