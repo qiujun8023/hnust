@@ -1,78 +1,67 @@
 #AngularJS
 hnust = angular.module 'hnust', ['ngRoute']
 
-#检查服务器数据
-hnust.factory 'checkJsonpData', ($rootScope, $location) ->
-    check: (data) ->
-        if !angular.isObject(data)
-            data = code:-1
-        switch data.code
-            #跳转到登录
-            when -2
-                $rootScope.user =
-                    name: '游客'
-                    rank: -1
-                $rootScope.referer = $location.url()
-                $location.url '/login'
-            #错误提示
-            when -1
-                $rootScope.error = data.msg || '网络连接超时 OR 服务器错误。'
-            #弹出提示框
-            when 1
-                layer.msg data.msg
-            #确认框
-            when 2
-                layer.open
-                    title: data.msg
-                    content:data.data
-            #跳转到登录前页面
-            when 3
-                if $rootScope.referer and $rootScope.referer isnt '/login'
-                    $location.url $rootScope.referer
-                    $rootScope.referer = ''
-                else
-                    $location.url '/score'
-        return if data.code >= 0 then true else false
-
 #加载jsonp获取数据
-hnust.factory 'getJsonpData', ($rootScope, $http, $location, checkJsonpData) ->
+hnust.factory 'request', ($rootScope, $http, $location) ->
+    #检查数据
+    check: (res, callback) ->
+        self = this
+        res.code = parseInt(res.code)
+        #跳转到登录
+        if res.code is -2
+            $rootScope.user =
+                name: '游客'
+                rank: -1
+            $rootScope.referer = $location.url()
+            $location.url '/login'
+        #错误提示
+        else if res.code is -1
+            error = res.msg || '网络连接超时 OR 服务器错误。'
+        else if res.code is 1
+            layer.msg res.msg
+        #确认框
+        else if res.code is 2
+            layer.open
+                title: res.msg
+                content:res.data
+        #跳转到登录前页面
+        else if res.code is  3
+            if $rootScope.referer and $rootScope.referer isnt '/login'
+                $location.url $rootScope.referer
+                $rootScope.referer = ''
+            else
+                $location.url '/score'
+        else if res.code is 4
+            params.passwd = prompt res.msg, ''
+            if params.passwd
+                self.query res.params, res.timeout, callback
+            else
+                error = '密码错误。'
+
+        #回调
+        if callback? then callback error, res.info, res.data
+    #请求数据
     query: (params, timeout, callback) ->
         self = this
-        #后台加载的数据
-        bgjsonp = ['user', 'failRateKey', 'bookInfo', 'electiveKey', 'electiveQueue']
-        if params.fun not in bgjsonp
-            $rootScope.error = ''
-            $rootScope.loading = true
-
         #jsonp请求参数
         search = angular.copy $location.search()
         search.fun ||= $rootScope.fun
         params = $.extend search, params
         params.callback = 'JSON_CALLBACK'
+
         timeout ||= 8000
-        #jsonp
+        callback = if callback? then callback else ->
+
+        #jsonp请求数据
         $http.jsonp $rootScope.url,
             params : params
             timeout: timeout
         .success (res) ->
-            if params.fun not in bgjsonp
-                $rootScope.loading = false
-            res.code = parseInt(res.code)
-            if !checkJsonpData.check res
-                return
-            else if res.code is 4
-                params.passwd = prompt res.msg, ''
-                if params.passwd
-                    self.query params, timeout, callback
-                else
-                    $rootScope.error = '密码错误！'
-            else if callback? then callback res
+            res.params  = params
+            res.timeout = timeout
+            self.check res, callback
         .error ->
-            if params.fun not in bgjsonp
-                $rootScope.loading = false
-            checkJsonpData.check 
-                code: -1
-                msg : '网络异常，请稍后再试。'
+            callback '网络异常，请稍后再试。'
 
 hnust.config ($httpProvider, $routeProvider) ->
     #设置路由
@@ -81,114 +70,109 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'login',
             title: '用户登录',
             controller: 'login',
-            templateUrl: 'views/login.html?150808'
+            templateUrl: 'views/login.html?150814'
         .when '/agreement',
             fun: 'agreement',
             title: '用户使用协议',
-            templateUrl: 'views/agreement.html?150808'
+            templateUrl: 'views/agreement.html?150814'
         .when '/user',
             fun: 'user',
             title: '用户中心',
             controller: 'user',
-            templateUrl: 'views/user.html?150811'
+            templateUrl: 'views/user.html?150814'
         .when '/score',
             fun: 'score',
             title: '成绩查询',
             controller: 'score',
-            templateUrl: 'views/score.html?150808'
+            templateUrl: 'views/score.html?150814'
         .when '/scoreAll',
             fun: 'scoreAll',
             title: '全班成绩',
             controller: 'scoreAll',
-            templateUrl: 'views/scoreAll.html?150808'
+            templateUrl: 'views/scoreAll.html?150814'
         .when '/schedule',
             fun: 'schedule',
             title: '实时课表',
             controller: 'schedule',
-            templateUrl: 'views/schedule.html?150808'
+            templateUrl: 'views/schedule.html?150814'
         .when '/exam',
             fun: 'exam',
             title: '考试安排',
             controller: 'exam',
-            templateUrl: 'views/exam.html?150808'
+            templateUrl: 'views/exam.html?150814'
         .when '/credit', 
             fun: 'credit',
             title: '学分绩点',
             controller: 'credit',
-            templateUrl: 'views/credit.html?150808'
+            templateUrl: 'views/credit.html?150814'
         .when '/classroom', 
             fun: 'classroom',
             title: '空闲教室',
             controller: 'classroom',
-            templateUrl: 'views/classroom.html?150810'
+            templateUrl: 'views/classroom.html?150814'
         .when '/elective', 
             fun: 'elective',
             title: '选课平台',
             controller: 'elective',
-            templateUrl: 'views/elective.html?150811'
+            templateUrl: 'views/elective.html?150814'
         .when '/judge', 
             fun: 'judge',
             title: '教学评价',
             controller: 'judge',
-            templateUrl: 'views/judge.html?150808'
+            templateUrl: 'views/judge.html?150814'
         .when '/book', 
             fun: 'book',
-            title: '图书续借',
+            title: '图书借阅',
             controller: 'book',
-            templateUrl: 'views/book.html?150808'
-        .when '/bookList', 
-            fun: 'bookList',
-            title: '图书检索',
-            controller: 'bookList',
-            templateUrl: 'views/bookList.html?150811'
+            templateUrl: 'views/book.html?150814'
         .when '/tuition', 
             fun: 'tuition',
             title: '学年学费',
             controller: 'tuition',
-            templateUrl: 'views/tuition.html?150808'
+            templateUrl: 'views/tuition.html?150814'
         .when '/card', 
             fun: 'card',
             title: '校园一卡通',
             controller: 'card',
-            templateUrl: 'views/card.html?150811'
+            templateUrl: 'views/card.html?150814'
         .when '/failRate', 
             fun: 'failRate',
             title: '挂科率统计',
             controller: 'failRate',
-            templateUrl: 'views/failRate.html?150811'
+            templateUrl: 'views/failRate.html?150814'
         .when '/editUser', 
             fun: 'editUser',
             title: '修改权限',
             controller: 'editUser',
-            templateUrl: 'views/editUser.html?150808'
+            templateUrl: 'views/editUser.html?150814'
         .when '/lastUser', 
             fun: 'lastUser',
             title: '最近活跃用户',
             controller: 'lastUser',
-            templateUrl: 'views/lastUser.html?150808'
+            templateUrl: 'views/lastUser.html?150814'
         .otherwise
             redirectTo: '/score'
 
-hnust.run ($location, $rootScope, getJsonpData) ->
+hnust.run ($location, $rootScope, request) ->
     #API网址
-    $rootScope.url = 'http://hnust.sinaapp.com/api/index.php'
+    $rootScope.url = 'http://a.hnust.sinaapp.com/index.php'
     #修改title
     $rootScope.$on '$routeChangeSuccess', (event, current, previous) ->
-        $rootScope.error = ''
         $rootScope.fun   = current.$$route?.fun   || ''
         $rootScope.title = current.$$route?.title || ''
 
     #获取用户信息
     $rootScope.$on 'updateUserInfo', (event, current) ->
-        getJsonpData.query fun:'user', 8000, (data) ->
-            data.info.id = data.info.studentId || ''
-            data.info.name ||= '游客'
-            data.info.rank = if data.info.rank? then parseInt(data.info.rank) else -1
-            data.info.scoreRemind = !!parseInt(data.info.scoreRemind)
-            $rootScope.user = data.info
+        request.query fun:'user', 8000, (error, info, data) ->
+            if error then info = {}
+            info.id = info.studentId || ''
+            info.name ||= '游客'
+            info.rank = if info.rank then parseInt(info.rank) else -1
+            info.scoreRemind = !!parseInt(info.scoreRemind)
+            $rootScope.user = info
 
 #导航栏控制器
-navbarController = ($scope, $rootScope, getJsonpData) ->
+navbarController = ($scope, $rootScope, request) ->
     isPhone = document.body.offsetWidth < 1360
     sidebarElement = $('.ui.sidebar')
 
@@ -207,15 +191,17 @@ navbarController = ($scope, $rootScope, getJsonpData) ->
         if isPhone then sidebarElement.sidebar 'hide'
 
     #是否隐藏导航栏
-    $scope.hideNavbar = navigator.userAgent is 'demo'
+    UA = navigator.userAgent
+    if UA.indexOf('demo') isnt -1 or UA.indexOf('hnust') isnt -1
+        $scope.hideNavbar = true
     #获取用户信息
     $scope.$emit 'updateUserInfo'
     #注销登录
     $scope.logout = ->
-        getJsonpData.query fun:'logout'
+        request.query fun:'logout'
 
 #用户中心
-userController = ($scope, $rootScope, $location, getJsonpData) ->
+userController = ($scope, $rootScope, $location, request) ->
     $('.ui.checkbox').checkbox 'check'
 
     #邮件输入框的显示与不显示
@@ -257,15 +243,19 @@ userController = ($scope, $rootScope, $location, getJsonpData) ->
                 fun: 'userUpdate'
                 scoreRemind: if $scope.user.scoreRemind then '1' else '0'
                 mail: $scope.user.mail
-            getJsonpData.query params, 8000, (data) ->
-                $scope.$emit 'updateUserInfo'
+            $scope.error = ''
+            $scope.loading = true
+            request.query params, 8000, (error, info, data) ->
+                $scope.loading = false
+                $scope.error = error
+                if !error then $scope.$emit 'updateUserInfo'
             return false
 
 #登录
-loginController = ($scope, $rootScope, getJsonpData, checkJsonpData) ->
+loginController = ($scope, $rootScope, $location, request) ->
     $('.ui.checkbox').checkbox()
     if $rootScope.user?.rank? and $rootScope.user.rank isnt -1
-        return checkJsonpData.check code:4
+        $location.url '/score'
     $scope.studentId = $scope.passwd = ''
 
     #用户名及密码等表单校验
@@ -303,45 +293,70 @@ loginController = ($scope, $rootScope, getJsonpData, checkJsonpData) ->
                 fun : 'login'
                 passwd : $scope.passwd
                 studentId : $scope.studentId
-            getJsonpData.query params, 8000, (data) ->
-                #发送登录成功事件
-                $scope.$emit 'updateUserInfo'
+            $scope.error = ''
+            $scope.loading = true
+            request.query params, 8000, (error, info, data) ->
+                $scope.loading = false
+                $scope.error = error
+                if !error then $scope.$emit 'updateUserInfo'
 
 #成绩
-scoreController = ($scope, getJsonpData) ->
-    getJsonpData.query {}, 8000, (data) ->
-        $scope.data = data.data
+scoreController = ($scope, request) ->
+    $scope.error = ''
+    $scope.loading = true
+    request.query {}, 8000, (error, info, data) ->
+        $scope.loading = false
+        $scope.error = error
+        $scope.data  = data
+        if error then return
         $scope.terms = (k for k,v of $scope.data).sort (a, b) ->
             a < b
 
 #全班成绩
-scoreAllController = ($scope, $location, getJsonpData) ->
+scoreAllController = ($scope, $location, request) ->
     if !$location.search().course
         return $location.url '/score'
-    getJsonpData.query {}, 8000, (data) ->
-        $scope.info = data.info
-        $scope.data = data.data
+    $scope.error = ''
+    $scope.loading = true
+    request.query {}, 8000, (error, info, data) ->
+        $scope.loading = false
+        $scope.error = error
+        $scope.info  = info
+        $scope.data  = data
 
 #课表
-scheduleController = ($scope, getJsonpData) ->
-    getJsonpData.query {}, 8000, (data) ->
-        $scope.data = data.data
-        $scope.info = data.info
-        $('.menu .item').tab()
-        $('.ui.inline.dropdown').dropdown()
+scheduleController = ($scope, $timeout, request) ->
+    $scope.error = ''
+    $scope.loading = true
+    request.query {}, 8000, (error, info, data) ->
+        $scope.loading = false
+        $scope.error = error
+        $scope.info  = info
+        $scope.data  = data
+        $timeout ->
+            $('.menu .item').tab()
+            $('.ui.inline.dropdown').dropdown()
 
 #考试
-examController = ($scope, getJsonpData) ->
-    getJsonpData.query {}, 10000, (data) ->
-        $scope.data = data.data
+examController = ($scope, request) ->
+    $scope.error = ''
+    $scope.loading = true
+    request.query {}, 10000, (error, info, data) ->
+        $scope.loading = false
+        $scope.error = error
+        $scope.data  = data
 
 #学分绩点
-creditController = ($scope, getJsonpData) ->
-    getJsonpData.query {}, 10000, (data) ->
-        $scope.data = data.data
+creditController = ($scope, request) ->
+    $scope.error = ''
+    $scope.loading = true
+    request.query {}, 10000, (error, info, data) ->
+        $scope.loading = false
+        $scope.error = error
+        $scope.data  = data
 
 #空闲教室
-classroomConller = ($scope, $rootScope, $timeout, getJsonpData) ->
+classroomConller = ($scope, $rootScope, $timeout, request) ->
     #阿拉伯转汉字
     $scope.nums = 
         '1'  : '一'
@@ -440,46 +455,41 @@ classroomConller = ($scope, $rootScope, $timeout, getJsonpData) ->
     $scope.day = day
 
     $scope.search = ->
-        $rootScope.error = ''
+        $scope.error = ''
         if !$scope.build or !$scope.week or !$scope.day or !$scope.beginSession or !$scope.endSession
-            return $rootScope.error = '请填写完整表单'
+            return $scope.error = '请填写完整表单'
         params = 
             build: $scope.build
             week : $scope.week
             day  : $scope.day
             beginSession: $scope.beginSession
             endSession  : $scope.endSession
-        getJsonpData.query params, 8000, (data) ->
-            $scope.data = data.data
+        $scope.loading = true
+        request.query params, 8000, (error, info, data) ->
+            $scope.loading = false
+            $scope.error = error
+            $scope.data  = data
 
 #选课平台
-electiveConller = ($scope, $rootScope, $timeout, getJsonpData) ->
+electiveConller = ($scope, $rootScope, $timeout, request) ->
     $('.tabular .item').tab()
 
     #个人信息
-    $scope.elective = ->
-        $scope.person = loading:true
-        getJsonpData.query {}, 30000, (data) ->
-            $scope.person.logs    = data.data.logs
-            $scope.person.courses = data.data.courses
-            $scope.person.loading = false
-
-    #消息队列
-    $scope.queue = ->
-        $timeout ->
-            getJsonpData.query fun:'electiveQueue', 8000, (data) ->
-                if data.code isnt 0 then $scope.elective()
-                if $rootScope.fun is 'elective' then $scope.queue()
-        , 3000
+    $scope.person = loading:true
+    request.query {}, 30000, (error, info, data) ->
+        $scope.person.error = error
+        $scope.person.logs  = data?.logs
+        $scope.person.courses = data?.courses
+        $scope.person.loading = false
 
     #选/退
     $scope.action = (title, url) ->
         if !confirm('您确定要' + title + '吗？') then return
         params =
-            fun  :'electiveAction'
-            title:title
-            url  :url
-        getJsonpData.query params, 8000, (data) ->
+            method : 'action'
+            title  : title
+            url    : url
+        request.query params, 8000, (error, info, data) ->
             if angular.isObject data.data and !angular.isArray data.data
                 $scope.person.logs.push data.data
 
@@ -504,9 +514,10 @@ electiveConller = ($scope, $rootScope, $timeout, getJsonpData) ->
     #自动补全
     $scope.completion = (key) ->
         if !key then return $scope.keys = []
-        getJsonpData.query {fun:'electiveKey', key:key}, 8000, (data) ->
-            $scope.keys = data.data
-            $scope.dropdown 'show'
+        request.query {method:'key', key:key}, 8000, (error, info, data) ->
+            $scope.keys = data
+            if ($scope.keys.length != 1) 
+                $scope.dropdown 'show'
 
     #选课列表
     $scope.electiveList = (key, page) ->
@@ -514,33 +525,35 @@ electiveConller = ($scope, $rootScope, $timeout, getJsonpData) ->
         if key then $scope.key = key
         $scope.list = loading:true
         params = 
-            fun  : 'electiveList'
-            key  : $scope.key
-            page : if page and page > 0 then page else 1
-        getJsonpData.query params, 8000, (data) ->
-            $scope.list.info = data.info
-            $scope.list.data = data.data
+            method : 'list'
+            key    : $scope.key
+            page   : if page and page > 0 then page else 1
+        request.query params, 8000, (error, info, data) ->
+            $scope.list.error = error
+            $scope.list.info  = info
+            $scope.list.data  = data
             $scope.list.loading = false
-
-    $scope.queue()
-    $scope.elective()
     $scope.electiveList()
 
 #教学评价
-judgeController = ($scope, $rootScope, $location, $anchorScroll, getJsonpData) ->
-    getJsonpData.query {}, 10000, (data) ->
-        $scope.data = data.data
+judgeController = ($scope, $rootScope, request) ->
+    $scope.error = ''
+    $scope.loading = true
+    request.query {}, 10000, (error, info, data) ->
+        $scope.loading = false
+        $scope.error = error
+        $scope.data  = data
 
     #评教
     $scope.judge = (item) ->
         $('.ui.checkbox').checkbox()
         $('.ui.form').form 'clear'
         $scope.judging = item
-        $anchorScroll()
 
     #提交评价
     $scope.submit = ->
-        $rootScope.error = ''
+        $scope.judging.error = ''
+        $scope.judging.loading = ''
         data = params: $scope.judging.params
         flag = true
         for i in [0...10]
@@ -556,93 +569,108 @@ judgeController = ($scope, $rootScope, $location, $anchorScroll, getJsonpData) -
         params =
             fun  : 'judge'
             data : angular.toJson(data)
-        getJsonpData.query params, 10000, (data) ->
-            if data.code is 0
+        request.query params, 10000, (error, info, data) ->
+            if error
+                $scope.judging.error = error
+                $scope.judging.loading = false
+            else
                 $scope.judging = false
                 $scope.data = data.data
 
-#图书续借
-bookController = ($scope, getJsonpData) ->
-    #获取图书列表
-    getJsonpData.query {}, 8000, (data) ->
-        $scope.data = data.data
-
-    #续借
-    $scope.renew = (params) ->
-        params.fun = 'book'
-        getJsonpData.query params, 8000, (data) ->
-            $scope.data = data.data
-
-#图书检索
-bookListController = ($scope, $rootScope, $timeout, $location, getJsonpData) ->
+#图书借阅
+bookController = ($scope, $location, $timeout, request) ->
+    $('.tabular .item').tab()
     #回车键Submit
     $('.ui.form').form {}, 
         onSuccess: ->
             $scope.$apply ->
                 $scope.search()
 
+    $scope.person = loading:true
+    request.query {}, 8000, (error, info, data) ->
+        $scope.person.loading = false
+        $scope.person.error = error
+        $scope.person.data = data
+
+    #续借
+    $scope.renew = (params) ->
+        params.method = 'renew'
+        request.query params, 8000, (data) ->
+            $scope.data = data.data
+
     #搜索书列表
-    $scope.search = (key) ->
+    $scope.search = (key, page) ->
         if key then $scope.key = key
         if !$scope.key?.length then return
-        $location.search
-            key : $scope.key
-            page: 1
-            rand: Math.random()
 
-    #查找详细信息
-    $scope.bookInfo = (item) ->
-        if item.data or item.loading
-            return
-        item.loading = true
-        getJsonpData.query {fun:'bookInfo', key:item.id}, 8000, (data) ->
-            item.loading = false
-            item.data = data.data
-
-    #加载数据
-    if $location.search().key
-        search = $location.search()
-        $scope.key = search.key
-        getJsonpData.query {key:search.key, page:search.page}, 8000, (data) ->
-            $scope.info = data.info
-            $scope.data = data.data
+        $scope.list = loading:true
+        params =
+            method : 'list'
+            key    : $scope.key
+            page   : if page and page > 0 then page else 1
+        request.query params, 8000, (error, info, data) ->
+            $scope.list.loading = false
+            $scope.list.error = error
+            $scope.list.info  = info
+            $scope.list.data  = data
             $timeout ->
                 $('.ui.accordion').accordion
                     duration: 200
                     exclusive: false
 
+    #查找详细信息
+    $scope.info = (item) ->
+        if item.data or item.loading
+            return
+        item.loading = true
+        request.query {method:'info', key:item.id}, 8000, (error, info, data) ->
+            item.loading = false
+            item.data = data
+
 #学费
-tuitionController = ($scope, getJsonpData) ->
-    getJsonpData.query {}, 8000, (data) ->
-        $scope.total = data.data?.total
-        delete data.data?.total
-        $scope.data = data.data
+tuitionController = ($scope, $timeout, request) ->
+    $scope.error = ''
+    $scope.loading = true
+    request.query {}, 8000, (error, info, data) ->
+        $scope.loading = false
+        $scope.error = error
+        if error then return
+        $scope.total = data?.total
+        delete data?.total
+        $scope.data = data
         $scope.terms = (k for k,v of $scope.data).sort (a, b) ->
             a < b
 
-    $('.ui.positive.message').popup
-        popup : $('.ui.flowing.popup')
-        on    : 'hover'
+        $timeout ->
+            $('.ui.positive.message').popup
+                popup : $('.ui.flowing.popup')
+                on    : 'hover'
 
 #校园一卡通
-cardController = ($scope, getJsonpData) ->
-    getJsonpData.query {}, 8000, (data) ->
-        $scope.info = data.info
-        $scope.data = data.data
+cardController = ($scope, request) ->
+    $scope.error = ''
+    $scope.loading = true
+    request.query {}, 8000, (error, info, data) ->
+        $scope.loading = false
+        $scope.error = error
+        $scope.info  = info
+        $scope.data  = data
 
     #挂失与解挂
-    $scope.card = (fun) ->
-        msg = '您确定要' + if fun is 'cardLoss' then '挂失' else '解挂' + '吗？';
+    $scope.card = (method) ->
+        msg = '您确定要' + if method is 'loss' then '挂失' else '解挂' + '吗？';
         if !confirm(msg)
             return
         params = 
-            fun   : fun
+            method: method
             cardId: $scope.info.cardId
-        getJsonpData.query params, 8000, (data) ->
-            $scope.info = data.info
+        $scope.loading = true
+        request.query params, 8000, (error, info, data) ->
+            $scope.loading = false
+            $scope.info = info
 
 #挂科率统计
-failRateController = ($scope, $rootScope, $timeout, getJsonpData) ->
+failRateController = ($scope, $rootScope, $timeout, request) ->
     $scope.keys = []
 
     $scope.dropdown = (method) ->
@@ -665,18 +693,22 @@ failRateController = ($scope, $rootScope, $timeout, getJsonpData) ->
     #自动补全
     $scope.completion = (key) ->
         if !key then return $scope.keys = []
-        getJsonpData.query {fun:'failRateKey', key:key}, 8000, (data) ->
-            $scope.keys = data.data
-            $scope.dropdown 'show'
+        request.query {method:'key', key:key}, 8000, (error, info, data) ->
+            $scope.keys = data
+            if ($scope.keys.length != 1) 
+                $scope.dropdown 'show'
 
     #搜索
     $scope.search = (key) ->
         $scope.dropdown 'hide'
-        $scope.data = []
         if key then $scope.key = key
         #请求服务器数据
-        getJsonpData.query {key:$scope.key}, 8000, (data) ->
-            $scope.data = data.data
+        $scope.error = ''
+        $scope.loading = true
+        request.query {key:$scope.key}, 8000, (error, info, data) ->
+            $scope.loading = false
+            $scope.error = error
+            $scope.data = data
             #进度条显示
             $timeout ->
                 $('.progress').progress()
@@ -695,7 +727,7 @@ failRateController = ($scope, $rootScope, $timeout, getJsonpData) ->
             ['red']
 
 #修改权限
-editUserController = ($scope, $rootScope, $location, getJsonpData) ->
+editUserController = ($scope, $rootScope, $location, request) ->
     $scope.studentId = ''
 
     #权限下拉框
@@ -729,13 +761,21 @@ editUserController = ($scope, $rootScope, $location, getJsonpData) ->
                 fun: 'editUser'
                 studentId: $scope.studentId
                 rank     : $("select[name='rank']").val()
-            getJsonpData.query params
+            $scope.error = ''
+            $scope.loading = true
+            request.query params, 8000, (error, info, data) ->
+                $scope.loading = false
+                $scope.error = error
             return false
 
 #最近使用用户
-lastUserController = ($scope, getJsonpData) ->
-    getJsonpData.query {}, 5000, (data) ->
-        $scope.data = data.data
+lastUserController = ($scope, request) ->
+    $scope.error = ''
+    $scope.loading = true
+    request.query {}, 5000, (error, info, data) ->
+        $scope.loading = false
+        $scope.error = error
+        $scope.data = data
 
 #排序
 sortByFilter = ->
@@ -771,7 +811,6 @@ hnust.controller 'classroom'  , classroomConller
 hnust.controller 'elective'   , electiveConller
 hnust.controller 'judge'      , judgeController
 hnust.controller 'book'       , bookController
-hnust.controller 'bookList'   , bookListController
 hnust.controller 'tuition'    , tuitionController
 hnust.controller 'card'       , cardController
 hnust.controller 'failRate'   , failRateController

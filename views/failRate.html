@@ -13,8 +13,11 @@
     </div>
   </form>
 </div>
-<div ng-include="'views/loading.html'"></div>
-<div class="container" ng-if="!$root.loading && data && data.length">
+<div ng-include="'views/loading.html'" ng-if="loading"></div>
+<div class="ui warning message" ng-if="!loading && error">
+  <div class="header" ng-bind="error"></div>
+</div>
+<div class="container" ng-if="!loading && !error && data && data.length">
   <div class="ui segment" ng-repeat="item in data | sortBy:'rate':false">
     <h4 class="ui header" ng-bind="item.name"></h4>
     <div class="ui green horizontal label" style="width:28%;max-width:120px" ng-bind="'总计' + item.all"></div>

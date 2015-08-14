@@ -28,17 +28,17 @@
         </div>
         <div class="field" style="width:50% !important;padding-left: .5em;">
           <select class="ui search dropdown" ng-model="endSession" style="min-width:100px">
-            <option class="item" value="{{item[0]}}" ng-selected="endSession == item[0]" ng-bind="item[1]" ng-repeat="item in endSessions" ng-if="!beginSession || item[0] >= beginSession"></option>
+            <option class="item" value="{{item[0]}}" ng-selected="endSession == item[0]" ng-bind="item[1]" ng-repeat="item in endSessions" ng-show="!beginSession || item[0] >= beginSession"></option>
           </select>
         </div>
       </div>
     </div>
-    <div class="ui positive submit button" ng-class="{loading:$root.loading}" ng-click="search()">查询</div>
+    <div class="ui positive submit button" ng-class="{loading:loading}" ng-click="search()">查询</div>
   </form>
-  <div class="ui bottom attached error message" ng-if="$root.error && $root.error.length">
-    <i class="info circle icon"></i> {{$root.error}}
+  <div class="ui bottom attached error message" ng-if="error">
+    <i class="info circle icon"></i> {{error}}
   </div>
-  <div class="ui segment" ng-if="!$root.loading && !$root.error && data">
+  <div class="ui segment" ng-if="!loading && !error && data">
     <h4 class="ui header">符合查询条件的空闲教室如下</h4>
     <div class="ui selection list">
       <div class="item" ng-repeat="item in data track by $index">

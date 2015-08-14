@@ -5,11 +5,11 @@
   </div>
   <div class="ui bottom attached active tab segment" data-tab="me">
     <div ng-include="'views/loading.html'" ng-if="person.loading"></div>
-    <div ng-if="!person.loading">
-      <div class="ui info message" ng-show="!person.courses && !person.logs">
-        <div class="header">未找到相关选课记录</div>
-      </div>
-      <h4 class="ui horizontal divider" ng-show="person.courses">
+    <div class="ui warning message" ng-if="!person.loading && person.error">
+      <div class="header" ng-bind="person.error"></div>
+    </div>
+    <div ng-if="!person.loading && !person.error && person.courses">
+      <h4 class="ui horizontal divider">
         <i class="list icon"></i> 已选列表
       </h4>
       <div class="ui vertical segment" ng-style="$last? {'box-shadow':'none'}:{}" ng-repeat="item in person.courses">
@@ -30,7 +30,9 @@
           </div>
         </div>
       </div>
-      <h4 class="ui horizontal divider" ng-show="person.logs">
+    </div>
+    <div ng-if="!person.loading && !person.error && person.logs">
+      <h4 class="ui horizontal divider">
         <i class="history icon"></i> 选课队列
       </h4>
       <div class="ui divided selection list">
@@ -61,18 +63,11 @@
         <button class="ui positive search button" ng-click="electiveList()">搜索</button>
       </div>
     </form>
-    <div class="spinner" ng-show="list.loading && $root.loading &&  !$root.error">
-      <div class="bounce1"></div>
-      <div class="bounce2"></div>
-      <div class="bounce3"></div>
+    <div ng-include="'views/loading.html'" ng-if="list.loading"></div>
+    <div class="ui warning message" ng-if="!list.loading && list.error">
+      <div class="header" ng-bind="list.error"></div>
     </div>
-    <div class="ui warning message" ng-if="list.loading && !$root.loading && $root.error">
-      <div class="header" ng-bind="$root.error"></div>
-    </div>
-    <div ng-if="!list.loading">
-      <div class="ui info message" style="margin: 1em 0;" ng-show="!list.data">
-        <div class="header">未找到相关课程</div>
-      </div>
+    <div ng-if="!list.loading && !list.error && list.data">
       <div class="ui vertical segment" ng-repeat="item in list.data">
         <h4 class="ui header" style="padding-right:65px" ng-bind="item.course"></h4>
         <div class="ui teal button" style="position: absolute;right: 10px;top: 10px;padding: 0.5em 1.0em;" ng-click="action('选修 ' + item.course, item.url)">选</div>

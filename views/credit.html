@@ -1,6 +1,9 @@
-<div ng-include="'views/loading.html'"></div>
-<div class="container" ng-show="!$root.loading && !$root.error && data">
-  <table class="ui teal celled striped unstackable attached table">
+<div class="container">
+  <div ng-include="'views/loading.html'" ng-if="loading"></div>
+  <div class="ui warning message" ng-if="!loading && error">
+    <div class="header" ng-bind="error"></div>
+  </div>
+  <table class="ui teal celled striped unstackable attached table" ng-if="!loading && !error && data">
     <thead>
       <tr>
         <th class="center aligned">科目</th>
