@@ -40,6 +40,7 @@ hnust.factory 'request', ($rootScope, $http, $location) ->
 
         #回调
         if callback? then callback error, res.info, res.data
+
     #请求数据
     query: (params, timeout, callback) ->
         self = this
@@ -49,7 +50,7 @@ hnust.factory 'request', ($rootScope, $http, $location) ->
         params = $.extend search, params
         params.callback = 'JSON_CALLBACK'
 
-        timeout ||= 8000
+        timeout ||= 10000
         callback = if callback? then callback else ->
 
         #jsonp请求数据
@@ -63,6 +64,51 @@ hnust.factory 'request', ($rootScope, $http, $location) ->
         .error ->
             callback '网络异常，请稍后再试。'
 
+hnust.directive 'autocomplete', ($timeout, request) ->
+    link: ($scope, elem, attrs) ->
+        $scope.keys = []
+        #自动补全框
+        $scope.dropdown = (method) ->
+            dropdown = $('.ui.search.dropdown .menu')
+            styles   = dropdown.attr('class')
+            if method is 'hide'
+                if styles.indexOf('hidden') is -1
+                    dropdown.transition 'slide down out'
+            else if styles.indexOf('visible') is -1
+                dropdown.transition 'slide down in'
+            return
+
+        #检查输入框值的变化
+        $scope.check = (key) ->
+            $timeout ->
+                if key is $scope.key
+                    $scope.completion key
+            , 300
+
+        #自动补全
+        $scope.completion = (key) ->
+            if !key then return $scope.keys = []
+            request.query {method:'key', key:key}, 5000, (error, info, data) ->
+                if error or info.key != $scope.key
+                    return
+                $scope.keys = data
+                if $scope.keys.length > 1
+                    $scope.dropdown 'show'
+                else if $scope.keys.length is 1 and $scope.keys[0] isnt $scope.key
+                    $scope.dropdown 'show'
+                else
+                    $scope.dropdown 'hide'
+
+        elem.on 'mouseenter', ->
+            if $scope.keys.length
+                $scope.dropdown 'show'
+
+        elem.on 'mouseleave', ->
+            $scope.dropdown 'hide'
+
+        elem.on 'keydown', (event) ->
+            if event.which is 13 then $scope.dropdown 'hide'
+
 hnust.config ($httpProvider, $routeProvider) ->
     #设置路由
     $routeProvider
@@ -70,86 +116,81 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'login',
             title: '用户登录',
             controller: 'login',
-            templateUrl: 'views/login.html?150814'
+            templateUrl: 'views/login.html?150815'
         .when '/agreement',
             fun: 'agreement',
             title: '用户使用协议',
-            templateUrl: 'views/agreement.html?150814'
+            templateUrl: 'views/agreement.html?150815'
         .when '/user',
             fun: 'user',
             title: '用户中心',
             controller: 'user',
-            templateUrl: 'views/user.html?150814'
+            templateUrl: 'views/user.html?150815'
         .when '/score',
             fun: 'score',
             title: '成绩查询',
             controller: 'score',
-            templateUrl: 'views/score.html?150814'
+            templateUrl: 'views/score.html?150815'
         .when '/scoreAll',
             fun: 'scoreAll',
             title: '全班成绩',
             controller: 'scoreAll',
-            templateUrl: 'views/scoreAll.html?150814'
+            templateUrl: 'views/scoreAll.html?150815'
         .when '/schedule',
             fun: 'schedule',
             title: '实时课表',
             controller: 'schedule',
-            templateUrl: 'views/schedule.html?150814'
+            templateUrl: 'views/schedule.html?150815'
         .when '/exam',
             fun: 'exam',
             title: '考试安排',
             controller: 'exam',
-            templateUrl: 'views/exam.html?150814'
+            templateUrl: 'views/exam.html?150815'
         .when '/credit', 
             fun: 'credit',
             title: '学分绩点',
             controller: 'credit',
-            templateUrl: 'views/credit.html?150814'
+            templateUrl: 'views/credit.html?150815'
         .when '/classroom', 
             fun: 'classroom',
             title: '空闲教室',
             controller: 'classroom',
-            templateUrl: 'views/classroom.html?150814'
+            templateUrl: 'views/classroom.html?150815'
         .when '/elective', 
             fun: 'elective',
             title: '选课平台',
             controller: 'elective',
-            templateUrl: 'views/elective.html?150814'
+            templateUrl: 'views/elective.html?150815'
         .when '/judge', 
             fun: 'judge',
             title: '教学评价',
             controller: 'judge',
-            templateUrl: 'views/judge.html?150814'
+            templateUrl: 'views/judge.html?150815'
         .when '/book', 
             fun: 'book',
             title: '图书借阅',
             controller: 'book',
-            templateUrl: 'views/book.html?150814'
+            templateUrl: 'views/book.html?150815'
         .when '/tuition', 
             fun: 'tuition',
             title: '学年学费',
             controller: 'tuition',
-            templateUrl: 'views/tuition.html?150814'
+            templateUrl: 'views/tuition.html?150815'
         .when '/card', 
             fun: 'card',
             title: '校园一卡通',
             controller: 'card',
-            templateUrl: 'views/card.html?150814'
+            templateUrl: 'views/card.html?150815'
         .when '/failRate', 
             fun: 'failRate',
             title: '挂科率统计',
             controller: 'failRate',
-            templateUrl: 'views/failRate.html?150814'
-        .when '/editUser', 
-            fun: 'editUser',
-            title: '修改权限',
-            controller: 'editUser',
-            templateUrl: 'views/editUser.html?150814'
-        .when '/lastUser', 
-            fun: 'lastUser',
-            title: '最近活跃用户',
-            controller: 'lastUser',
-            templateUrl: 'views/lastUser.html?150814'
+            templateUrl: 'views/failRate.html?150815'
+        .when '/admin', 
+            fun: 'admin',
+            title: '后台管理',
+            controller: 'admin',
+            templateUrl: 'views/admin.html?150815'
         .otherwise
             redirectTo: '/score'
 
@@ -163,7 +204,7 @@ hnust.run ($location, $rootScope, request) ->
 
     #获取用户信息
     $rootScope.$on 'updateUserInfo', (event, current) ->
-        request.query fun:'user', 8000, (error, info, data) ->
+        request.query fun:'user', 10000, (error, info, data) ->
             if error then info = {}
             info.id = info.studentId || ''
             info.name ||= '游客'
@@ -217,13 +258,13 @@ userController = ($scope, $rootScope, $location, request) ->
             $scope.user.mail = ''
 
     #监视有无获取用户信息
-    watch = $scope.$watch ->
+    deleteWatch = $scope.$watch ->
         $rootScope.user
     , ->
         if $rootScope.user?.rank? and $rootScope.user.rank isnt -1
             $scope.user = angular.copy $rootScope.user
             $scope.scoreRemind $scope.user.scoreRemind
-            watch()
+            deleteWatch()
     , true
 
     #邮件校验
@@ -245,7 +286,7 @@ userController = ($scope, $rootScope, $location, request) ->
                 mail: $scope.user.mail
             $scope.error = ''
             $scope.loading = true
-            request.query params, 8000, (error, info, data) ->
+            request.query params, 10000, (error, info, data) ->
                 $scope.loading = false
                 $scope.error = error
                 if !error then $scope.$emit 'updateUserInfo'
@@ -295,7 +336,7 @@ loginController = ($scope, $rootScope, $location, request) ->
                 studentId : $scope.studentId
             $scope.error = ''
             $scope.loading = true
-            request.query params, 8000, (error, info, data) ->
+            request.query params, 10000, (error, info, data) ->
                 $scope.loading = false
                 $scope.error = error
                 if !error then $scope.$emit 'updateUserInfo'
@@ -304,7 +345,7 @@ loginController = ($scope, $rootScope, $location, request) ->
 scoreController = ($scope, request) ->
     $scope.error = ''
     $scope.loading = true
-    request.query {}, 8000, (error, info, data) ->
+    request.query {}, 10000, (error, info, data) ->
         $scope.loading = false
         $scope.error = error
         $scope.data  = data
@@ -318,7 +359,7 @@ scoreAllController = ($scope, $location, request) ->
         return $location.url '/score'
     $scope.error = ''
     $scope.loading = true
-    request.query {}, 8000, (error, info, data) ->
+    request.query {}, 10000, (error, info, data) ->
         $scope.loading = false
         $scope.error = error
         $scope.info  = info
@@ -328,7 +369,7 @@ scoreAllController = ($scope, $location, request) ->
 scheduleController = ($scope, $timeout, request) ->
     $scope.error = ''
     $scope.loading = true
-    request.query {}, 8000, (error, info, data) ->
+    request.query {}, 10000, (error, info, data) ->
         $scope.loading = false
         $scope.error = error
         $scope.info  = info
@@ -465,7 +506,7 @@ classroomConller = ($scope, $rootScope, $timeout, request) ->
             beginSession: $scope.beginSession
             endSession  : $scope.endSession
         $scope.loading = true
-        request.query params, 8000, (error, info, data) ->
+        request.query params, 10000, (error, info, data) ->
             $scope.loading = false
             $scope.error = error
             $scope.data  = data
@@ -489,51 +530,24 @@ electiveConller = ($scope, $rootScope, $timeout, request) ->
             method : 'action'
             title  : title
             url    : url
-        request.query params, 8000, (error, info, data) ->
+        request.query params, 10000, (error, info, data) ->
             if angular.isObject data.data and !angular.isArray data.data
                 $scope.person.logs.push data.data
 
-    #自动补全框
-    $scope.dropdown = (method) ->
-        dropdown = $('.ui.search.dropdown .menu')
-        styles   = dropdown.attr('class')
-        if method is 'hide'
-            if styles.indexOf('hidden') is -1
-                dropdown.transition 'slide down out'
-        else if styles.indexOf('visible') is -1
-            dropdown.transition 'slide down in'
-        return
-
-    #检查输入框值的变化
-    $scope.check = (key) ->
-        $timeout ->
-            if key is $scope.key
-                $scope.completion key
-        , 300
-
-    #自动补全
-    $scope.completion = (key) ->
-        if !key then return $scope.keys = []
-        request.query {method:'key', key:key}, 8000, (error, info, data) ->
-            $scope.keys = data
-            if ($scope.keys.length != 1) 
-                $scope.dropdown 'show'
-
     #选课列表
-    $scope.electiveList = (key, page) ->
-        $scope.dropdown 'hide'
+    $scope.search = (key, page) ->
         if key then $scope.key = key
         $scope.list = loading:true
         params = 
             method : 'list'
             key    : $scope.key
             page   : if page and page > 0 then page else 1
-        request.query params, 8000, (error, info, data) ->
+        request.query params, 10000, (error, info, data) ->
             $scope.list.error = error
             $scope.list.info  = info
             $scope.list.data  = data
             $scope.list.loading = false
-    $scope.electiveList()
+    $scope.search()
 
 #教学评价
 judgeController = ($scope, $rootScope, request) ->
@@ -587,7 +601,7 @@ bookController = ($scope, $location, $timeout, request) ->
                 $scope.search()
 
     $scope.person = loading:true
-    request.query {}, 8000, (error, info, data) ->
+    request.query {}, 10000, (error, info, data) ->
         $scope.person.loading = false
         $scope.person.error = error
         $scope.person.data = data
@@ -595,7 +609,7 @@ bookController = ($scope, $location, $timeout, request) ->
     #续借
     $scope.renew = (params) ->
         params.method = 'renew'
-        request.query params, 8000, (data) ->
+        request.query params, 10000, (data) ->
             $scope.data = data.data
 
     #搜索书列表
@@ -608,7 +622,7 @@ bookController = ($scope, $location, $timeout, request) ->
             method : 'list'
             key    : $scope.key
             page   : if page and page > 0 then page else 1
-        request.query params, 8000, (error, info, data) ->
+        request.query params, 10000, (error, info, data) ->
             $scope.list.loading = false
             $scope.list.error = error
             $scope.list.info  = info
@@ -623,7 +637,7 @@ bookController = ($scope, $location, $timeout, request) ->
         if item.data or item.loading
             return
         item.loading = true
-        request.query {method:'info', key:item.id}, 8000, (error, info, data) ->
+        request.query {method:'info', key:item.id}, 10000, (error, info, data) ->
             item.loading = false
             item.data = data
 
@@ -650,7 +664,7 @@ tuitionController = ($scope, $timeout, request) ->
 cardController = ($scope, request) ->
     $scope.error = ''
     $scope.loading = true
-    request.query {}, 8000, (error, info, data) ->
+    request.query {}, 10000, (error, info, data) ->
         $scope.loading = false
         $scope.error = error
         $scope.info  = info
@@ -665,47 +679,19 @@ cardController = ($scope, request) ->
             method: method
             cardId: $scope.info.cardId
         $scope.loading = true
-        request.query params, 8000, (error, info, data) ->
+        request.query params, 10000, (error, info, data) ->
             $scope.loading = false
             $scope.info = info
 
 #挂科率统计
 failRateController = ($scope, $rootScope, $timeout, request) ->
-    $scope.keys = []
-
-    $scope.dropdown = (method) ->
-        dropdown = $('.ui.search.dropdown .menu')
-        styles   = dropdown.attr('class')
-        if method is 'hide'
-            if styles.indexOf('hidden') is -1
-                dropdown.transition 'slide down out'
-        else if styles.indexOf('visible') is -1
-            dropdown.transition 'slide down in'
-        return
-
-    #检查输入框值的变化
-    $scope.check = (key) ->
-        $timeout ->
-            if key is $scope.key
-                $scope.completion key
-        , 300
-
-    #自动补全
-    $scope.completion = (key) ->
-        if !key then return $scope.keys = []
-        request.query {method:'key', key:key}, 8000, (error, info, data) ->
-            $scope.keys = data
-            if ($scope.keys.length != 1) 
-                $scope.dropdown 'show'
-
     #搜索
     $scope.search = (key) ->
-        $scope.dropdown 'hide'
         if key then $scope.key = key
         #请求服务器数据
         $scope.error = ''
         $scope.loading = true
-        request.query {key:$scope.key}, 8000, (error, info, data) ->
+        request.query {key:$scope.key}, 10000, (error, info, data) ->
             $scope.loading = false
             $scope.error = error
             $scope.data = data
@@ -727,13 +713,14 @@ failRateController = ($scope, $rootScope, $timeout, request) ->
             ['red']
 
 #修改权限
-editUserController = ($scope, $rootScope, $location, request) ->
-    $scope.studentId = ''
+adminController = ($scope, $rootScope, $location, request) ->
+    $('.tabular .item').tab()
+    $scope.editUser = {}
 
     #权限下拉框
     $('.ui.dropdown').dropdown()
     #表单验证
-    $('.ui.form').form
+    $('.ui.editUser.form').form
         studentId: 
             identifier: 'studentId'
             rules: [
@@ -759,23 +746,21 @@ editUserController = ($scope, $rootScope, $location, request) ->
         onSuccess: ->
             params =
                 fun: 'editUser'
-                studentId: $scope.studentId
+                studentId: $scope.editUser.studentId
                 rank     : $("select[name='rank']").val()
-            $scope.error = ''
-            $scope.loading = true
-            request.query params, 8000, (error, info, data) ->
-                $scope.loading = false
-                $scope.error = error
+            $scope.editUser.error = ''
+            $scope.editUser.loading = true
+            request.query params, 10000, (error, info, data) ->
+                $scope.editUser.loading = false
+                $scope.editUser.error = error
             return false
 
-#最近使用用户
-lastUserController = ($scope, request) ->
-    $scope.error = ''
-    $scope.loading = true
-    request.query {}, 5000, (error, info, data) ->
-        $scope.loading = false
-        $scope.error = error
-        $scope.data = data
+    #最近使用用户
+    $scope.lastUser = loading:true
+    request.query {fun:'lastUser'}, 10000, (error, info, data) ->
+        $scope.lastUser.loading = false
+        $scope.lastUser.error = error
+        $scope.lastUser.data = data
 
 #排序
 sortByFilter = ->
@@ -814,6 +799,5 @@ hnust.controller 'book'       , bookController
 hnust.controller 'tuition'    , tuitionController
 hnust.controller 'card'       , cardController
 hnust.controller 'failRate'   , failRateController
-hnust.controller 'editUser'   , editUserController
-hnust.controller 'lastUser'   , lastUserController
+hnust.controller 'admin'      , adminController
 hnust.filter     'sortBy'     , sortByFilter

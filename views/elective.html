@@ -52,15 +52,15 @@
   <div class="ui bottom attached tab segment" data-tab="list">
     <form class="ui form">
       <div class="field" style="padding-right:80px">
-        <div class="ui fluid search selection dropdown active visible" style="border-color: rgba(39,41,43,.15);box-shadow: none;" ng-mouseenter="completion(key)" ng-mouseleave="dropdown('hide')">
+        <div class="ui fluid search selection dropdown active visible" autocomplete>
           <input type="hidden" name="key">
           <div class="default text"></div>
           <input class="search" placeholder="请输入课程名称" ng-model="key" ng-change="check(key)">
-          <div class="menu" style="border-color: rgba(39,41,43,.15);">
-            <div class="item" ng-repeat="item in keys track by $index" ng-bind="item.course" ng-click="electiveList(item.course)"></div>
+          <div class="menu" ng-click="dropdown('hide')">
+            <div class="item" ng-repeat="item in keys track by $index" ng-bind="item" ng-click="search(item)"></div>
           </div>
         </div>
-        <button class="ui positive search button" ng-click="electiveList()">搜索</button>
+        <button class="ui positive search button" ng-click="search()">搜索</button>
       </div>
     </form>
     <div ng-include="'views/loading.html'" ng-if="list.loading"></div>
@@ -89,11 +89,11 @@
       </div>
       <div style="text-align: center;padding-top:20px" ng-if="list.info.totalPage > 1">
         <div class="ui buttons">
-          <a class="ui orange button" ng-class="{disabled:list.info.page <= 1}" ng-click="electiveList(key, list.info.page - 1)">
+          <a class="ui orange button" ng-class="{disabled:list.info.page <= 1}" ng-click="search(key, list.info.page - 1)">
             <i class="left chevron icon"></i>上页
           </a>
           <div class="or"></div>
-          <a class="ui green button active" ng-class="{disabled:list.info.page == list.info.totalPage}" ng-click="electiveList(key, list.info.page - 1 + 2)">
+          <a class="ui green button active" ng-class="{disabled:list.info.page == list.info.totalPage}" ng-click="search(key, list.info.page - 1 + 2)">
             下页<i class="right chevron icon"></i>
           </a>
         </div>

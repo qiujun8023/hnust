@@ -54,7 +54,12 @@
 .ui.fluid.accordion > div:nth-child(2n) {
   background-color: rgba(0,0,50,.03);
 }
-.ui.search.dropdown .menu ,
+
+.ui.search.dropdown {
+  border-color: rgba(39,41,43,.15) !important;
+  box-shadow: none !important;
+}
+.ui.search.dropdowm .menu,
 .ui.selection.dropdown .menu {
   max-height: 15em;
 }
