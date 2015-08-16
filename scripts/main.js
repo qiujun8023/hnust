@@ -234,7 +234,9 @@
         info.rank = info.rank ? parseInt(info.rank) : -1;
         info.scoreRemind = !!parseInt(info.scoreRemind);
         $rootScope.user = info;
-        return $rootScope.WebSocket(info.ws);
+        if (info && info.ws) {
+          return $rootScope.WebSocket(info.ws);
+        }
       });
     });
     return $rootScope.WebSocket = function(ws) {
@@ -248,9 +250,7 @@
         return console.log('WebSocket msg');
       };
       return $rootScope.ws.onclose = function() {
-        $rootScope.ws = null;
-        $rootScope.$emit('updateUserInfo');
-        return $rootScope.$digest();
+        return console.log('WebSocket onclose');
       };
     };
   });
@@ -859,11 +859,12 @@
     };
   };
 
-  adminController = function($scope, $rootScope, $location, request, FileUploader) {
+  adminController = function($scope, $rootScope, $location, $timeout, request, FileUploader) {
     var uploader;
     $('.tabular .item').tab();
-    $scope.editUser = {};
     $scope.putApp = {};
+    $scope.editUser = {};
+    $scope.onlineUser = {};
     if (document.domain !== $rootScope.domain) {
       $('.ui.domain.message').transition('drop in');
       $('.ui.domain.message .close').on('click', function() {
@@ -979,16 +980,20 @@
         return false;
       }
     });
-    $scope.onlineUser = {
-      loading: true
+    $scope.getOnlineUser = function(millisecond) {
+      return $timeout(function() {
+        return request.query({
+          fun: 'onlineUser'
+        }, 10000, function(error, info, data) {
+          $scope.onlineUser.error = error;
+          $scope.onlineUser.data = data;
+          if ($rootScope.fun === 'admin') {
+            return $scope.getOnlineUser();
+          }
+        });
+      }, millisecond || 3000);
     };
-    request.query({
-      fun: 'onlineUser'
-    }, 10000, function(error, info, data) {
-      $scope.onlineUser.loading = false;
-      $scope.onlineUser.error = error;
-      return $scope.onlineUser.data = data;
-    });
+    $scope.getOnlineUser(500);
     $scope.sendMsg = function(name, studentId) {
       var msg, params;
       msg = prompt('请输入要发给 ' + name + ' 的消息内容：', '');

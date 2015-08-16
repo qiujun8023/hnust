@@ -212,7 +212,8 @@ hnust.run ($rootScope, $location, request) ->
             info.rank = if info.rank then parseInt(info.rank) else -1
             info.scoreRemind = !!parseInt(info.scoreRemind)
             $rootScope.user = info
-            $rootScope.WebSocket info.ws
+            if info and info.ws
+                $rootScope.WebSocket info.ws
 
     #实时日志WebSockets
     $rootScope.WebSocket = (ws)->
@@ -224,9 +225,8 @@ hnust.run ($rootScope, $location, request) ->
             request.check msg
             console.log 'WebSocket msg'
         $rootScope.ws.onclose = ->
-            $rootScope.ws = null
-            $rootScope.$emit 'updateUserInfo'
-            $rootScope.$digest();
+            console.log 'WebSocket onclose'
+            #此处断线不重新连接
 
 #导航栏控制器
 navbarController = ($scope, $rootScope, request) ->
@@ -729,10 +729,11 @@ failRateController = ($scope, $rootScope, $timeout, request) ->
             ['red']
 
 #修改权限
-adminController = ($scope, $rootScope, $location, request, FileUploader) ->
+adminController = ($scope, $rootScope, $location, $timeout, request, FileUploader) ->
     $('.tabular .item').tab()
-    $scope.editUser = {}
     $scope.putApp = {}
+    $scope.editUser = {}
+    $scope.onlineUser = {}
 
     if document.domain isnt $rootScope.domain
         $('.ui.domain.message').transition('drop in')
@@ -830,11 +831,15 @@ adminController = ($scope, $rootScope, $location, request, FileUploader) ->
             return false
 
     #在线用户
-    $scope.onlineUser = loading:true
-    request.query {fun:'onlineUser'}, 10000, (error, info, data) ->
-        $scope.onlineUser.loading = false
-        $scope.onlineUser.error = error
-        $scope.onlineUser.data = data
+    $scope.getOnlineUser = (millisecond)->
+        $timeout ->
+            request.query {fun:'onlineUser'}, 10000, (error, info, data) ->
+                $scope.onlineUser.error = error
+                $scope.onlineUser.data = data
+                if $rootScope.fun is 'admin'
+                    $scope.getOnlineUser()
+        , millisecond || 3000
+    $scope.getOnlineUser 500
 
     $scope.sendMsg = (name, studentId) ->
         msg = prompt '请输入要发给 ' + name + ' 的消息内容：', ''
