@@ -2,7 +2,7 @@
 (function() {
   var adminController, bookController, cardController, classroomConller, creditController, electiveConller, examController, failRateController, hnust, judgeController, loginController, navbarController, scheduleController, scoreAllController, scoreController, sortByFilter, tuitionController, userController;
 
-  hnust = angular.module('hnust', ['ngRoute']);
+  hnust = angular.module('hnust', ['ngRoute', 'angularFileUpload']);
 
   hnust.factory('request', function($rootScope, $http, $location) {
     return {
@@ -158,7 +158,7 @@
       fun: 'schedule',
       title: '实时课表',
       controller: 'schedule',
-      templateUrl: 'views/schedule.html?150815'
+      templateUrl: 'views/schedule.html?150816'
     }).when('/exam', {
       fun: 'exam',
       title: '考试安排',
@@ -188,7 +188,7 @@
       fun: 'book',
       title: '图书借阅',
       controller: 'book',
-      templateUrl: 'views/book.html?150815'
+      templateUrl: 'views/book.html?150816'
     }).when('/tuition', {
       fun: 'tuition',
       title: '学年学费',
@@ -196,26 +196,27 @@
       templateUrl: 'views/tuition.html?150815'
     }).when('/card', {
       fun: 'card',
-      title: '校园一卡通',
+      title: '一卡通',
       controller: 'card',
       templateUrl: 'views/card.html?150815'
     }).when('/failRate', {
       fun: 'failRate',
-      title: '挂科率统计',
+      title: '挂科率',
       controller: 'failRate',
       templateUrl: 'views/failRate.html?150815'
     }).when('/admin', {
       fun: 'admin',
       title: '后台管理',
       controller: 'admin',
-      templateUrl: 'views/admin.html?150815'
+      templateUrl: 'views/admin.html?150816'
     }).otherwise({
       redirectTo: '/score'
     });
   });
 
   hnust.run(function($location, $rootScope, request) {
-    $rootScope.url = 'http://a.hnust.sinaapp.com/index.php';
+    $rootScope.domain = 'a.hnust.sinaapp.com';
+    $rootScope.url = 'http://' + $rootScope.domain + '/index.php';
     $rootScope.$on('$routeChangeSuccess', function(event, current, previous) {
       var ref, ref1;
       $rootScope.fun = ((ref = current.$$route) != null ? ref.fun : void 0) || '';
@@ -748,7 +749,7 @@
   tuitionController = function($scope, $timeout, request) {
     $scope.error = '';
     $scope.loading = true;
-    return request.query({}, 8000, function(error, info, data) {
+    return request.query({}, 10000, function(error, info, data) {
       var k, v;
       $scope.loading = false;
       $scope.error = error;
@@ -841,9 +842,81 @@
     };
   };
 
-  adminController = function($scope, $rootScope, $location, request) {
+  adminController = function($scope, $rootScope, $location, request, FileUploader) {
+    var uploader;
     $('.tabular .item').tab();
     $scope.editUser = {};
+    $scope.putApp = {};
+    if (document.domain !== $rootScope.domain) {
+      $('.ui.domain.message').transition('drop in');
+      $('.ui.domain.message .close').on('click', function() {
+        return $(this).closest('.message').transition('drop out');
+      });
+    }
+    $scope.readablizeBytes = function(bytes) {
+      var e, s;
+      s = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
+      e = Math.floor(Math.log(bytes) / Math.log(1024));
+      return (bytes / Math.pow(1024, Math.floor(e))).toFixed(2) + " " + s[e];
+    };
+    $scope.putApp.uploader = uploader = new FileUploader({
+      url: $rootScope.url + '?fun=putApp'
+    });
+    uploader.onAfterAddingFile = function(fileItem) {
+      var ref, ref1;
+      uploader.queue.splice(0, uploader.queue.length - 1);
+      $scope.putApp.size = $scope.readablizeBytes((ref = uploader.queue[0]) != null ? ref.file.size : void 0);
+      return $scope.putApp.name = ((ref1 = uploader.queue[0]) != null ? ref1.file.name : void 0) + '  (' + $scope.putApp.size + ')';
+    };
+    uploader.onCompleteItem = function(fileItem, response, status, headers) {
+      $scope.putApp.loading = false;
+      uploader.queue[0].isSuccess = false;
+      uploader.queue[0].isUploaded = false;
+      return request.check(response, function(error) {
+        return $scope.putApp.error = error;
+      });
+    };
+    $('.ui.putApp.form').form({
+      version: {
+        identifier: 'version',
+        rules: [
+          {
+            type: 'empty',
+            prompt: '版本号不能为空！'
+          }
+        ]
+      },
+      intro: {
+        identifier: 'intro',
+        rules: [
+          {
+            type: 'empty',
+            prompt: '介绍不能为空！'
+          }
+        ]
+      }
+    }, {
+      inline: true,
+      on: 'blur',
+      onSuccess: function() {
+        $scope.putApp.error = '';
+        if (!uploader.queue.length) {
+          $scope.putApp.error = 'APK文件不能为空';
+        } else {
+          $scope.putApp.loading = true;
+          uploader.queue[0].formData = [
+            {
+              version: $scope.putApp.version,
+              intro: $scope.putApp.intro,
+              size: $scope.putApp.size
+            }
+          ];
+          uploader.uploadAll();
+        }
+        $scope.$digest();
+        return false;
+      }
+    });
     $('.ui.dropdown').dropdown();
     $('.ui.editUser.form').form({
       studentId: {

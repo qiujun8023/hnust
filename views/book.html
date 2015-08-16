@@ -31,21 +31,23 @@
       </div>
     </div>
   </div>
-  <div class="ui bottom attached tab segment" data-tab="list">
-    <div class="ui form">
-      <div class="field" style="padding-right:80px">
-        <input type="text" placeholder="请输入关键词" ng-model="key">
+  <div class="ui tab " data-tab="list">
+    <div class="ui segment" style="margin-bottom: 0;border-radius: 0;">
+      <div class="ui form">
+        <div class="field" style="padding-right:80px">
+          <input type="text" placeholder="请输入关键词" ng-model="key">
+        </div>
+        <button class="ui submit positive search button" ng-click="search(key)">搜索</button>
       </div>
-      <button class="ui submit positive search button" ng-click="search(key)">搜索</button>
-    </div>
-    <div ng-include="'views/loading.html'" ng-if="list.loading"></div>
-    <div class="ui warning message" ng-if="!list.loading && list.error">
-      <div class="header" ng-bind="list.error"></div>
+      <div ng-include="'views/loading.html'" ng-if="list.loading"></div>
+      <div class="ui warning message" ng-if="!list.loading && list.error">
+        <div class="header" ng-bind="list.error"></div>
+      </div>
     </div>
     <div ng-if="!list.loading && !list.error && list.data && list.data.length">
-      <div class="ui styled fluid accordion" style="box-shadow: 0 0 2px rgba(39,41,43,.15);">
+      <div class="ui styled fluid accordion">
         <div ng-repeat="item in list.data">
-          <div class="book title" ng-click="info(item)">
+          <div class="book title" ng-click="info(item)" ng-style="$first? {'border-top': 'none'}:{}">
             <i class="dropdown icon"></i>
             <span ng-bind="item.title"></span>
           </div>

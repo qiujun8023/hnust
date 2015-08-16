@@ -1,5 +1,5 @@
 #AngularJS
-hnust = angular.module 'hnust', ['ngRoute']
+hnust = angular.module 'hnust', ['ngRoute', 'angularFileUpload']
 
 #加载jsonp获取数据
 hnust.factory 'request', ($rootScope, $http, $location) ->
@@ -140,7 +140,7 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'schedule',
             title: '实时课表',
             controller: 'schedule',
-            templateUrl: 'views/schedule.html?150815'
+            templateUrl: 'views/schedule.html?150816'
         .when '/exam',
             fun: 'exam',
             title: '考试安排',
@@ -170,7 +170,7 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'book',
             title: '图书借阅',
             controller: 'book',
-            templateUrl: 'views/book.html?150815'
+            templateUrl: 'views/book.html?150816'
         .when '/tuition', 
             fun: 'tuition',
             title: '学年学费',
@@ -178,25 +178,26 @@ hnust.config ($httpProvider, $routeProvider) ->
             templateUrl: 'views/tuition.html?150815'
         .when '/card', 
             fun: 'card',
-            title: '校园一卡通',
+            title: '一卡通',
             controller: 'card',
             templateUrl: 'views/card.html?150815'
         .when '/failRate', 
             fun: 'failRate',
-            title: '挂科率统计',
+            title: '挂科率',
             controller: 'failRate',
             templateUrl: 'views/failRate.html?150815'
         .when '/admin', 
             fun: 'admin',
             title: '后台管理',
             controller: 'admin',
-            templateUrl: 'views/admin.html?150815'
+            templateUrl: 'views/admin.html?150816'
         .otherwise
             redirectTo: '/score'
 
 hnust.run ($location, $rootScope, request) ->
     #API网址
-    $rootScope.url = 'http://a.hnust.sinaapp.com/index.php'
+    $rootScope.domain = 'a.hnust.sinaapp.com'
+    $rootScope.url    = 'http://' + $rootScope.domain + '/index.php'
     #修改title
     $rootScope.$on '$routeChangeSuccess', (event, current, previous) ->
         $rootScope.fun   = current.$$route?.fun   || ''
@@ -645,7 +646,7 @@ bookController = ($scope, $location, $timeout, request) ->
 tuitionController = ($scope, $timeout, request) ->
     $scope.error = ''
     $scope.loading = true
-    request.query {}, 8000, (error, info, data) ->
+    request.query {}, 10000, (error, info, data) ->
         $scope.loading = false
         $scope.error = error
         if error then return
@@ -713,9 +714,67 @@ failRateController = ($scope, $rootScope, $timeout, request) ->
             ['red']
 
 #修改权限
-adminController = ($scope, $rootScope, $location, request) ->
+adminController = ($scope, $rootScope, $location, request, FileUploader) ->
     $('.tabular .item').tab()
     $scope.editUser = {}
+    $scope.putApp = {}
+
+    if document.domain isnt $rootScope.domain
+        $('.ui.domain.message').transition('drop in')
+        $('.ui.domain.message .close').on 'click', ->
+            $(this).closest('.message').transition('drop out')
+
+    $scope.readablizeBytes = (bytes) ->
+        s = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
+        e = Math.floor Math.log(bytes) / Math.log(1024)
+        (bytes / Math.pow(1024, Math.floor(e))).toFixed(2) + " " + s[e]
+
+    #文件上传
+    $scope.putApp.uploader = uploader = new FileUploader
+        url:$rootScope.url + '?fun=putApp'
+    #添加文件
+    uploader.onAfterAddingFile = (fileItem) ->
+        uploader.queue.splice 0, uploader.queue.length - 1
+        $scope.putApp.size = $scope.readablizeBytes uploader.queue[0]?.file.size
+        $scope.putApp.name = uploader.queue[0]?.file.name + '  (' + $scope.putApp.size + ')'
+    #上传成功
+    uploader.onCompleteItem = (fileItem, response, status, headers) ->
+        $scope.putApp.loading = false
+        uploader.queue[0].isSuccess = false
+        uploader.queue[0].isUploaded = false
+        request.check response, (error) ->
+            $scope.putApp.error = error
+    #发布APP
+    $('.ui.putApp.form').form
+        version: 
+            identifier: 'version'
+            rules: [
+                type  : 'empty'
+                prompt: '版本号不能为空！'
+            ]
+        , intro: 
+            identifier: 'intro'
+            rules: [
+                type  : 'empty'
+                prompt: '介绍不能为空！'
+            ]
+    ,
+        inline: true
+        on    : 'blur'
+        onSuccess: ->
+            $scope.putApp.error = ''
+            if !uploader.queue.length
+                $scope.putApp.error = 'APK文件不能为空'
+            else
+                $scope.putApp.loading = true
+                uploader.queue[0].formData = [
+                    version : $scope.putApp.version
+                    intro   : $scope.putApp.intro
+                    size    : $scope.putApp.size
+                ]
+                uploader.uploadAll()
+            $scope.$digest()
+            return false
 
     #权限下拉框
     $('.ui.dropdown').dropdown()
