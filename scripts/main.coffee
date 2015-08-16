@@ -194,7 +194,7 @@ hnust.config ($httpProvider, $routeProvider) ->
         .otherwise
             redirectTo: '/score'
 
-hnust.run ($location, $rootScope, request) ->
+hnust.run ($rootScope, $location, request) ->
     #API网址
     $rootScope.domain = 'a.hnust.sinaapp.com'
     $rootScope.url    = 'http://' + $rootScope.domain + '/index.php'
@@ -212,6 +212,21 @@ hnust.run ($location, $rootScope, request) ->
             info.rank = if info.rank then parseInt(info.rank) else -1
             info.scoreRemind = !!parseInt(info.scoreRemind)
             $rootScope.user = info
+            $rootScope.WebSocket info.ws
+
+    #实时日志WebSockets
+    $rootScope.WebSocket = (ws)->
+        $rootScope.ws ||= new WebSocket(ws)
+        $rootScope.ws.onopen = ->
+            console.log 'WebSocket Open'
+        $rootScope.ws.onmessage = (msg) ->
+            msg = angular.fromJson(msg.data);
+            request.check msg
+            console.log 'WebSocket msg'
+        $rootScope.ws.onclose = ->
+            $rootScope.ws = null
+            $rootScope.$emit 'updateUserInfo'
+            $rootScope.$digest();
 
 #导航栏控制器
 navbarController = ($scope, $rootScope, request) ->
@@ -813,6 +828,23 @@ adminController = ($scope, $rootScope, $location, request, FileUploader) ->
                 $scope.editUser.loading = false
                 $scope.editUser.error = error
             return false
+
+    #在线用户
+    $scope.onlineUser = loading:true
+    request.query {fun:'onlineUser'}, 10000, (error, info, data) ->
+        $scope.onlineUser.loading = false
+        $scope.onlineUser.error = error
+        $scope.onlineUser.data = data
+
+    $scope.sendMsg = (name, studentId) ->
+        msg = prompt '请输入要发给 ' + name + ' 的消息内容：', ''
+        if !msg then return
+        params = 
+            fun:'sendMsg'
+            msg:msg
+            name:name
+            studentId:studentId
+        request.query params, 10000
 
     #最近使用用户
     $scope.lastUser = loading:true

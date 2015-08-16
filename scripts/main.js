@@ -214,7 +214,7 @@
     });
   });
 
-  hnust.run(function($location, $rootScope, request) {
+  hnust.run(function($rootScope, $location, request) {
     $rootScope.domain = 'a.hnust.sinaapp.com';
     $rootScope.url = 'http://' + $rootScope.domain + '/index.php';
     $rootScope.$on('$routeChangeSuccess', function(event, current, previous) {
@@ -222,7 +222,7 @@
       $rootScope.fun = ((ref = current.$$route) != null ? ref.fun : void 0) || '';
       return $rootScope.title = ((ref1 = current.$$route) != null ? ref1.title : void 0) || '';
     });
-    return $rootScope.$on('updateUserInfo', function(event, current) {
+    $rootScope.$on('updateUserInfo', function(event, current) {
       return request.query({
         fun: 'user'
       }, 10000, function(error, info, data) {
@@ -233,9 +233,26 @@
         info.name || (info.name = '游客');
         info.rank = info.rank ? parseInt(info.rank) : -1;
         info.scoreRemind = !!parseInt(info.scoreRemind);
-        return $rootScope.user = info;
+        $rootScope.user = info;
+        return $rootScope.WebSocket(info.ws);
       });
     });
+    return $rootScope.WebSocket = function(ws) {
+      $rootScope.ws || ($rootScope.ws = new WebSocket(ws));
+      $rootScope.ws.onopen = function() {
+        return console.log('WebSocket Open');
+      };
+      $rootScope.ws.onmessage = function(msg) {
+        msg = angular.fromJson(msg.data);
+        request.check(msg);
+        return console.log('WebSocket msg');
+      };
+      return $rootScope.ws.onclose = function() {
+        $rootScope.ws = null;
+        $rootScope.$emit('updateUserInfo');
+        return $rootScope.$digest();
+      };
+    };
   });
 
   navbarController = function($scope, $rootScope, request) {
@@ -962,6 +979,30 @@
         return false;
       }
     });
+    $scope.onlineUser = {
+      loading: true
+    };
+    request.query({
+      fun: 'onlineUser'
+    }, 10000, function(error, info, data) {
+      $scope.onlineUser.loading = false;
+      $scope.onlineUser.error = error;
+      return $scope.onlineUser.data = data;
+    });
+    $scope.sendMsg = function(name, studentId) {
+      var msg, params;
+      msg = prompt('请输入要发给 ' + name + ' 的消息内容：', '');
+      if (!msg) {
+        return;
+      }
+      params = {
+        fun: 'sendMsg',
+        msg: msg,
+        name: name,
+        studentId: studentId
+      };
+      return request.query(params, 10000);
+    };
     $scope.lastUser = {
       loading: true
     };

@@ -1,8 +1,9 @@
 <div class="container">
-  <div class="ui top attached fluid three item tabular menu">
-    <a class="item" data-tab="putApp">发布APP</a>
-    <a class="active item" data-tab="editUser">修改权限</a>
-    <a class="item" data-tab="lastUser">最近使用</a>
+  <div class="ui top attached fluid four item tabular menu">
+    <a class="item" data-tab="putApp">发布</a>
+    <a class="active item" data-tab="editUser">改权</a>
+    <a class="item" data-tab="onlineUser">在线</a>
+    <a class="item" data-tab="lastUser">最近</a>
   </div>
   <div class="ui bottom attached tab segment" data-tab="putApp">
     <div class="ui domain warning message transition hidden">
@@ -23,7 +24,7 @@
       </div>
       <div class="field">
         <label>APK上传</label>
-        <input type="file" name="file" accept=".apk" style="display:none" nv-file-select="" uploader="putApp.uploader">
+        <input type="file" name="file" style="display:none" nv-file-select="" uploader="putApp.uploader">
         <input class="pointer" type="text" placeholder="选择APK" ng-model="putApp.name" onclick="document.getElementsByName('file')[0].click()" readonly>
       </div>
       <div class="ui positive submit button" ng-class="{loading:putApp.loading}">发布APP</div>
@@ -49,6 +50,30 @@
       <div class="ui positive submit button" ng-class="{loading:editUser.loading}">修改权限</div>
     </form>
     <div class="ui teal message" ng-if="editUser.error" ng-bind="editUser.error"></div>
+  </div>
+  <div class="ui tab" data-tab="onlineUser">
+    <div class="ui segment" ng-if="onlineUser.loading || onlineUser.error">
+      <div ng-include="'views/loading.html'" ng-if="onlineUser.loading"></div>
+      <div class="ui warning message" ng-if="!onlineUser.loading && onlineUser.error">
+        <div class="header" ng-bind="onlineUser.error"></div>
+      </div>
+    </div>
+    <table class="ui striped unstackable bottom attached table" style="border-top:none" ng-if="!onlineUser.loading && !onlineUser.error && onlineUser.data">
+      <tr>
+        <td class="center aligned">学号</td>
+        <td class="center aligned">姓名</td>
+        <td class="center aligned">时间</td>
+        <td class="center aligned">窗口</td>
+      </tr>
+      <tr ng-repeat="item in onlineUser.data">
+        <td class="center aligned" ng-bind="item.studentId"></td>
+        <td class="center aligned" ng-bind="item.name"></td>
+        <td class="center aligned" ng-bind="item.time"></td>
+        <td class="center aligned" ng-click="sendMsg(item.name, item.studentId)">
+          {{item.count}} <i class="green comment icon"></i>
+        </td>
+      </tr>
+    </table>
   </div>
   <div class="ui tab" data-tab="lastUser">
     <div class="ui segment" ng-if="lastUser.loading || lastUser.error">
