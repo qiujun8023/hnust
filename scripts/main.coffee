@@ -202,6 +202,7 @@ hnust.run ($rootScope, $location, request) ->
     $rootScope.$on '$routeChangeSuccess', (event, current, previous) ->
         $rootScope.fun   = current.$$route?.fun   || ''
         $rootScope.title = current.$$route?.title || ''
+        if !$rootScope.ws then $scope.$emit 'updateUserInfo'
 
     #获取用户信息
     $rootScope.$on 'updateUserInfo', (event, current) ->
@@ -225,6 +226,7 @@ hnust.run ($rootScope, $location, request) ->
             request.check msg
             console.log 'WebSocket msg'
         $rootScope.ws.onclose = ->
+            $rootScope.ws = null
             console.log 'WebSocket onclose'
             #此处断线不重新连接
 

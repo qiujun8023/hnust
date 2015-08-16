@@ -220,7 +220,10 @@
     $rootScope.$on('$routeChangeSuccess', function(event, current, previous) {
       var ref, ref1;
       $rootScope.fun = ((ref = current.$$route) != null ? ref.fun : void 0) || '';
-      return $rootScope.title = ((ref1 = current.$$route) != null ? ref1.title : void 0) || '';
+      $rootScope.title = ((ref1 = current.$$route) != null ? ref1.title : void 0) || '';
+      if (!$rootScope.ws) {
+        return $scope.$emit('updateUserInfo');
+      }
     });
     $rootScope.$on('updateUserInfo', function(event, current) {
       return request.query({
@@ -250,6 +253,7 @@
         return console.log('WebSocket msg');
       };
       return $rootScope.ws.onclose = function() {
+        $rootScope.ws = null;
         return console.log('WebSocket onclose');
       };
     };
