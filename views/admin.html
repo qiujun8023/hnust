@@ -6,7 +6,7 @@
     <a class="item" data-tab="lastUser">最近</a>
   </div>
   <div class="ui bottom attached tab segment" data-tab="putApp">
-    <div class="ui domain warning message transition hidden">
+    <div class="ui domain info message transition hidden">
       <i class="close icon"></i>
       <div class="header">
         使用以下域名才能发布APP
@@ -39,7 +39,7 @@
       </div>
       <div class="field">
         <label>权限</label>
-        <select class="ui dropdown" name="rank">
+        <select class="ui rank dropdown" name="rank">
           <option value="-1">禁用</option>
           <option value="1">查个人</option>
           <option value="2">查全班</option>
@@ -52,24 +52,24 @@
     <div class="ui teal message" ng-if="editUser.error" ng-bind="editUser.error"></div>
   </div>
   <div class="ui tab" data-tab="onlineUser">
-    <div class="ui segment" ng-if="onlineUser.loading || onlineUser.error">
-      <div ng-include="'views/loading.html'" ng-if="onlineUser.loading"></div>
-      <div class="ui warning message" ng-if="!onlineUser.loading && onlineUser.error">
-        <div class="header" ng-bind="onlineUser.error"></div>
+    <div class="ui segment" ng-if="$root.onlineUser.loading || $root.onlineUser.error">
+      <div ng-include="'views/loading.html'" ng-if="$root.onlineUser.loading"></div>
+      <div class="ui warning message" ng-if="!$root.onlineUser.loading && $root.onlineUser.error">
+        <div class="header" ng-bind="$root.onlineUser.error"></div>
       </div>
     </div>
-    <table class="ui striped unstackable bottom attached table" style="border-top:none" ng-if="!onlineUser.loading && !onlineUser.error && onlineUser.data">
+    <table class="ui striped unstackable bottom attached table" style="border-top:none" ng-if="!$root.onlineUser.loading && !$root.onlineUser.error && $root.onlineUser.data">
       <tr>
-        <td class="center aligned">学号</td>
         <td class="center aligned">姓名</td>
+        <td class="center aligned">权限</td>
         <td class="center aligned">时间</td>
         <td class="center aligned">窗口</td>
       </tr>
-      <tr ng-repeat="item in onlineUser.data | sortBy:time:false">
-        <td class="center aligned" ng-bind="item.studentId"></td>
+      <tr ng-repeat="item in $root.onlineUser.data | sortBy:time:false">
         <td class="center aligned" ng-bind="item.name"></td>
+        <td class="center aligned" ng-bind="item.rank"></td>
         <td class="center aligned" ng-bind="item.time"></td>
-        <td class="center aligned" ng-click="sendMsg(item.name, item.studentId)">
+        <td class="center aligned" ng-click="$root.sendMsg(item.name, item.studentId, item.rank)">
           {{item.count}} <i class="green comment icon"></i>
         </td>
       </tr>

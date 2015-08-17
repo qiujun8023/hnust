@@ -13,7 +13,7 @@
             <a class="item" ng-href="#/schedule?term={{term}}" ng-bind="term" ng-repeat="term in info.term track by $index" ng-if="$index"></a>
           </div>
         </div>
-        学期课表(<a ng-href="{{$root.url}}?fun=schedule&term={{info.term[0]}}&download"><i class="download icon"></i>下载 </a>)
+        学期课表(<a ng-href="{{$root.url}}?fun=schedule&term={{info.term[0]}}&download=true"><i class="download icon"></i>下载 </a>)
       </div>
     </div>
     <div class="ui top attached fluid seven tabular item menu" id="week">

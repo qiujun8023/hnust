@@ -6,7 +6,7 @@
   <div ng-if="!loading && !error">
     <div class="ui positive message">
       <a class="header"
-         ng-href="{{$root.url}}?fun=scoreAll&course={{info.course}}&download"
+         ng-href="{{$root.url}}?fun=scoreAll&course={{info.course}}&download=true"
          ng-bind="info.class + info.course + '（' + info.credit + '学分）'">
       </a>
     </div>

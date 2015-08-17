@@ -30,7 +30,7 @@ hnust.factory 'request', ($rootScope, $http, $location) ->
                 $location.url $rootScope.referer
                 $rootScope.referer = ''
             else
-                $location.url '/score'
+                $location.url '/schedule'
         else if res.code is 4
             params.passwd = prompt res.msg, ''
             if params.passwd
@@ -125,7 +125,12 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'user',
             title: '用户中心',
             controller: 'user',
-            templateUrl: 'views/user.html?150815'
+            templateUrl: 'views/user.html?150817'
+        .when '/schedule',
+            fun: 'schedule',
+            title: '实时课表',
+            controller: 'schedule',
+            templateUrl: 'views/schedule.html?150817'
         .when '/score',
             fun: 'score',
             title: '成绩查询',
@@ -135,12 +140,7 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'scoreAll',
             title: '全班成绩',
             controller: 'scoreAll',
-            templateUrl: 'views/scoreAll.html?150815'
-        .when '/schedule',
-            fun: 'schedule',
-            title: '实时课表',
-            controller: 'schedule',
-            templateUrl: 'views/schedule.html?150816'
+            templateUrl: 'views/scoreAll.html?150817'
         .when '/exam',
             fun: 'exam',
             title: '考试安排',
@@ -190,9 +190,9 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'admin',
             title: '后台管理',
             controller: 'admin',
-            templateUrl: 'views/admin.html?150816'
+            templateUrl: 'views/admin.html?150817'
         .otherwise
-            redirectTo: '/score'
+            redirectTo: '/schedule'
 
 hnust.run ($rootScope, $location, request) ->
     #API网址
@@ -202,7 +202,6 @@ hnust.run ($rootScope, $location, request) ->
     $rootScope.$on '$routeChangeSuccess', (event, current, previous) ->
         $rootScope.fun   = current.$$route?.fun   || ''
         $rootScope.title = current.$$route?.title || ''
-        if !$rootScope.ws then $scope.$emit 'updateUserInfo'
 
     #获取用户信息
     $rootScope.$on 'updateUserInfo', (event, current) ->
@@ -223,31 +222,41 @@ hnust.run ($rootScope, $location, request) ->
             console.log 'WebSocket Open'
         $rootScope.ws.onmessage = (msg) ->
             msg = angular.fromJson(msg.data);
-            request.check msg
-            console.log 'WebSocket msg'
+            request.check msg, (error, info ,data) ->
+                if info and info.fun is 'onlineUser'
+                    $rootScope.onlineUser =
+                        info :info
+                        data :data
+                        error:error
+                    $rootScope.$digest();
+            console.log 'WebSocket Message'
         $rootScope.ws.onclose = ->
             $rootScope.ws = null
-            console.log 'WebSocket onclose'
-            #此处断线不重新连接
+            console.log 'WebSocket Close'
+
+    #发送WebSockets消息
+    $rootScope.sendMsg = (name, studentId, rank) ->
+        msg = prompt "请输入要发给 #{name} 的消息内容：", ''
+        if !msg then return
+        message = angular.toJson
+            msg:msg
+            name:name
+            studentId:studentId
+            rank:rank
+        $rootScope.ws.send message
 
 #导航栏控制器
 navbarController = ($scope, $rootScope, request) ->
-    isPhone = document.body.offsetWidth < 1360
-    sidebarElement = $('.ui.sidebar')
+    #顶栏
+    $('.desktop.only.dropdown').dropdown
+        on:'hover'
+        action:'select'
 
-    #监视权限
-    $scope.$watch ->
-        $rootScope.user?.rank
-    , ->
-        if !isPhone
-            sidebarElement.sidebar
-                closable: false
-                dimPage: false
-                transition: 'overlay'
-        sidebarElement.sidebar 'attach events', '#menu'
-
+    #侧栏
+    $('.ui.sidebar').sidebar 'attach events', '#menu'
     $scope.$on '$routeChangeSuccess', ->
-        if isPhone then sidebarElement.sidebar 'hide'
+        $('.ui.sidebar').sidebar 'hide'
+        if $rootScope.ws is null then $scope.$emit 'updateUserInfo'
 
     #是否隐藏导航栏
     UA = navigator.userAgent
@@ -261,18 +270,22 @@ navbarController = ($scope, $rootScope, request) ->
 
 #用户中心
 userController = ($scope, $rootScope, $location, request) ->
-    $('.ui.checkbox').checkbox 'check'
+    $('.ui.checkbox').checkbox 'uncheck'
 
     #邮件输入框的显示与不显示
     $scope.scoreRemind = (isCheck) ->
+        mailField = $('#mailField')
+        checkbox  = $('.ui.checkbox')
         $scope.user.scoreRemind = if isCheck? then isCheck else !$scope.user?.scoreRemind
         if $scope.user.scoreRemind is true
-            $('.ui.checkbox').checkbox 'check'
-            $('#mailField').transition 'slide down in'
+            checkbox.checkbox 'check'
+            if mailField.attr('class').indexOf('visible') is -1
+                mailField.transition 'slide down in'
             $scope.user.mail = $rootScope.user.mail
         else
-            $('.ui.checkbox').checkbox 'uncheck'
-            $('#mailField').transition 'slide down out'
+            checkbox.checkbox 'uncheck'
+            if mailField.attr('class').indexOf('hidden') is -1
+                mailField.transition 'slide down out'
             $scope.user.mail = ''
 
     #监视有无获取用户信息
@@ -314,7 +327,7 @@ userController = ($scope, $rootScope, $location, request) ->
 loginController = ($scope, $rootScope, $location, request) ->
     $('.ui.checkbox').checkbox()
     if $rootScope.user?.rank? and $rootScope.user.rank isnt -1
-        $location.url '/score'
+        $location.url '/schedule'
     $scope.studentId = $scope.passwd = ''
 
     #用户名及密码等表单校验
@@ -735,7 +748,6 @@ adminController = ($scope, $rootScope, $location, $timeout, request, FileUploade
     $('.tabular .item').tab()
     $scope.putApp = {}
     $scope.editUser = {}
-    $scope.onlineUser = {}
 
     if document.domain isnt $rootScope.domain
         $('.ui.domain.message').transition('drop in')
@@ -795,7 +807,7 @@ adminController = ($scope, $rootScope, $location, $timeout, request, FileUploade
             return false
 
     #权限下拉框
-    $('.ui.dropdown').dropdown()
+    $('.ui.rank.dropdown').dropdown()
     #表单验证
     $('.ui.editUser.form').form
         studentId: 
@@ -831,27 +843,6 @@ adminController = ($scope, $rootScope, $location, $timeout, request, FileUploade
                 $scope.editUser.loading = false
                 $scope.editUser.error = error
             return false
-
-    #在线用户
-    $scope.getOnlineUser = (millisecond)->
-        $timeout ->
-            request.query {fun:'onlineUser'}, 10000, (error, info, data) ->
-                $scope.onlineUser.error = error
-                $scope.onlineUser.data = data
-                if $rootScope.fun is 'admin'
-                    $scope.getOnlineUser()
-        , millisecond || 3000
-    $scope.getOnlineUser 500
-
-    $scope.sendMsg = (name, studentId) ->
-        msg = prompt '请输入要发给 ' + name + ' 的消息内容：', ''
-        if !msg then return
-        params = 
-            fun:'sendMsg'
-            msg:msg
-            name:name
-            studentId:studentId
-        request.query params, 10000
 
     #最近使用用户
     $scope.lastUser = loading:true

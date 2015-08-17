@@ -31,7 +31,7 @@
             $location.url($rootScope.referer);
             $rootScope.referer = '';
           } else {
-            $location.url('/score');
+            $location.url('/schedule');
           }
         } else if (res.code === 4) {
           params.passwd = prompt(res.msg, '');
@@ -143,7 +143,12 @@
       fun: 'user',
       title: '用户中心',
       controller: 'user',
-      templateUrl: 'views/user.html?150815'
+      templateUrl: 'views/user.html?150817'
+    }).when('/schedule', {
+      fun: 'schedule',
+      title: '实时课表',
+      controller: 'schedule',
+      templateUrl: 'views/schedule.html?150817'
     }).when('/score', {
       fun: 'score',
       title: '成绩查询',
@@ -153,12 +158,7 @@
       fun: 'scoreAll',
       title: '全班成绩',
       controller: 'scoreAll',
-      templateUrl: 'views/scoreAll.html?150815'
-    }).when('/schedule', {
-      fun: 'schedule',
-      title: '实时课表',
-      controller: 'schedule',
-      templateUrl: 'views/schedule.html?150816'
+      templateUrl: 'views/scoreAll.html?150817'
     }).when('/exam', {
       fun: 'exam',
       title: '考试安排',
@@ -208,9 +208,9 @@
       fun: 'admin',
       title: '后台管理',
       controller: 'admin',
-      templateUrl: 'views/admin.html?150816'
+      templateUrl: 'views/admin.html?150817'
     }).otherwise({
-      redirectTo: '/score'
+      redirectTo: '/schedule'
     });
   });
 
@@ -220,10 +220,7 @@
     $rootScope.$on('$routeChangeSuccess', function(event, current, previous) {
       var ref, ref1;
       $rootScope.fun = ((ref = current.$$route) != null ? ref.fun : void 0) || '';
-      $rootScope.title = ((ref1 = current.$$route) != null ? ref1.title : void 0) || '';
-      if (!$rootScope.ws) {
-        return $scope.$emit('updateUserInfo');
-      }
+      return $rootScope.title = ((ref1 = current.$$route) != null ? ref1.title : void 0) || '';
     });
     $rootScope.$on('updateUserInfo', function(event, current) {
       return request.query({
@@ -242,43 +239,57 @@
         }
       });
     });
-    return $rootScope.WebSocket = function(ws) {
+    $rootScope.WebSocket = function(ws) {
       $rootScope.ws || ($rootScope.ws = new WebSocket(ws));
       $rootScope.ws.onopen = function() {
         return console.log('WebSocket Open');
       };
       $rootScope.ws.onmessage = function(msg) {
         msg = angular.fromJson(msg.data);
-        request.check(msg);
-        return console.log('WebSocket msg');
+        request.check(msg, function(error, info, data) {
+          if (info && info.fun === 'onlineUser') {
+            $rootScope.onlineUser = {
+              info: info,
+              data: data,
+              error: error
+            };
+            return $rootScope.$digest();
+          }
+        });
+        return console.log('WebSocket Message');
       };
       return $rootScope.ws.onclose = function() {
         $rootScope.ws = null;
-        return console.log('WebSocket onclose');
+        return console.log('WebSocket Close');
       };
+    };
+    return $rootScope.sendMsg = function(name, studentId, rank) {
+      var message, msg;
+      msg = prompt("请输入要发给 " + name + " 的消息内容：", '');
+      if (!msg) {
+        return;
+      }
+      message = angular.toJson({
+        msg: msg,
+        name: name,
+        studentId: studentId,
+        rank: rank
+      });
+      return $rootScope.ws.send(message);
     };
   });
 
   navbarController = function($scope, $rootScope, request) {
-    var UA, isPhone, sidebarElement;
-    isPhone = document.body.offsetWidth < 1360;
-    sidebarElement = $('.ui.sidebar');
-    $scope.$watch(function() {
-      var ref;
-      return (ref = $rootScope.user) != null ? ref.rank : void 0;
-    }, function() {
-      if (!isPhone) {
-        sidebarElement.sidebar({
-          closable: false,
-          dimPage: false,
-          transition: 'overlay'
-        });
-      }
-      return sidebarElement.sidebar('attach events', '#menu');
+    var UA;
+    $('.desktop.only.dropdown').dropdown({
+      on: 'hover',
+      action: 'select'
     });
+    $('.ui.sidebar').sidebar('attach events', '#menu');
     $scope.$on('$routeChangeSuccess', function() {
-      if (isPhone) {
-        return sidebarElement.sidebar('hide');
+      $('.ui.sidebar').sidebar('hide');
+      if ($rootScope.ws === null) {
+        return $scope.$emit('updateUserInfo');
       }
     });
     UA = navigator.userAgent;
@@ -295,17 +306,23 @@
 
   userController = function($scope, $rootScope, $location, request) {
     var deleteWatch;
-    $('.ui.checkbox').checkbox('check');
+    $('.ui.checkbox').checkbox('uncheck');
     $scope.scoreRemind = function(isCheck) {
-      var ref;
+      var checkbox, mailField, ref;
+      mailField = $('#mailField');
+      checkbox = $('.ui.checkbox');
       $scope.user.scoreRemind = isCheck != null ? isCheck : !((ref = $scope.user) != null ? ref.scoreRemind : void 0);
       if ($scope.user.scoreRemind === true) {
-        $('.ui.checkbox').checkbox('check');
-        $('#mailField').transition('slide down in');
+        checkbox.checkbox('check');
+        if (mailField.attr('class').indexOf('visible') === -1) {
+          mailField.transition('slide down in');
+        }
         return $scope.user.mail = $rootScope.user.mail;
       } else {
-        $('.ui.checkbox').checkbox('uncheck');
-        $('#mailField').transition('slide down out');
+        checkbox.checkbox('uncheck');
+        if (mailField.attr('class').indexOf('hidden') === -1) {
+          mailField.transition('slide down out');
+        }
         return $scope.user.mail = '';
       }
     };
@@ -358,7 +375,7 @@
     var ref;
     $('.ui.checkbox').checkbox();
     if ((((ref = $rootScope.user) != null ? ref.rank : void 0) != null) && $rootScope.user.rank !== -1) {
-      $location.url('/score');
+      $location.url('/schedule');
     }
     $scope.studentId = $scope.passwd = '';
     $('.ui.form').attr('action', $rootScope.url);
@@ -868,7 +885,6 @@
     $('.tabular .item').tab();
     $scope.putApp = {};
     $scope.editUser = {};
-    $scope.onlineUser = {};
     if (document.domain !== $rootScope.domain) {
       $('.ui.domain.message').transition('drop in');
       $('.ui.domain.message .close').on('click', function() {
@@ -939,7 +955,7 @@
         return false;
       }
     });
-    $('.ui.dropdown').dropdown();
+    $('.ui.rank.dropdown').dropdown();
     $('.ui.editUser.form').form({
       studentId: {
         identifier: 'studentId',
@@ -984,34 +1000,6 @@
         return false;
       }
     });
-    $scope.getOnlineUser = function(millisecond) {
-      return $timeout(function() {
-        return request.query({
-          fun: 'onlineUser'
-        }, 10000, function(error, info, data) {
-          $scope.onlineUser.error = error;
-          $scope.onlineUser.data = data;
-          if ($rootScope.fun === 'admin') {
-            return $scope.getOnlineUser();
-          }
-        });
-      }, millisecond || 3000);
-    };
-    $scope.getOnlineUser(500);
-    $scope.sendMsg = function(name, studentId) {
-      var msg, params;
-      msg = prompt('请输入要发给 ' + name + ' 的消息内容：', '');
-      if (!msg) {
-        return;
-      }
-      params = {
-        fun: 'sendMsg',
-        msg: msg,
-        name: name,
-        studentId: studentId
-      };
-      return request.query(params, 10000);
-    };
     $scope.lastUser = {
       loading: true
     };

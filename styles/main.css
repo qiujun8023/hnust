@@ -8,9 +8,17 @@
   margin-right: auto;
   margin-left: auto;
 }
+@media (max-width: 768px) {
+  .desktop.only {
+    display: none !important;
+  }
+}
 @media (min-width: 768px) {
   .container {
     width: 750px;
+  }
+  .mobile.only {
+    display: none !important;
   }
 }
 @media (min-width: 992px) {
@@ -24,8 +32,8 @@
   }
 }
 
-
-.left.item {
+.left.item,
+.desktop.only.item {
   padding-top: 14px !important;
   padding-bottom: 13px !important;
 }
