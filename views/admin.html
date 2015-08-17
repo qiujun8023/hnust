@@ -6,17 +6,10 @@
     <a class="item" data-tab="lastUser">最近</a>
   </div>
   <div class="ui bottom attached tab segment" data-tab="putApp">
-    <div class="ui domain info message transition hidden">
-      <i class="close icon"></i>
-      <div class="header">
-        使用以下域名才能发布APP
-      </div>
-      <a ng-href="http://{{$root.domain}}/#/admin/" ng-bind="$root.domain"></a>
-    </div>
     <form class="ui putApp form">
       <div class="field">
         <label>版本号</label>
-        <input type="text" placeholder="安卓APP版本号" name="version" ng-model="putApp.version">
+        <input type="number" placeholder="安卓APP版本号" name="version" ng-model="putApp.version">
       </div>
       <div class="field">
         <label>APP介绍</label>
@@ -29,7 +22,7 @@
       </div>
       <div class="ui positive submit button" ng-class="{loading:putApp.loading}">发布APP</div>
     </form>
-    <div class="ui teal message" ng-if="putApp.error" ng-bind="putApp.error"></div>
+    <div class="ui warning message" ng-if="putApp.error" ng-bind="putApp.error"></div>
   </div>
   <div class="ui bottom attached active tab segment" data-tab="editUser">
     <form class="ui editUser form">
@@ -52,13 +45,10 @@
     <div class="ui teal message" ng-if="editUser.error" ng-bind="editUser.error"></div>
   </div>
   <div class="ui tab" data-tab="onlineUser">
-    <div class="ui segment" ng-if="$root.onlineUser.loading || $root.onlineUser.error">
-      <div ng-include="'views/loading.html'" ng-if="$root.onlineUser.loading"></div>
-      <div class="ui warning message" ng-if="!$root.onlineUser.loading && $root.onlineUser.error">
-        <div class="header" ng-bind="$root.onlineUser.error"></div>
-      </div>
+    <div class="ui warning message" ng-if="$root.onlineUser.error">
+      <div class="header" ng-bind="$root.onlineUser.error"></div>
     </div>
-    <table class="ui striped unstackable bottom attached table" style="border-top:none" ng-if="!$root.onlineUser.loading && !$root.onlineUser.error && $root.onlineUser.data">
+    <table class="ui striped unstackable bottom attached table" style="border-top:none" ng-if="!$root.onlineUser.error && $root.onlineUser.data">
       <tr>
         <td class="center aligned">姓名</td>
         <td class="center aligned">权限</td>

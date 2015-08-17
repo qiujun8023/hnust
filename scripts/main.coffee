@@ -232,6 +232,8 @@ hnust.run ($rootScope, $location, request) ->
             console.log 'WebSocket Message'
         $rootScope.ws.onclose = ->
             $rootScope.ws = null
+            $rootScope.onlineUser = error:'已断开网络连接'
+            $rootScope.$digest();
             console.log 'WebSocket Close'
 
     #发送WebSockets消息
@@ -749,19 +751,16 @@ adminController = ($scope, $rootScope, $location, $timeout, request, FileUploade
     $scope.putApp = {}
     $scope.editUser = {}
 
-    if document.domain isnt $rootScope.domain
-        $('.ui.domain.message').transition('drop in')
-        $('.ui.domain.message .close').on 'click', ->
-            $(this).closest('.message').transition('drop out')
-
+    #计算文件大小
     $scope.readablizeBytes = (bytes) ->
         s = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
         e = Math.floor Math.log(bytes) / Math.log(1024)
         (bytes / Math.pow(1024, Math.floor(e))).toFixed(2) + " " + s[e]
 
-    #文件上传
+    #文件上传到七牛
+    qiniu = 'http://upload.qiniu.com/'
     $scope.putApp.uploader = uploader = new FileUploader
-        url:$rootScope.url + '?fun=putApp'
+        url:qiniu
     #添加文件
     uploader.onAfterAddingFile = (fileItem) ->
         uploader.queue.splice 0, uploader.queue.length - 1
@@ -769,11 +768,21 @@ adminController = ($scope, $rootScope, $location, $timeout, request, FileUploade
         $scope.putApp.name = uploader.queue[0]?.file.name + '  (' + $scope.putApp.size + ')'
     #上传成功
     uploader.onCompleteItem = (fileItem, response, status, headers) ->
-        $scope.putApp.loading = false
         uploader.queue[0].isSuccess = false
         uploader.queue[0].isUploaded = false
-        request.check response, (error) ->
-            $scope.putApp.error = error
+        if status isnt 200
+            $scope.putApp.loading = false
+            return $scope.putApp.error = angular.toJson response
+        #将上传数据反馈到服务器
+        params =
+            fun     : 'putApp'
+            version : $scope.putApp.version
+            intro   : $scope.putApp.intro
+            size    : $scope.putApp.size
+            url     : qiniu + response.key
+        request.query params, 10000, (error, info, data) ->
+            $scope.putApp.loading = false
+            $scope.lastUser.error = error
     #发布APP
     $('.ui.putApp.form').form
         version: 
@@ -795,12 +804,13 @@ adminController = ($scope, $rootScope, $location, $timeout, request, FileUploade
             $scope.putApp.error = ''
             if !uploader.queue.length
                 $scope.putApp.error = 'APK文件不能为空'
+            else if !$rootScope.user || !$rootScope.user.qiniu
+                $scope.putApp.error = '无七牛Token，请刷新或稍后再试'
             else
                 $scope.putApp.loading = true
                 uploader.queue[0].formData = [
-                    version : $scope.putApp.version
-                    intro   : $scope.putApp.intro
-                    size    : $scope.putApp.size
+                    key   : 'APP/' + uploader.queue[0].file.name
+                    token : $rootScope.user?.qiniu
                 ]
                 uploader.uploadAll()
             $scope.$digest()
@@ -846,7 +856,7 @@ adminController = ($scope, $rootScope, $location, $timeout, request, FileUploade
 
     #最近使用用户
     $scope.lastUser = loading:true
-    request.query {fun:'lastUser'}, 10000, (error, info, data) ->
+    request.query fun:'lastUser', 10000, (error, info, data) ->
         $scope.lastUser.loading = false
         $scope.lastUser.error = error
         $scope.lastUser.data = data

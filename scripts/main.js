@@ -260,6 +260,10 @@
       };
       return $rootScope.ws.onclose = function() {
         $rootScope.ws = null;
+        $rootScope.onlineUser = {
+          error: '已断开网络连接'
+        };
+        $rootScope.$digest();
         return console.log('WebSocket Close');
       };
     };
@@ -881,24 +885,19 @@
   };
 
   adminController = function($scope, $rootScope, $location, $timeout, request, FileUploader) {
-    var uploader;
+    var qiniu, uploader;
     $('.tabular .item').tab();
     $scope.putApp = {};
     $scope.editUser = {};
-    if (document.domain !== $rootScope.domain) {
-      $('.ui.domain.message').transition('drop in');
-      $('.ui.domain.message .close').on('click', function() {
-        return $(this).closest('.message').transition('drop out');
-      });
-    }
     $scope.readablizeBytes = function(bytes) {
       var e, s;
       s = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
       e = Math.floor(Math.log(bytes) / Math.log(1024));
       return (bytes / Math.pow(1024, Math.floor(e))).toFixed(2) + " " + s[e];
     };
+    qiniu = 'http://upload.qiniu.com/';
     $scope.putApp.uploader = uploader = new FileUploader({
-      url: $rootScope.url + '?fun=putApp'
+      url: qiniu
     });
     uploader.onAfterAddingFile = function(fileItem) {
       var ref, ref1;
@@ -907,11 +906,23 @@
       return $scope.putApp.name = ((ref1 = uploader.queue[0]) != null ? ref1.file.name : void 0) + '  (' + $scope.putApp.size + ')';
     };
     uploader.onCompleteItem = function(fileItem, response, status, headers) {
-      $scope.putApp.loading = false;
+      var params;
       uploader.queue[0].isSuccess = false;
       uploader.queue[0].isUploaded = false;
-      return request.check(response, function(error) {
-        return $scope.putApp.error = error;
+      if (status !== 200) {
+        $scope.putApp.loading = false;
+        return $scope.putApp.error = angular.toJson(response);
+      }
+      params = {
+        fun: 'putApp',
+        version: $scope.putApp.version,
+        intro: $scope.putApp.intro,
+        size: $scope.putApp.size,
+        url: qiniu + response.key
+      };
+      return request.query(params, 10000, function(error, info, data) {
+        $scope.putApp.loading = false;
+        return $scope.lastUser.error = error;
       });
     };
     $('.ui.putApp.form').form({
@@ -937,16 +948,18 @@
       inline: true,
       on: 'blur',
       onSuccess: function() {
+        var ref;
         $scope.putApp.error = '';
         if (!uploader.queue.length) {
           $scope.putApp.error = 'APK文件不能为空';
+        } else if (!$rootScope.user || !$rootScope.user.qiniu) {
+          $scope.putApp.error = '无七牛Token，请刷新或稍后再试';
         } else {
           $scope.putApp.loading = true;
           uploader.queue[0].formData = [
             {
-              version: $scope.putApp.version,
-              intro: $scope.putApp.intro,
-              size: $scope.putApp.size
+              key: 'APP/' + uploader.queue[0].file.name,
+              token: (ref = $rootScope.user) != null ? ref.qiniu : void 0
             }
           ];
           uploader.uploadAll();
