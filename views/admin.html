@@ -45,8 +45,10 @@
     <div class="ui teal message" ng-if="editUser.error" ng-bind="editUser.error"></div>
   </div>
   <div class="ui tab" data-tab="onlineUser">
-    <div class="ui warning message" ng-if="$root.onlineUser.error">
-      <div class="header" ng-bind="$root.onlineUser.error"></div>
+    <div class="ui segment" ng-if="$root.onlineUser.error">
+      <div class="ui warning message">
+        <div class="header" ng-bind="$root.onlineUser.error"></div>
+      </div>
     </div>
     <table class="ui striped unstackable bottom attached table" style="border-top:none" ng-if="!$root.onlineUser.error && $root.onlineUser.data">
       <tr>
