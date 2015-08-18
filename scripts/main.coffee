@@ -1,3 +1,7 @@
+#加载layer扩展方法
+layer.config
+    extend: 'extend/layer.ext.js'
+
 #AngularJS
 hnust = angular.module 'hnust', ['ngRoute', 'angularFileUpload']
 
@@ -6,6 +10,7 @@ hnust.factory 'request', ($rootScope, $http, $location) ->
     #检查数据
     check: (res, callback) ->
         self = this
+        callback ||= ->
         res.code = parseInt(res.code)
         #跳转到登录
         if res.code is -2
@@ -31,15 +36,21 @@ hnust.factory 'request', ($rootScope, $http, $location) ->
                 $rootScope.referer = ''
             else
                 $location.url '/schedule'
-        else if res.code is 4
-            params.passwd = prompt res.msg, ''
-            if params.passwd
-                self.query res.params, res.timeout, callback
-            else
-                error = '密码错误。'
 
-        #回调
-        if callback? then callback error, res.info, res.data
+        if res.code is 4
+            res.params ||= {}
+            layer.prompt
+                formType: 1
+                title: res.msg
+                cancel: ->
+                    callback '密码错误。', {}, {}
+                    $rootScope.$digest()
+            , (value, index, elem) ->
+                layer.close index
+                res.params.passwd = value
+                self.query res.params, res.timeout, callback
+                $rootScope.$digest()
+        else callback error, res.info, res.data
 
     #请求数据
     query: (params, timeout, callback) ->
@@ -160,7 +171,7 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'elective',
             title: '选课平台',
             controller: 'elective',
-            templateUrl: 'views/elective.html?150815'
+            templateUrl: 'views/elective.html?150818'
         .when '/judge', 
             fun: 'judge',
             title: '教学评价',
@@ -190,7 +201,7 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'admin',
             title: '后台管理',
             controller: 'admin',
-            templateUrl: 'views/admin.html?150817'
+            templateUrl: 'views/admin.html?150818'
         .otherwise
             redirectTo: '/schedule'
 
@@ -238,14 +249,15 @@ hnust.run ($rootScope, $location, request) ->
 
     #发送WebSockets消息
     $rootScope.sendMsg = (name, studentId, rank) ->
-        msg = prompt "请输入要发给 #{name} 的消息内容：", ''
-        if !msg then return
-        message = angular.toJson
-            msg:msg
-            name:name
-            studentId:studentId
-            rank:rank
-        $rootScope.ws.send message
+        layer.prompt
+            formType: 2
+            title: "发送给 #{name} ："
+        , (value, index, elem) ->
+            $rootScope.ws.send angular.toJson
+                msg:value
+                name:name
+                studentId:studentId
+                rank:rank
 
 #导航栏控制器
 navbarController = ($scope, $rootScope, request) ->
@@ -758,9 +770,8 @@ adminController = ($scope, $rootScope, $location, $timeout, request, FileUploade
         (bytes / Math.pow(1024, Math.floor(e))).toFixed(2) + " " + s[e]
 
     #文件上传到七牛
-    qiniu = 'http://upload.qiniu.com/'
     $scope.putApp.uploader = uploader = new FileUploader
-        url:qiniu
+        url:'http://upload.qiniu.com/'
     #添加文件
     uploader.onAfterAddingFile = (fileItem) ->
         uploader.queue.splice 0, uploader.queue.length - 1
@@ -779,7 +790,7 @@ adminController = ($scope, $rootScope, $location, $timeout, request, FileUploade
             version : $scope.putApp.version
             intro   : $scope.putApp.intro
             size    : $scope.putApp.size
-            url     : qiniu + response.key
+            url     : 'http://ypan.qiniudn.com/' + response.key
         request.query params, 10000, (error, info, data) ->
             $scope.putApp.loading = false
             $scope.lastUser.error = error

@@ -14,7 +14,7 @@
       </h4>
       <div class="ui vertical segment" ng-style="$last? {'box-shadow':'none'}:{}" ng-repeat="item in person.courses">
         <h4 class="ui header" style="padding-right:65px" ng-bind="item.course"></h4>
-        <div class="ui orange button" style="position: absolute;right: 10px;top: 10px;padding: 0.5em 1.0em;" ng-click="action('退选 ' + item.course, item.url)">退</div>
+        <div class="ui orange button" style="position: absolute;right: 10px;top: 10px;padding: 0.5em 1.0em;" ng-click="action('退选 ' + item.course + ' ', item.url)">退</div>
         <div class="ui selection list">
           <div class="item">
             <div class="ui orange horizontal label">时间</div>
@@ -70,7 +70,7 @@
     <div ng-if="!list.loading && !list.error && list.data">
       <div class="ui vertical segment" ng-repeat="item in list.data">
         <h4 class="ui header" style="padding-right:65px" ng-bind="item.course"></h4>
-        <div class="ui teal button" style="position: absolute;right: 10px;top: 10px;padding: 0.5em 1.0em;" ng-click="action('选修 ' + item.course, item.url)">选</div>
+        <div class="ui teal button" style="position: absolute;right: 10px;top: 10px;padding: 0.5em 1.0em;" ng-click="action('选修 ' + item.course + ' ', item.url)">选</div>
         <div class="ui selection list">
           <div class="item">
             <div class="ui green horizontal label">时间</div>

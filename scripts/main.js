@@ -2,6 +2,10 @@
 (function() {
   var adminController, bookController, cardController, classroomConller, creditController, electiveConller, examController, failRateController, hnust, judgeController, loginController, navbarController, scheduleController, scoreAllController, scoreController, sortByFilter, tuitionController, userController;
 
+  layer.config({
+    extend: 'extend/layer.ext.js'
+  });
+
   hnust = angular.module('hnust', ['ngRoute', 'angularFileUpload']);
 
   hnust.factory('request', function($rootScope, $http, $location) {
@@ -9,6 +13,7 @@
       check: function(res, callback) {
         var error, self;
         self = this;
+        callback || (callback = function() {});
         res.code = parseInt(res.code);
         if (res.code === -2) {
           $rootScope.user = {
@@ -33,15 +38,23 @@
           } else {
             $location.url('/schedule');
           }
-        } else if (res.code === 4) {
-          params.passwd = prompt(res.msg, '');
-          if (params.passwd) {
-            self.query(res.params, res.timeout, callback);
-          } else {
-            error = '密码错误。';
-          }
         }
-        if (callback != null) {
+        if (res.code === 4) {
+          res.params || (res.params = {});
+          return layer.prompt({
+            formType: 1,
+            title: res.msg,
+            cancel: function() {
+              callback('密码错误。', {}, {});
+              return $rootScope.$digest();
+            }
+          }, function(value, index, elem) {
+            layer.close(index);
+            res.params.passwd = value;
+            self.query(res.params, res.timeout, callback);
+            return $rootScope.$digest();
+          });
+        } else {
           return callback(error, res.info, res.data);
         }
       },
@@ -178,7 +191,7 @@
       fun: 'elective',
       title: '选课平台',
       controller: 'elective',
-      templateUrl: 'views/elective.html?150815'
+      templateUrl: 'views/elective.html?150818'
     }).when('/judge', {
       fun: 'judge',
       title: '教学评价',
@@ -208,7 +221,7 @@
       fun: 'admin',
       title: '后台管理',
       controller: 'admin',
-      templateUrl: 'views/admin.html?150817'
+      templateUrl: 'views/admin.html?150818'
     }).otherwise({
       redirectTo: '/schedule'
     });
@@ -268,18 +281,17 @@
       };
     };
     return $rootScope.sendMsg = function(name, studentId, rank) {
-      var message, msg;
-      msg = prompt("请输入要发给 " + name + " 的消息内容：", '');
-      if (!msg) {
-        return;
-      }
-      message = angular.toJson({
-        msg: msg,
-        name: name,
-        studentId: studentId,
-        rank: rank
+      return layer.prompt({
+        formType: 2,
+        title: "发送给 " + name + " ："
+      }, function(value, index, elem) {
+        return $rootScope.ws.send(angular.toJson({
+          msg: value,
+          name: name,
+          studentId: studentId,
+          rank: rank
+        }));
       });
-      return $rootScope.ws.send(message);
     };
   });
 
@@ -885,7 +897,7 @@
   };
 
   adminController = function($scope, $rootScope, $location, $timeout, request, FileUploader) {
-    var qiniu, uploader;
+    var uploader;
     $('.tabular .item').tab();
     $scope.putApp = {};
     $scope.editUser = {};
@@ -895,9 +907,8 @@
       e = Math.floor(Math.log(bytes) / Math.log(1024));
       return (bytes / Math.pow(1024, Math.floor(e))).toFixed(2) + " " + s[e];
     };
-    qiniu = 'http://upload.qiniu.com/';
     $scope.putApp.uploader = uploader = new FileUploader({
-      url: qiniu
+      url: 'http://upload.qiniu.com/'
     });
     uploader.onAfterAddingFile = function(fileItem) {
       var ref, ref1;
@@ -918,7 +929,7 @@
         version: $scope.putApp.version,
         intro: $scope.putApp.intro,
         size: $scope.putApp.size,
-        url: qiniu + response.key
+        url: 'http://ypan.qiniudn.com/' + response.key
       };
       return request.query(params, 10000, function(error, info, data) {
         $scope.putApp.loading = false;
