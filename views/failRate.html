@@ -16,7 +16,7 @@
   <div class="ui warning message" ng-if="!loading && error">
     <div class="header" ng-bind="error"></div>
   </div>
-  <div style="padding-top:20px" ng-if="!loading && !error && data && data.length">
+  <div class="animate" style="padding-top:20px" ng-if="!loading && !error && data && data.length">
     <div class="ui segment" ng-repeat="item in data | sortBy:'rate':false">
       <h4 class="ui header" ng-bind="item.name"></h4>
       <div class="ui green horizontal label" style="width:28%;max-width:120px" ng-bind="'总计' + item.all"></div>

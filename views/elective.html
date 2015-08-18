@@ -8,42 +8,44 @@
     <div class="ui warning message" ng-if="!person.loading && person.error">
       <div class="header" ng-bind="person.error"></div>
     </div>
-    <div ng-if="!person.loading && !person.error && person.courses">
-      <h4 class="ui horizontal divider">
-        <i class="list icon"></i> 已选列表
-      </h4>
-      <div class="ui vertical segment" ng-style="$last? {'box-shadow':'none'}:{}" ng-repeat="item in person.courses">
-        <h4 class="ui header" style="padding-right:65px" ng-bind="item.course"></h4>
-        <div class="ui orange button" style="position: absolute;right: 10px;top: 10px;padding: 0.5em 1.0em;" ng-click="action('退选 ' + item.course + ' ', item.url)">退</div>
-        <div class="ui selection list">
-          <div class="item">
-            <div class="ui orange horizontal label">时间</div>
-            <span style="color:#333" ng-bind="item.time"></span>
-          </div>
-          <div class="item">
-            <div class="ui teal horizontal label">地点</div>
-            <span style="color:#333" ng-bind="item.place"></span>
-          </div>
-          <div class="item">
-            <div class="ui green horizontal label">老师</div>
-            <span style="color:#333" ng-bind="item.teacher"></span>
+    <div class="animate" ng-if="!person.loading && !person.error">
+      <div ng-if="person.courses">
+        <h4 class="ui horizontal divider">
+          <i class="list icon"></i> 已选列表
+        </h4>
+        <div class="ui vertical segment" ng-style="$last? {'box-shadow':'none'}:{}" ng-repeat="item in person.courses">
+          <h4 class="ui header" style="padding-right:65px" ng-bind="item.course"></h4>
+          <div class="ui orange button" style="position: absolute;right: 10px;top: 10px;padding: 0.5em 1.0em;" ng-click="action('退选 ' + item.course + ' ', item.url)">退</div>
+          <div class="ui selection list">
+            <div class="item">
+              <div class="ui orange horizontal label">时间</div>
+              <span style="color:#333" ng-bind="item.time"></span>
+            </div>
+            <div class="item">
+              <div class="ui teal horizontal label">地点</div>
+              <span style="color:#333" ng-bind="item.place"></span>
+            </div>
+            <div class="item">
+              <div class="ui green horizontal label">老师</div>
+              <span style="color:#333" ng-bind="item.teacher"></span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <div ng-if="!person.loading && !person.error && person.logs">
-      <h4 class="ui horizontal divider">
-        <i class="history icon"></i> 选课队列
-      </h4>
-      <div class="ui divided selection list">
-        <div class="item" ng-repeat="item in person.logs | sortBy:'upTime':false">
-          <div style="display: table-cell;vertical-align: middle;min-width: 65px;">
-            <div class="ui teal horizontal label" ng-if="!item.result">进行中</div>
-            <div class="ui green horizontal label" ng-if="item.result">已完成</div>
-          </div>
-          <div class="content" style="display: table-cell;">
-            <div class="header" ng-bind="item.title"></div>
-            <div class="description" ng-bind="item.result"></div>
+      <div ng-if="person.logs">
+        <h4 class="ui horizontal divider">
+          <i class="history icon"></i> 选课队列
+        </h4>
+        <div class="ui divided selection list">
+          <div class="item" ng-repeat="item in person.logs | sortBy:'upTime':false">
+            <div style="display: table-cell;vertical-align: middle;min-width: 65px;">
+              <div class="ui teal horizontal label" ng-if="!item.result">进行中</div>
+              <div class="ui green horizontal label" ng-if="item.result">已完成</div>
+            </div>
+            <div class="content" style="display: table-cell;">
+              <div class="header" ng-bind="item.title"></div>
+              <div class="description" ng-bind="item.result"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -67,7 +69,7 @@
     <div class="ui warning message" ng-if="!list.loading && list.error">
       <div class="header" ng-bind="list.error"></div>
     </div>
-    <div ng-if="!list.loading && !list.error && list.data">
+    <div class="animate" ng-if="!list.loading && !list.error && list.data">
       <div class="ui vertical segment" ng-repeat="item in list.data">
         <h4 class="ui header" style="padding-right:65px" ng-bind="item.course"></h4>
         <div class="ui teal button" style="position: absolute;right: 10px;top: 10px;padding: 0.5em 1.0em;" ng-click="action('选修 ' + item.course + ' ', item.url)">选</div>

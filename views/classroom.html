@@ -38,7 +38,7 @@
   <div class="ui bottom attached error message" ng-if="error">
     <i class="info circle icon"></i> {{error}}
   </div>
-  <div class="ui segment" ng-if="!loading && !error && data">
+  <div class="ui segment animate" ng-if="!loading && !error && data">
     <h4 class="ui header">符合查询条件的空闲教室如下</h4>
     <div class="ui selection list">
       <div class="item" ng-repeat="item in data track by $index">

@@ -1,9 +1,5 @@
-#加载layer扩展方法
-layer.config
-    extend: 'extend/layer.ext.js'
-
 #AngularJS
-hnust = angular.module 'hnust', ['ngRoute', 'angularFileUpload']
+hnust = angular.module 'hnust', ['ngRoute', 'ngAnimate', 'angularFileUpload']
 
 #加载jsonp获取数据
 hnust.factory 'request', ($rootScope, $http, $location) ->
@@ -75,6 +71,29 @@ hnust.factory 'request', ($rootScope, $http, $location) ->
         .error ->
             callback '网络异常，请稍后再试。'
 
+hnust.factory 'animate', ->
+    rand: ->
+        animates = [
+            'scale'
+            'fade up'
+            'fade left'
+            'fade right'
+            'slide down'
+            'slide up'
+            'slide left'
+            'slide right'
+        ] 
+        animates[Math.floor Math.random() * animates.length]
+
+hnust.animation '.animate', (animate)->
+    enter: (element, done) ->
+        element.transition "#{animate.rand()} in", done
+        return
+
+    leave: (element, done) ->
+        element.transition 'scale out', 0, done
+        return
+
 hnust.directive 'autocomplete', ($timeout, request) ->
     link: ($scope, elem, attrs) ->
         $scope.keys = []
@@ -127,46 +146,46 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'login',
             title: '用户登录',
             controller: 'login',
-            templateUrl: 'views/login.html?150815'
+            templateUrl: 'views/login.html?150818'
         .when '/agreement',
             fun: 'agreement',
             title: '用户使用协议',
-            templateUrl: 'views/agreement.html?150815'
+            templateUrl: 'views/agreement.html?150818'
         .when '/user',
             fun: 'user',
             title: '用户中心',
             controller: 'user',
-            templateUrl: 'views/user.html?150817'
+            templateUrl: 'views/user.html?150818'
         .when '/schedule',
             fun: 'schedule',
             title: '实时课表',
             controller: 'schedule',
-            templateUrl: 'views/schedule.html?150817'
+            templateUrl: 'views/schedule.html?150818'
         .when '/score',
             fun: 'score',
             title: '成绩查询',
             controller: 'score',
-            templateUrl: 'views/score.html?150815'
+            templateUrl: 'views/score.html?150818'
         .when '/scoreAll',
             fun: 'scoreAll',
             title: '全班成绩',
             controller: 'scoreAll',
-            templateUrl: 'views/scoreAll.html?150817'
+            templateUrl: 'views/scoreAll.html?150818'
         .when '/exam',
             fun: 'exam',
             title: '考试安排',
             controller: 'exam',
-            templateUrl: 'views/exam.html?150815'
+            templateUrl: 'views/exam.html?150818'
         .when '/credit', 
             fun: 'credit',
             title: '学分绩点',
             controller: 'credit',
-            templateUrl: 'views/credit.html?150815'
+            templateUrl: 'views/credit.html?150818'
         .when '/classroom', 
             fun: 'classroom',
             title: '空闲教室',
             controller: 'classroom',
-            templateUrl: 'views/classroom.html?150815'
+            templateUrl: 'views/classroom.html?150818'
         .when '/elective', 
             fun: 'elective',
             title: '选课平台',
@@ -176,7 +195,7 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'judge',
             title: '教学评价',
             controller: 'judge',
-            templateUrl: 'views/judge.html?150815'
+            templateUrl: 'views/judge.html?150818'
         .when '/book', 
             fun: 'book',
             title: '图书借阅',
@@ -186,17 +205,17 @@ hnust.config ($httpProvider, $routeProvider) ->
             fun: 'tuition',
             title: '学年学费',
             controller: 'tuition',
-            templateUrl: 'views/tuition.html?150815'
+            templateUrl: 'views/tuition.html?150818'
         .when '/card', 
             fun: 'card',
             title: '一卡通',
             controller: 'card',
-            templateUrl: 'views/card.html?150815'
+            templateUrl: 'views/card.html?150818'
         .when '/failRate', 
             fun: 'failRate',
             title: '挂科率',
             controller: 'failRate',
-            templateUrl: 'views/failRate.html?150815'
+            templateUrl: 'views/failRate.html?150818'
         .when '/admin', 
             fun: 'admin',
             title: '后台管理',
@@ -253,6 +272,7 @@ hnust.run ($rootScope, $location, request) ->
             formType: 2
             title: "发送给 #{name} ："
         , (value, index, elem) ->
+            layer.close index
             $rootScope.ws.send angular.toJson
                 msg:value
                 name:name
@@ -261,6 +281,10 @@ hnust.run ($rootScope, $location, request) ->
 
 #导航栏控制器
 navbarController = ($scope, $rootScope, request) ->
+    #加载layer扩展方法
+    layer.config
+        extend: 'extend/layer.ext.js'
+
     #顶栏
     $('.desktop.only.dropdown').dropdown
         on:'hover'
@@ -733,6 +757,7 @@ failRateController = ($scope, $rootScope, $timeout, request) ->
     #搜索
     $scope.search = (key) ->
         if key then $scope.key = key
+        if !$scope.key then return
         #请求服务器数据
         $scope.error = ''
         $scope.loading = true

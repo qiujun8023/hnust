@@ -8,7 +8,7 @@
     <div class="ui warning message" ng-if="!person.loading && person.error">
       <div class="header" ng-bind="person.error"></div>
     </div>
-    <div ng-if="!person.loading && !person.error && person.data">
+    <div class="animate" ng-if="!person.loading && !person.error && person.data">
       <div class="ui segment" ng-repeat="item in person.data track by $index">
         <h4 class="ui header" ng-bind="item.title"></h4>
         <div class="ui divided selection list">
@@ -44,7 +44,7 @@
         <div class="header" ng-bind="list.error"></div>
       </div>
     </div>
-    <div ng-if="!list.loading && !list.error && list.data && list.data.length">
+    <div class="animate" ng-if="!list.loading && !list.error && list.data && list.data.length">
       <div class="ui styled fluid accordion">
         <div ng-repeat="item in list.data">
           <div class="book title" ng-click="info(item)" ng-style="$first? {'border-top': 'none'}:{}">

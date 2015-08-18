@@ -3,7 +3,7 @@
   <div class="ui warning message" ng-if="!loading && error">
     <div class="header" ng-bind="error"></div>
   </div>
-  <div ng-if="!loading && !error">
+  <div class="animate" ng-if="!loading && !error">
     <div class="ui segment" ng-repeat="item in data track by $index">
       <h4 class="ui header" ng-bind="item.course"></h4>
       <div class="ui divided selection list">

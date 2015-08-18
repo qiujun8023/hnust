@@ -2,11 +2,7 @@
 (function() {
   var adminController, bookController, cardController, classroomConller, creditController, electiveConller, examController, failRateController, hnust, judgeController, loginController, navbarController, scheduleController, scoreAllController, scoreController, sortByFilter, tuitionController, userController;
 
-  layer.config({
-    extend: 'extend/layer.ext.js'
-  });
-
-  hnust = angular.module('hnust', ['ngRoute', 'angularFileUpload']);
+  hnust = angular.module('hnust', ['ngRoute', 'ngAnimate', 'angularFileUpload']);
 
   hnust.factory('request', function($rootScope, $http, $location) {
     return {
@@ -81,6 +77,27 @@
     };
   });
 
+  hnust.factory('animate', function() {
+    return {
+      rand: function() {
+        var animates;
+        animates = ['scale', 'fade up', 'fade left', 'fade right', 'slide down', 'slide up', 'slide left', 'slide right'];
+        return animates[Math.floor(Math.random() * animates.length)];
+      }
+    };
+  });
+
+  hnust.animation('.animate', function(animate) {
+    return {
+      enter: function(element, done) {
+        element.transition((animate.rand()) + " in", done);
+      },
+      leave: function(element, done) {
+        element.transition('scale out', 0, done);
+      }
+    };
+  });
+
   hnust.directive('autocomplete', function($timeout, request) {
     return {
       link: function($scope, elem, attrs) {
@@ -147,46 +164,46 @@
       fun: 'login',
       title: '用户登录',
       controller: 'login',
-      templateUrl: 'views/login.html?150815'
+      templateUrl: 'views/login.html?150818'
     }).when('/agreement', {
       fun: 'agreement',
       title: '用户使用协议',
-      templateUrl: 'views/agreement.html?150815'
+      templateUrl: 'views/agreement.html?150818'
     }).when('/user', {
       fun: 'user',
       title: '用户中心',
       controller: 'user',
-      templateUrl: 'views/user.html?150817'
+      templateUrl: 'views/user.html?150818'
     }).when('/schedule', {
       fun: 'schedule',
       title: '实时课表',
       controller: 'schedule',
-      templateUrl: 'views/schedule.html?150817'
+      templateUrl: 'views/schedule.html?150818'
     }).when('/score', {
       fun: 'score',
       title: '成绩查询',
       controller: 'score',
-      templateUrl: 'views/score.html?150815'
+      templateUrl: 'views/score.html?150818'
     }).when('/scoreAll', {
       fun: 'scoreAll',
       title: '全班成绩',
       controller: 'scoreAll',
-      templateUrl: 'views/scoreAll.html?150817'
+      templateUrl: 'views/scoreAll.html?150818'
     }).when('/exam', {
       fun: 'exam',
       title: '考试安排',
       controller: 'exam',
-      templateUrl: 'views/exam.html?150815'
+      templateUrl: 'views/exam.html?150818'
     }).when('/credit', {
       fun: 'credit',
       title: '学分绩点',
       controller: 'credit',
-      templateUrl: 'views/credit.html?150815'
+      templateUrl: 'views/credit.html?150818'
     }).when('/classroom', {
       fun: 'classroom',
       title: '空闲教室',
       controller: 'classroom',
-      templateUrl: 'views/classroom.html?150815'
+      templateUrl: 'views/classroom.html?150818'
     }).when('/elective', {
       fun: 'elective',
       title: '选课平台',
@@ -196,7 +213,7 @@
       fun: 'judge',
       title: '教学评价',
       controller: 'judge',
-      templateUrl: 'views/judge.html?150815'
+      templateUrl: 'views/judge.html?150818'
     }).when('/book', {
       fun: 'book',
       title: '图书借阅',
@@ -206,17 +223,17 @@
       fun: 'tuition',
       title: '学年学费',
       controller: 'tuition',
-      templateUrl: 'views/tuition.html?150815'
+      templateUrl: 'views/tuition.html?150818'
     }).when('/card', {
       fun: 'card',
       title: '一卡通',
       controller: 'card',
-      templateUrl: 'views/card.html?150815'
+      templateUrl: 'views/card.html?150818'
     }).when('/failRate', {
       fun: 'failRate',
       title: '挂科率',
       controller: 'failRate',
-      templateUrl: 'views/failRate.html?150815'
+      templateUrl: 'views/failRate.html?150818'
     }).when('/admin', {
       fun: 'admin',
       title: '后台管理',
@@ -285,6 +302,7 @@
         formType: 2,
         title: "发送给 " + name + " ："
       }, function(value, index, elem) {
+        layer.close(index);
         return $rootScope.ws.send(angular.toJson({
           msg: value,
           name: name,
@@ -297,6 +315,9 @@
 
   navbarController = function($scope, $rootScope, request) {
     var UA;
+    layer.config({
+      extend: 'extend/layer.ext.js'
+    });
     $('.desktop.only.dropdown').dropdown({
       on: 'hover',
       action: 'select'
@@ -867,6 +888,9 @@
     $scope.search = function(key) {
       if (key) {
         $scope.key = key;
+      }
+      if (!$scope.key) {
+        return;
       }
       $scope.error = '';
       $scope.loading = true;

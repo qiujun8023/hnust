@@ -3,7 +3,7 @@
   <div class="ui warning message" ng-if="!loading && error">
     <div class="header" ng-bind="error"></div>
   </div>
-  <div ng-if="!loading && !error && total">
+  <div class="animate" ng-if="!loading && !error && total">
     <div class="ui positive message">
       <div class="header" ng-bind="'您当前欠缴的学费为' + total.owing"></div>
     </div>

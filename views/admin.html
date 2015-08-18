@@ -50,22 +50,24 @@
         <div class="header" ng-bind="$root.onlineUser.error"></div>
       </div>
     </div>
-    <table class="ui striped unstackable bottom attached table" style="border-top:none" ng-if="!$root.onlineUser.error && $root.onlineUser.data">
-      <tr>
-        <td class="center aligned">姓名</td>
-        <td class="center aligned">权限</td>
-        <td class="center aligned">时间</td>
-        <td class="center aligned">窗口</td>
-      </tr>
-      <tr ng-repeat="item in $root.onlineUser.data | sortBy:time:false">
-        <td class="center aligned" ng-bind="item.name"></td>
-        <td class="center aligned" ng-bind="item.rank"></td>
-        <td class="center aligned" ng-bind="item.time"></td>
-        <td class="center aligned" ng-click="$root.sendMsg(item.name, item.studentId, item.rank)">
-          {{item.count}} <i class="green comment icon"></i>
-        </td>
-      </tr>
-    </table>
+    <div class="animate" ng-if="!$root.onlineUser.error && $root.onlineUser.data">
+      <table class="ui striped unstackable bottom attached table" style="border-top:none">
+        <tr>
+          <td class="center aligned">姓名</td>
+          <td class="center aligned">权限</td>
+          <td class="center aligned">时间</td>
+          <td class="center aligned">窗口</td>
+        </tr>
+        <tr ng-repeat="item in $root.onlineUser.data | sortBy:time:false">
+          <td class="center aligned" ng-bind="item.name"></td>
+          <td class="center aligned" ng-bind="item.rank"></td>
+          <td class="center aligned" ng-bind="item.time"></td>
+          <td class="center aligned" ng-click="$root.sendMsg(item.name, item.studentId, item.rank)">
+            {{item.count}} <i class="green comment icon"></i>
+          </td>
+        </tr>
+      </table>
+    </div>
   </div>
   <div class="ui tab" data-tab="lastUser">
     <div class="ui segment" ng-if="lastUser.loading || lastUser.error">
@@ -74,19 +76,21 @@
         <div class="header" ng-bind="lastUser.error"></div>
       </div>
     </div>
-    <table class="ui striped unstackable bottom attached table" style="border-top:none" ng-if="!lastUser.loading && !lastUser.error && lastUser.data">
-      <tr>
-        <td class="center aligned">学号</td>
-        <td class="center aligned">姓名</td>
-        <td class="center aligned">时间</td>
-        <td class="center aligned">次数</td>
-      </tr>
-      <tr ng-repeat="item in lastUser.data">
-        <td class="center aligned" ng-bind="item.studentId"></td>
-        <td class="center aligned" ng-bind="item.name"></td>
-        <td class="center aligned" ng-bind="item.time"></td>
-        <td class="center aligned" ng-bind="item.count"></td>
-      </tr>
-    </table>
+    <div class="animate" ng-if="!lastUser.loading && !lastUser.error && lastUser.data">
+      <table class="ui striped unstackable bottom attached table" style="border-top:none">
+        <tr>
+          <td class="center aligned">学号</td>
+          <td class="center aligned">姓名</td>
+          <td class="center aligned">时间</td>
+          <td class="center aligned">次数</td>
+        </tr>
+        <tr ng-repeat="item in lastUser.data">
+          <td class="center aligned" ng-bind="item.studentId"></td>
+          <td class="center aligned" ng-bind="item.name"></td>
+          <td class="center aligned" ng-bind="item.time"></td>
+          <td class="center aligned" ng-bind="item.count"></td>
+        </tr>
+      </table>
+    </div>
   </div>
 </div>
