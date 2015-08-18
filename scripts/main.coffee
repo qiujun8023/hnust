@@ -87,7 +87,7 @@ hnust.factory 'animate', ->
 
 hnust.animation '.animate', (animate)->
     enter: (element, done) ->
-        element.transition "#{animate.rand()} in", done
+        element.transition "#{animate.rand()} in", 300, done
         return
 
     leave: (element, done) ->

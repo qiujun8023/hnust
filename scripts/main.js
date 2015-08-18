@@ -90,7 +90,7 @@
   hnust.animation('.animate', function(animate) {
     return {
       enter: function(element, done) {
-        element.transition((animate.rand()) + " in", done);
+        element.transition((animate.rand()) + " in", 300, done);
       },
       leave: function(element, done) {
         element.transition('scale out', 0, done);
