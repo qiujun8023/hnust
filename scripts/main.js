@@ -159,7 +159,8 @@
     };
   });
 
-  hnust.config(function($httpProvider, $routeProvider) {
+  hnust.config(function($httpProvider, $routeProvider, $animateProvider) {
+    $animateProvider.classNameFilter(/animate/);
     return $routeProvider.when('/login', {
       fun: 'login',
       title: '用户登录',

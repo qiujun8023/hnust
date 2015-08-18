@@ -139,7 +139,8 @@ hnust.directive 'autocomplete', ($timeout, request) ->
         elem.on 'keydown', (event) ->
             if event.which is 13 then $scope.dropdown 'hide'
 
-hnust.config ($httpProvider, $routeProvider) ->
+hnust.config ($httpProvider, $routeProvider, $animateProvider) ->
+    $animateProvider.classNameFilter /animate/
     #设置路由
     $routeProvider
         .when '/login',
