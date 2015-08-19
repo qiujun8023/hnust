@@ -22,6 +22,7 @@
       </div>
     </div>
     <div class="positive ui submit button" ng-class="{loading:loading}">登录</div>
+    <a class="ui bottom right attached label" ng-href="{{$root.url}}?fun=getApp&download" ng-show="$root.isClient == false">下载安卓客户端</a>
   </form>
   <div class="ui bottom attached warning message" ng-if="error">
     <i class="info circle icon"></i> {{error}}

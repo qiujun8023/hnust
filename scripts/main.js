@@ -159,13 +159,13 @@
     };
   });
 
-  hnust.config(function($httpProvider, $routeProvider, $animateProvider) {
+  hnust.config(function($routeProvider, $animateProvider) {
     $animateProvider.classNameFilter(/animate/);
     return $routeProvider.when('/login', {
       fun: 'login',
       title: '用户登录',
       controller: 'login',
-      templateUrl: 'views/login.html?150818'
+      templateUrl: 'views/login.html?150819'
     }).when('/agreement', {
       fun: 'agreement',
       title: '用户使用协议',
@@ -239,13 +239,13 @@
       fun: 'admin',
       title: '后台管理',
       controller: 'admin',
-      templateUrl: 'views/admin.html?150818'
+      templateUrl: 'views/admin.html?150819'
     }).otherwise({
       redirectTo: '/schedule'
     });
   });
 
-  hnust.run(function($rootScope, $location, request) {
+  hnust.run(function($rootScope, request) {
     $rootScope.domain = 'a.hnust.sinaapp.com';
     $rootScope.url = 'http://' + $rootScope.domain + '/index.php';
     $rootScope.$on('$routeChangeSuccess', function(event, current, previous) {
@@ -316,6 +316,11 @@
 
   navbarController = function($scope, $rootScope, request) {
     var UA;
+    $rootScope.isClient = false;
+    UA = navigator.userAgent;
+    if (UA.indexOf('demo') !== -1 || UA.indexOf('hnust') !== -1) {
+      $rootScope.isClient = true;
+    }
     layer.config({
       extend: 'extend/layer.ext.js'
     });
@@ -330,10 +335,6 @@
         return $scope.$emit('updateUserInfo');
       }
     });
-    UA = navigator.userAgent;
-    if (UA.indexOf('demo') !== -1 || UA.indexOf('hnust') !== -1) {
-      $scope.hideNavbar = true;
-    }
     $scope.$emit('updateUserInfo');
     return $scope.logout = function() {
       return request.query({
@@ -342,7 +343,7 @@
     };
   };
 
-  userController = function($scope, $rootScope, $location, request) {
+  userController = function($scope, $rootScope, request) {
     var deleteWatch;
     $('.ui.checkbox').checkbox('uncheck');
     $scope.scoreRemind = function(isCheck) {
@@ -549,7 +550,7 @@
     });
   };
 
-  classroomConller = function($scope, $rootScope, $timeout, request) {
+  classroomConller = function($scope, $rootScope, request) {
     var date, day, hour, i, isSummer, j, l, m, minute, month, n, ref, week;
     $scope.nums = {
       '1': '一',
@@ -650,7 +651,7 @@
     };
   };
 
-  electiveConller = function($scope, $rootScope, $timeout, request) {
+  electiveConller = function($scope, request) {
     $('.tabular .item').tab();
     $scope.person = {
       loading: true
@@ -700,7 +701,7 @@
     return $scope.search();
   };
 
-  judgeController = function($scope, $rootScope, request) {
+  judgeController = function($scope, request) {
     $scope.error = '';
     $scope.loading = true;
     request.query({}, 10000, function(error, info, data) {
@@ -755,7 +756,7 @@
     };
   };
 
-  bookController = function($scope, $location, $timeout, request) {
+  bookController = function($scope, $timeout, request) {
     $('.tabular .item').tab();
     $('.ui.form').form({}, {
       onSuccess: function() {
@@ -885,7 +886,7 @@
     };
   };
 
-  failRateController = function($scope, $rootScope, $timeout, request) {
+  failRateController = function($scope, $timeout, request) {
     $scope.search = function(key) {
       if (key) {
         $scope.key = key;
@@ -921,7 +922,7 @@
     };
   };
 
-  adminController = function($scope, $rootScope, $location, $timeout, request, FileUploader) {
+  adminController = function($scope, $rootScope, request, FileUploader) {
     var uploader;
     $('.tabular .item').tab();
     $scope.putApp = {};
@@ -1049,15 +1050,16 @@
         return false;
       }
     });
-    $scope.lastUser = {
+    $scope.userLogs = {
       loading: true
     };
     return request.query({
-      fun: 'lastUser'
+      fun: 'userLogs'
     }, 10000, function(error, info, data) {
-      $scope.lastUser.loading = false;
-      $scope.lastUser.error = error;
-      return $scope.lastUser.data = data;
+      $scope.userLogs.loading = false;
+      $scope.userLogs.error = error;
+      $scope.userLogs.lastUser = data != null ? data.lastUser : void 0;
+      return $scope.userLogs.client = data != null ? data.client : void 0;
     });
   };
 

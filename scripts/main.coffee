@@ -139,7 +139,7 @@ hnust.directive 'autocomplete', ($timeout, request) ->
         elem.on 'keydown', (event) ->
             if event.which is 13 then $scope.dropdown 'hide'
 
-hnust.config ($httpProvider, $routeProvider, $animateProvider) ->
+hnust.config ($routeProvider, $animateProvider) ->
     $animateProvider.classNameFilter /animate/
     #设置路由
     $routeProvider
@@ -147,7 +147,7 @@ hnust.config ($httpProvider, $routeProvider, $animateProvider) ->
             fun: 'login',
             title: '用户登录',
             controller: 'login',
-            templateUrl: 'views/login.html?150818'
+            templateUrl: 'views/login.html?150819'
         .when '/agreement',
             fun: 'agreement',
             title: '用户使用协议',
@@ -221,11 +221,11 @@ hnust.config ($httpProvider, $routeProvider, $animateProvider) ->
             fun: 'admin',
             title: '后台管理',
             controller: 'admin',
-            templateUrl: 'views/admin.html?150818'
+            templateUrl: 'views/admin.html?150819'
         .otherwise
             redirectTo: '/schedule'
 
-hnust.run ($rootScope, $location, request) ->
+hnust.run ($rootScope, request) ->
     #API网址
     $rootScope.domain = 'a.hnust.sinaapp.com'
     $rootScope.url    = 'http://' + $rootScope.domain + '/index.php'
@@ -282,6 +282,12 @@ hnust.run ($rootScope, $location, request) ->
 
 #导航栏控制器
 navbarController = ($scope, $rootScope, request) ->
+    #判断是否客户端
+    $rootScope.isClient = false
+    UA = navigator.userAgent
+    if UA.indexOf('demo') isnt -1 or UA.indexOf('hnust') isnt -1
+        $rootScope.isClient = true
+
     #加载layer扩展方法
     layer.config
         extend: 'extend/layer.ext.js'
@@ -297,10 +303,6 @@ navbarController = ($scope, $rootScope, request) ->
         $('.ui.sidebar').sidebar 'hide'
         if $rootScope.ws is null then $scope.$emit 'updateUserInfo'
 
-    #是否隐藏导航栏
-    UA = navigator.userAgent
-    if UA.indexOf('demo') isnt -1 or UA.indexOf('hnust') isnt -1
-        $scope.hideNavbar = true
     #获取用户信息
     $scope.$emit 'updateUserInfo'
     #注销登录
@@ -308,7 +310,7 @@ navbarController = ($scope, $rootScope, request) ->
         request.query fun:'logout'
 
 #用户中心
-userController = ($scope, $rootScope, $location, request) ->
+userController = ($scope, $rootScope, request) ->
     $('.ui.checkbox').checkbox 'uncheck'
 
     #邮件输入框的显示与不显示
@@ -467,7 +469,7 @@ creditController = ($scope, request) ->
         $scope.data  = data
 
 #空闲教室
-classroomConller = ($scope, $rootScope, $timeout, request) ->
+classroomConller = ($scope, $rootScope, request) ->
     #阿拉伯转汉字
     $scope.nums = 
         '1'  : '一'
@@ -582,7 +584,7 @@ classroomConller = ($scope, $rootScope, $timeout, request) ->
             $scope.data  = data
 
 #选课平台
-electiveConller = ($scope, $rootScope, $timeout, request) ->
+electiveConller = ($scope, request) ->
     $('.tabular .item').tab()
 
     #个人信息
@@ -620,7 +622,7 @@ electiveConller = ($scope, $rootScope, $timeout, request) ->
     $scope.search()
 
 #教学评价
-judgeController = ($scope, $rootScope, request) ->
+judgeController = ($scope, request) ->
     $scope.error = ''
     $scope.loading = true
     request.query {}, 10000, (error, info, data) ->
@@ -662,7 +664,7 @@ judgeController = ($scope, $rootScope, request) ->
                 $scope.data = data.data
 
 #图书借阅
-bookController = ($scope, $location, $timeout, request) ->
+bookController = ($scope, $timeout, request) ->
     $('.tabular .item').tab()
     #回车键Submit
     $('.ui.form').form {}, 
@@ -754,7 +756,7 @@ cardController = ($scope, request) ->
             $scope.info = info
 
 #挂科率统计
-failRateController = ($scope, $rootScope, $timeout, request) ->
+failRateController = ($scope, $timeout, request) ->
     #搜索
     $scope.search = (key) ->
         if key then $scope.key = key
@@ -784,7 +786,7 @@ failRateController = ($scope, $rootScope, $timeout, request) ->
             ['red']
 
 #修改权限
-adminController = ($scope, $rootScope, $location, $timeout, request, FileUploader) ->
+adminController = ($scope, $rootScope, request, FileUploader) ->
     $('.tabular .item').tab()
     $scope.putApp = {}
     $scope.editUser = {}
@@ -892,11 +894,12 @@ adminController = ($scope, $rootScope, $location, $timeout, request, FileUploade
             return false
 
     #最近使用用户
-    $scope.lastUser = loading:true
-    request.query fun:'lastUser', 10000, (error, info, data) ->
-        $scope.lastUser.loading = false
-        $scope.lastUser.error = error
-        $scope.lastUser.data = data
+    $scope.userLogs = loading:true
+    request.query fun:'userLogs', 10000, (error, info, data) ->
+        $scope.userLogs.loading  = false
+        $scope.userLogs.error    = error
+        $scope.userLogs.lastUser = data?.lastUser
+        $scope.userLogs.client   = data?.client
 
 #排序
 sortByFilter = ->

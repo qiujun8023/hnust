@@ -1,9 +1,10 @@
 <div class="container">
-  <div class="ui top attached fluid four item tabular menu">
+  <div class="ui top attached fluid five item tabular menu">
     <a class="item" data-tab="putApp">发布</a>
     <a class="active item" data-tab="editUser">改权</a>
     <a class="item" data-tab="onlineUser">在线</a>
     <a class="item" data-tab="lastUser">最近</a>
+    <a class="item" data-tab="client">APP</a>
   </div>
   <div class="ui bottom attached tab segment" data-tab="putApp">
     <form class="ui putApp form">
@@ -70,13 +71,13 @@
     </div>
   </div>
   <div class="ui tab" data-tab="lastUser">
-    <div class="ui segment" ng-if="lastUser.loading || lastUser.error">
-      <div ng-include="'views/loading.html'" ng-if="lastUser.loading"></div>
-      <div class="ui warning message" ng-if="!lastUser.loading && lastUser.error">
-        <div class="header" ng-bind="lastUser.error"></div>
+    <div class="ui segment" ng-if="userLogs.loading || userLogs.error">
+      <div ng-include="'views/loading.html'" ng-if="userLogs.loading"></div>
+      <div class="ui warning message" ng-if="!userLogs.loading && userLogs.error">
+        <div class="header" ng-bind="userLogs.error"></div>
       </div>
     </div>
-    <div class="animate" ng-if="!lastUser.loading && !lastUser.error && lastUser.data">
+    <div class="animate" ng-if="!userLogs.loading && !userLogs.error && userLogs.lastUser">
       <table class="ui striped unstackable bottom attached table" style="border-top:none">
         <tr>
           <td class="center aligned">学号</td>
@@ -84,13 +85,40 @@
           <td class="center aligned">时间</td>
           <td class="center aligned">次数</td>
         </tr>
-        <tr ng-repeat="item in lastUser.data">
+        <tr ng-repeat="item in userLogs.lastUser">
           <td class="center aligned" ng-bind="item.studentId"></td>
           <td class="center aligned" ng-bind="item.name"></td>
           <td class="center aligned" ng-bind="item.time"></td>
           <td class="center aligned" ng-bind="item.count"></td>
         </tr>
       </table>
+    </div>
+  </div>
+  <div class="ui bottom attached tab segment" data-tab="client" style="border-top: none; margin: 0;">
+    <div ng-if="userLogs.loading || userLogs.error">
+      <div ng-include="'views/loading.html'" ng-if="userLogs.loading"></div>
+      <div class="ui warning message" ng-if="!userLogs.loading && userLogs.error">
+        <div class="header" ng-bind="userLogs.error"></div>
+      </div>
+    </div>
+    <div class="animate" ng-if="!userLogs.loading && !userLogs.error && userLogs.client">
+      <div class="ui vertical segment ng-scope" ng-repeat="item in userLogs.client">
+        <h4 class="ui header ng-binding" ng-bind="item.name + '(' + item.studentId + ')'"></h4>
+        <div class="ui selection list">
+          <div class="item">
+            <div class="ui teal horizontal label">版本</div>
+            <span style="color:#333" ng-bind="'Hnust ' + item.version + ' / ' + item.system"></span>
+          </div>
+          <div class="item">
+            <div class="ui green horizontal label">设备</div>
+            <span style="color:#333" ng-bind="item.model + ' ' + item.resolution"></span>
+          </div>
+          <div class="item">
+            <div class="ui orange horizontal label">网络</div>
+            <span style="color:#333" ng-bind="item.network"></span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
