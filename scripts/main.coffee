@@ -221,7 +221,7 @@ hnust.config ($routeProvider, $animateProvider) ->
             fun: 'admin',
             title: '后台管理',
             controller: 'admin',
-            templateUrl: 'views/admin.html?150819'
+            templateUrl: 'views/admin.html?150821'
         .otherwise
             redirectTo: '/schedule'
 
@@ -249,8 +249,6 @@ hnust.run ($rootScope, request) ->
     #实时日志WebSockets
     $rootScope.WebSocket = (ws)->
         $rootScope.ws ||= new WebSocket(ws)
-        $rootScope.ws.onopen = ->
-            console.log 'WebSocket Open'
         $rootScope.ws.onmessage = (msg) ->
             msg = angular.fromJson(msg.data);
             request.check msg, (error, info ,data) ->
@@ -259,13 +257,17 @@ hnust.run ($rootScope, request) ->
                         info :info
                         data :data
                         error:error
-                    $rootScope.$digest();
-            console.log 'WebSocket Message'
+                    $rootScope.$digest()
         $rootScope.ws.onclose = ->
             $rootScope.ws = null
-            $rootScope.onlineUser = error:'已断开网络连接'
-            $rootScope.$digest();
-            console.log 'WebSocket Close'
+            $rootScope.onlineUser = error:'已断开WebSocket，正在重新连接。'
+            $rootScope.$emit 'updateUserInfo'
+            $rootScope.$digest()
+
+    #清空在线用户
+    $rootScope.clearOnlineUser = ->
+        $rootScope.ws.send '"clearOnlineUser"'
+        $rootScope.ws.close()
 
     #发送WebSockets消息
     $rootScope.sendMsg = (name, studentId, rank) ->
@@ -301,7 +303,6 @@ navbarController = ($scope, $rootScope, request) ->
     $('.ui.sidebar').sidebar 'attach events', '#menu'
     $scope.$on '$routeChangeSuccess', ->
         $('.ui.sidebar').sidebar 'hide'
-        if $rootScope.ws is null then $scope.$emit 'updateUserInfo'
 
     #获取用户信息
     $scope.$emit 'updateUserInfo'

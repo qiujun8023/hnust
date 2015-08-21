@@ -239,7 +239,7 @@
       fun: 'admin',
       title: '后台管理',
       controller: 'admin',
-      templateUrl: 'views/admin.html?150819'
+      templateUrl: 'views/admin.html?150821'
     }).otherwise({
       redirectTo: '/schedule'
     });
@@ -272,12 +272,9 @@
     });
     $rootScope.WebSocket = function(ws) {
       $rootScope.ws || ($rootScope.ws = new WebSocket(ws));
-      $rootScope.ws.onopen = function() {
-        return console.log('WebSocket Open');
-      };
       $rootScope.ws.onmessage = function(msg) {
         msg = angular.fromJson(msg.data);
-        request.check(msg, function(error, info, data) {
+        return request.check(msg, function(error, info, data) {
           if (info && info.fun === 'onlineUser') {
             $rootScope.onlineUser = {
               info: info,
@@ -287,16 +284,19 @@
             return $rootScope.$digest();
           }
         });
-        return console.log('WebSocket Message');
       };
       return $rootScope.ws.onclose = function() {
         $rootScope.ws = null;
         $rootScope.onlineUser = {
-          error: '已断开网络连接'
+          error: '已断开WebSocket，正在重新连接。'
         };
-        $rootScope.$digest();
-        return console.log('WebSocket Close');
+        $rootScope.$emit('updateUserInfo');
+        return $rootScope.$digest();
       };
+    };
+    $rootScope.clearOnlineUser = function() {
+      $rootScope.ws.send('"clearOnlineUser"');
+      return $rootScope.ws.close();
     };
     return $rootScope.sendMsg = function(name, studentId, rank) {
       return layer.prompt({
@@ -330,10 +330,7 @@
     });
     $('.ui.sidebar').sidebar('attach events', '#menu');
     $scope.$on('$routeChangeSuccess', function() {
-      $('.ui.sidebar').sidebar('hide');
-      if ($rootScope.ws === null) {
-        return $scope.$emit('updateUserInfo');
-      }
+      return $('.ui.sidebar').sidebar('hide');
     });
     $scope.$emit('updateUserInfo');
     return $scope.logout = function() {
