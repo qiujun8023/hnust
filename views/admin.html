@@ -1,8 +1,8 @@
 <div class="container">
   <div class="ui top attached fluid five item tabular menu">
     <a class="item" data-tab="putApp">发布</a>
-    <a class="active item" data-tab="editUser">改权</a>
-    <a class="item" data-tab="onlineUser">在线</a>
+    <a class="item" data-tab="editUser">改权</a>
+    <a class="active item" data-tab="onlineUser">在线</a>
     <a class="item" data-tab="lastUser">最近</a>
     <a class="item" data-tab="client">APP</a>
   </div>
@@ -25,7 +25,7 @@
     </form>
     <div class="ui warning message" ng-if="putApp.error" ng-bind="putApp.error"></div>
   </div>
-  <div class="ui bottom attached active tab segment" data-tab="editUser">
+  <div class="ui bottom attached tab segment" data-tab="editUser">
     <form class="ui editUser form">
       <div class="field">
         <label>学号</label>
@@ -45,7 +45,7 @@
     </form>
     <div class="ui teal message" ng-if="editUser.error" ng-bind="editUser.error"></div>
   </div>
-  <div class="ui tab" data-tab="onlineUser">
+  <div class="ui active tab" data-tab="onlineUser">
     <div class="ui segment" ng-if="$root.onlineUser.error">
       <div class="ui positive message">
         <div class="header" ng-bind="$root.onlineUser.error"></div>
@@ -117,6 +117,10 @@
           <div class="item">
             <div class="ui orange horizontal label">网络</div>
             <span style="color:#333" ng-bind="item.network"></span>
+          </div>
+          <div class="item">
+            <div class="ui red horizontal label">时间</div>
+            <span style="color:#333" ng-bind="item.time"></span>
           </div>
         </div>
       </div>
