@@ -239,7 +239,7 @@
       fun: 'admin',
       title: '后台管理',
       controller: 'admin',
-      templateUrl: 'views/admin.html?150821'
+      templateUrl: 'views/admin.html?150822'
     }).otherwise({
       redirectTo: '/schedule'
     });
@@ -288,15 +288,10 @@
       return $rootScope.ws.onclose = function() {
         $rootScope.ws = null;
         $rootScope.onlineUser = {
-          error: '已断开WebSocket，正在重新连接。'
+          error: '已断开网络连接'
         };
-        $rootScope.$emit('updateUserInfo');
         return $rootScope.$digest();
       };
-    };
-    $rootScope.clearOnlineUser = function() {
-      $rootScope.ws.send('"clearOnlineUser"');
-      return $rootScope.ws.close();
     };
     return $rootScope.sendMsg = function(name, studentId, rank) {
       return layer.prompt({
@@ -330,6 +325,9 @@
     });
     $('.ui.sidebar').sidebar('attach events', '#menu');
     $scope.$on('$routeChangeSuccess', function() {
+      if ($rootScope.ws === null) {
+        $scope.$emit('updateUserInfo');
+      }
       return $('.ui.sidebar').sidebar('hide');
     });
     $scope.$emit('updateUserInfo');

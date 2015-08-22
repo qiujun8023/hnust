@@ -47,7 +47,7 @@
   </div>
   <div class="ui active tab" data-tab="onlineUser">
     <div class="ui segment" ng-if="$root.onlineUser.error">
-      <div class="ui positive message">
+      <div class="ui warning message">
         <div class="header" ng-bind="$root.onlineUser.error"></div>
       </div>
     </div>
@@ -68,7 +68,7 @@
           </td>
         </tr>
       </table>
-      <div class="positive fluid ui button" ng-click="$root.clearOnlineUser()">清空在线用户</div>
+      <div class="positive fluid ui button" ng-click="$root.ws.send('&quot;clearOnlineUser&quot;')">清空在线用户</div>
     </div>
   </div>
   <div class="ui tab" data-tab="lastUser">

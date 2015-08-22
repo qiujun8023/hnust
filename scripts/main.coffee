@@ -221,7 +221,7 @@ hnust.config ($routeProvider, $animateProvider) ->
             fun: 'admin',
             title: '后台管理',
             controller: 'admin',
-            templateUrl: 'views/admin.html?150821'
+            templateUrl: 'views/admin.html?150822'
         .otherwise
             redirectTo: '/schedule'
 
@@ -260,14 +260,8 @@ hnust.run ($rootScope, request) ->
                     $rootScope.$digest()
         $rootScope.ws.onclose = ->
             $rootScope.ws = null
-            $rootScope.onlineUser = error:'已断开WebSocket，正在重新连接。'
-            $rootScope.$emit 'updateUserInfo'
+            $rootScope.onlineUser = error:'已断开网络连接'
             $rootScope.$digest()
-
-    #清空在线用户
-    $rootScope.clearOnlineUser = ->
-        $rootScope.ws.send '"clearOnlineUser"'
-        $rootScope.ws.close()
 
     #发送WebSockets消息
     $rootScope.sendMsg = (name, studentId, rank) ->
@@ -302,6 +296,7 @@ navbarController = ($scope, $rootScope, request) ->
     #侧栏
     $('.ui.sidebar').sidebar 'attach events', '#menu'
     $scope.$on '$routeChangeSuccess', ->
+        if $rootScope.ws is null then $scope.$emit 'updateUserInfo'
         $('.ui.sidebar').sidebar 'hide'
 
     #获取用户信息
