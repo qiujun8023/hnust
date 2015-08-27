@@ -219,7 +219,7 @@
       fun: 'book',
       title: '图书借阅',
       controller: 'book',
-      templateUrl: 'views/book.html?150816'
+      templateUrl: 'views/book.html?150827'
     }).when('/tuition', {
       fun: 'tuition',
       title: '学年学费',
@@ -271,6 +271,12 @@
       });
     });
     $rootScope.WebSocket = function(ws) {
+      if (typeof WebSocket === 'undefined') {
+        $rootScope.onlineUser = {
+          error: '浏览器不支持WebSocket'
+        };
+        return;
+      }
       $rootScope.ws || ($rootScope.ws = new WebSocket(ws));
       $rootScope.ws.onmessage = function(msg) {
         msg = angular.fromJson(msg.data);
@@ -647,7 +653,12 @@
   };
 
   electiveConller = function($scope, request) {
+    var tabWidth;
     $('.tabular .item').tab();
+    tabWidth = $('.tabular')[0].scrollWidth;
+    $('.tabular .item').css({
+      'width': (tabWidth - 4.2) / 2
+    });
     $scope.person = {
       loading: true
     };
@@ -752,7 +763,12 @@
   };
 
   bookController = function($scope, $timeout, request) {
+    var tabWidth;
     $('.tabular .item').tab();
+    tabWidth = $('.tabular')[0].scrollWidth;
+    $('.tabular .item').css({
+      'width': (tabWidth - 4.2) / 2
+    });
     $('.ui.form').form({}, {
       onSuccess: function() {
         return $scope.$apply(function() {
@@ -768,10 +784,14 @@
       $scope.person.error = error;
       return $scope.person.data = data;
     });
-    $scope.renew = function(params) {
-      params.method = 'renew';
-      return request.query(params, 10000, function(data) {
-        return $scope.data = data.data;
+    $scope.renew = function(item) {
+      item.method = 'renew';
+      $scope.person.loading = true;
+      return request.query(item, 10000, function(error, info, data) {
+        $scope.person.loading = false;
+        if (data.indexOf('应还日期:') !== -1) {
+          return item.time = data.substr(-10);
+        }
       });
     };
     $scope.search = function(key, page) {

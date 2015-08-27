@@ -37,7 +37,7 @@
         <div class="field" style="padding-right:80px">
           <input type="text" placeholder="请输入关键词" ng-model="key">
         </div>
-        <button class="ui submit positive search button" ng-click="search(key)">搜索</button>
+        <button class="ui submit positive search button">搜索</button>
       </div>
       <div ng-include="'views/loading.html'" ng-if="list.loading"></div>
       <div class="ui warning message" ng-if="!list.loading && list.error">

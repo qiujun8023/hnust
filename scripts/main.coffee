@@ -201,7 +201,7 @@ hnust.config ($routeProvider, $animateProvider) ->
             fun: 'book',
             title: '图书借阅',
             controller: 'book',
-            templateUrl: 'views/book.html?150816'
+            templateUrl: 'views/book.html?150827'
         .when '/tuition', 
             fun: 'tuition',
             title: '学年学费',
@@ -248,6 +248,9 @@ hnust.run ($rootScope, request) ->
 
     #实时日志WebSockets
     $rootScope.WebSocket = (ws)->
+        if typeof WebSocket is 'undefined'
+            $rootScope.onlineUser = error:'浏览器不支持WebSocket'
+            return
         $rootScope.ws ||= new WebSocket(ws)
         $rootScope.ws.onmessage = (msg) ->
             msg = angular.fromJson(msg.data);
@@ -582,6 +585,8 @@ classroomConller = ($scope, $rootScope, request) ->
 #选课平台
 electiveConller = ($scope, request) ->
     $('.tabular .item').tab()
+    tabWidth = $('.tabular')[0].scrollWidth
+    $('.tabular .item').css 'width': (tabWidth - 4.2) / 2
 
     #个人信息
     $scope.person = loading:true
@@ -662,6 +667,8 @@ judgeController = ($scope, request) ->
 #图书借阅
 bookController = ($scope, $timeout, request) ->
     $('.tabular .item').tab()
+    tabWidth = $('.tabular')[0].scrollWidth
+    $('.tabular .item').css 'width': (tabWidth - 4.2) / 2
     #回车键Submit
     $('.ui.form').form {}, 
         onSuccess: ->
@@ -675,10 +682,13 @@ bookController = ($scope, $timeout, request) ->
         $scope.person.data = data
 
     #续借
-    $scope.renew = (params) ->
-        params.method = 'renew'
-        request.query params, 10000, (data) ->
-            $scope.data = data.data
+    $scope.renew = (item) ->
+        item.method = 'renew'
+        $scope.person.loading = true
+        request.query item, 10000, (error, info, data) ->
+            $scope.person.loading = false
+            if data.indexOf('应还日期:') isnt -1
+                item.time = data.substr(-10)
 
     #搜索书列表
     $scope.search = (key, page) ->
