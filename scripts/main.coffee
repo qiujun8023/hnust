@@ -234,6 +234,13 @@ hnust.run ($rootScope, request) ->
         $rootScope.fun   = current.$$route?.fun   || ''
         $rootScope.title = current.$$route?.title || ''
 
+    #判断是否客户端
+    $rootScope.isClient = false
+    UA = navigator.userAgent
+    if UA.indexOf('demo') isnt -1 or UA.indexOf('hnust') isnt -1
+        $rootScope.isClient = true
+        $rootScope.clientVersion = UA.split('   ')[1]
+
     #获取用户信息
     $rootScope.$on 'updateUserInfo', (event, current) ->
         request.query fun:'user', 10000, (error, info, data) ->
@@ -243,7 +250,7 @@ hnust.run ($rootScope, request) ->
             info.rank = if info.rank then parseInt(info.rank) else -1
             info.scoreRemind = !!parseInt(info.scoreRemind)
             $rootScope.user = info
-            if info and info.ws
+            if info and info.ws and (!$rootScope.isClient or $rootScope.clientVersion <= 'v1.1.0')
                 $rootScope.WebSocket info.ws
 
     #实时日志WebSockets
@@ -281,12 +288,6 @@ hnust.run ($rootScope, request) ->
 
 #导航栏控制器
 navbarController = ($scope, $rootScope, request) ->
-    #判断是否客户端
-    $rootScope.isClient = false
-    UA = navigator.userAgent
-    if UA.indexOf('demo') isnt -1 or UA.indexOf('hnust') isnt -1
-        $rootScope.isClient = true
-
     #加载layer扩展方法
     layer.config
         extend: 'extend/layer.ext.js'
@@ -446,8 +447,9 @@ scheduleController = ($scope, $timeout, request) ->
         $scope.info  = info
         $scope.data  = data
         $timeout ->
-            $('.menu .item').tab()
+            day = (new Date).getDay()
             $('.ui.inline.dropdown').dropdown()
+            $('.menu .item').tab('change tab', day || 7)
 
 #考试
 examController = ($scope, request) ->

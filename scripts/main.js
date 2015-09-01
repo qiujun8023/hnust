@@ -246,6 +246,7 @@
   });
 
   hnust.run(function($rootScope, request) {
+    var UA;
     $rootScope.domain = 'a.hnust.sinaapp.com';
     $rootScope.url = 'http://' + $rootScope.domain + '/index.php';
     $rootScope.$on('$routeChangeSuccess', function(event, current, previous) {
@@ -253,6 +254,12 @@
       $rootScope.fun = ((ref = current.$$route) != null ? ref.fun : void 0) || '';
       return $rootScope.title = ((ref1 = current.$$route) != null ? ref1.title : void 0) || '';
     });
+    $rootScope.isClient = false;
+    UA = navigator.userAgent;
+    if (UA.indexOf('demo') !== -1 || UA.indexOf('hnust') !== -1) {
+      $rootScope.isClient = true;
+      $rootScope.clientVersion = UA.split('   ')[1];
+    }
     $rootScope.$on('updateUserInfo', function(event, current) {
       return request.query({
         fun: 'user'
@@ -265,7 +272,7 @@
         info.rank = info.rank ? parseInt(info.rank) : -1;
         info.scoreRemind = !!parseInt(info.scoreRemind);
         $rootScope.user = info;
-        if (info && info.ws) {
+        if (info && info.ws && (!$rootScope.isClient || $rootScope.clientVersion <= 'v1.1.0')) {
           return $rootScope.WebSocket(info.ws);
         }
       });
@@ -316,12 +323,6 @@
   });
 
   navbarController = function($scope, $rootScope, request) {
-    var UA;
-    $rootScope.isClient = false;
-    UA = navigator.userAgent;
-    if (UA.indexOf('demo') !== -1 || UA.indexOf('hnust') !== -1) {
-      $rootScope.isClient = true;
-    }
     layer.config({
       extend: 'extend/layer.ext.js'
     });
@@ -525,8 +526,10 @@
       $scope.info = info;
       $scope.data = data;
       return $timeout(function() {
-        $('.menu .item').tab();
-        return $('.ui.inline.dropdown').dropdown();
+        var day;
+        day = (new Date).getDay();
+        $('.ui.inline.dropdown').dropdown();
+        return $('.menu .item').tab('change tab', day || 7);
       });
     });
   };
