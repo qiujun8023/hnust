@@ -174,12 +174,12 @@
       fun: 'user',
       title: '用户中心',
       controller: 'user',
-      templateUrl: 'views/user.html?150818'
+      templateUrl: 'views/user.html?150905'
     }).when('/schedule', {
       fun: 'schedule',
       title: '实时课表',
       controller: 'schedule',
-      templateUrl: 'views/schedule.html?150903'
+      templateUrl: 'views/schedule.html?150905'
     }).when('/score', {
       fun: 'score',
       title: '成绩查询',
@@ -209,7 +209,7 @@
       fun: 'elective',
       title: '选课平台',
       controller: 'elective',
-      templateUrl: 'views/elective.html?150818'
+      templateUrl: 'views/elective.html?150905'
     }).when('/judge', {
       fun: 'judge',
       title: '教学评价',
@@ -229,7 +229,7 @@
       fun: 'card',
       title: '一卡通',
       controller: 'card',
-      templateUrl: 'views/card.html?150818'
+      templateUrl: 'views/card.html?15905'
     }).when('/failRate', {
       fun: 'failRate',
       title: '挂科率',
@@ -239,7 +239,7 @@
       fun: 'admin',
       title: '后台管理',
       controller: 'admin',
-      templateUrl: 'views/admin.html?150822'
+      templateUrl: 'views/admin.html?150905'
     }).otherwise({
       redirectTo: '/schedule'
     });
@@ -540,7 +540,7 @@
   scheduleController = function($scope, $timeout, request) {
     $scope.error = '';
     $scope.loading = true;
-    return request.query({}, 10000, function(error, info, data) {
+    request.query({}, 10000, function(error, info, data) {
       $scope.loading = false;
       $scope.error = error;
       $scope.info = info;
@@ -552,6 +552,19 @@
         return $('.menu .item').tab('change tab', day || 7);
       });
     });
+    return $scope.hasCourse = function(day) {
+      var item, tmp;
+      if (!angular.isObject(day)) {
+        return false;
+      }
+      for (tmp in day) {
+        item = day[tmp];
+        if (angular.isObject(item) && item.length) {
+          return true;
+        }
+      }
+      return false;
+    };
   };
 
   examController = function($scope, request) {
@@ -702,8 +715,8 @@
         url: url
       };
       return request.query(params, 10000, function(error, info, data) {
-        if (angular.isObject(data.data && !angular.isArray(data.data))) {
-          return $scope.person.logs.push(data.data);
+        if (angular.isObject(data) && !angular.isArray(data)) {
+          return $scope.person.logs.push(data);
         }
       });
     };
@@ -779,7 +792,7 @@
           return $scope.judging.loading = false;
         } else {
           $scope.judging = false;
-          return $scope.data = data.data;
+          return $scope.data = data;
         }
       });
     };

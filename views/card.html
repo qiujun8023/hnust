@@ -12,8 +12,13 @@
         <div class="ui horizontal label" ng-class="{true:'green', false:'orange'}[info.status != '挂失']">
           状态<div class="detail" ng-bind="info.status"></div>
         </div>
-        <div class="ui orange horizontal pointer label" style="float:right" ng-click="card('loss')" ng-if="info.status != '挂失'">挂失</div>
-        <div class="ui green horizontal pointer label" style="float:right" ng-click="card('reloss')" ng-if="info.status == '挂失'">解挂</div>
+        <div class="ui horizontal pointer label"
+             style="position: absolute;right: 5px"
+             ng-init="loss = (info.status == '挂失')"
+             ng-class="{true:'green',false:'orange'}[loss]"
+             ng-click="card(loss? 'reloss':'loss')"
+             ng-bind="loss? '解挂':'挂失'">
+        </div>
       </div>
     </div>
     <table class="ui teal celled striped unstackable attached table" ng-if="data && data.length">

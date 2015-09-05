@@ -156,12 +156,12 @@ hnust.config ($routeProvider, $animateProvider) ->
             fun: 'user',
             title: '用户中心',
             controller: 'user',
-            templateUrl: 'views/user.html?150818'
+            templateUrl: 'views/user.html?150905'
         .when '/schedule',
             fun: 'schedule',
             title: '实时课表',
             controller: 'schedule',
-            templateUrl: 'views/schedule.html?150903'
+            templateUrl: 'views/schedule.html?150905'
         .when '/score',
             fun: 'score',
             title: '成绩查询',
@@ -191,7 +191,7 @@ hnust.config ($routeProvider, $animateProvider) ->
             fun: 'elective',
             title: '选课平台',
             controller: 'elective',
-            templateUrl: 'views/elective.html?150818'
+            templateUrl: 'views/elective.html?150905'
         .when '/judge', 
             fun: 'judge',
             title: '教学评价',
@@ -211,7 +211,7 @@ hnust.config ($routeProvider, $animateProvider) ->
             fun: 'card',
             title: '一卡通',
             controller: 'card',
-            templateUrl: 'views/card.html?150818'
+            templateUrl: 'views/card.html?15905'
         .when '/failRate', 
             fun: 'failRate',
             title: '挂科率',
@@ -221,7 +221,7 @@ hnust.config ($routeProvider, $animateProvider) ->
             fun: 'admin',
             title: '后台管理',
             controller: 'admin',
-            templateUrl: 'views/admin.html?150822'
+            templateUrl: 'views/admin.html?150905'
         .otherwise
             redirectTo: '/schedule'
 
@@ -466,6 +466,13 @@ scheduleController = ($scope, $timeout, request) ->
             $('.ui.inline.dropdown').dropdown()
             $('.menu .item').tab('change tab', day || 7)
 
+    $scope.hasCourse = (day) ->
+        if !angular.isObject(day) then return false
+        for tmp, item of day
+            if angular.isObject(item) and item.length
+                return true
+        return false
+
 #考试
 examController = ($scope, request) ->
     $scope.error = ''
@@ -621,8 +628,8 @@ electiveConller = ($scope, request) ->
             title  : title
             url    : url
         request.query params, 10000, (error, info, data) ->
-            if angular.isObject data.data and !angular.isArray data.data
-                $scope.person.logs.push data.data
+            if angular.isObject(data) and !angular.isArray(data)
+                $scope.person.logs.push data
 
     #选课列表
     $scope.search = (key, page) ->
@@ -679,7 +686,7 @@ judgeController = ($scope, request) ->
                 $scope.judging.loading = false
             else
                 $scope.judging = false
-                $scope.data = data.data
+                $scope.data = data
 
 #图书借阅
 bookController = ($scope, $timeout, request) ->
