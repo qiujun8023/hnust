@@ -1,8 +1,8 @@
 <div class="container">
-  <div class="ui top attached fluid five item tabular menu">
+  <div class="ui top attached fluid item tabular menu" ng-class="{false:'five',true:'four'}[$root.isClient]">
     <a class="item" data-tab="putApp">发布</a>
     <a class="item" data-tab="editUser">改权</a>
-    <a class="active item" data-tab="onlineUser">在线</a>
+    <a class="active item" data-tab="onlineUser" ng-show="!$root.isClient">在线</a>
     <a class="item" data-tab="lastUser">最近</a>
     <a class="item" data-tab="client">APP</a>
   </div>
@@ -27,6 +27,11 @@
   </div>
   <div class="ui bottom attached tab segment" data-tab="editUser">
     <form class="ui editUser form">
+      <div class="ui animate teal message" ng-if="$root.user.token">
+        <div class="header">
+          临时登录密码：<div class="ui teal label" ng-bind="$root.user.token"></div>
+        </div>
+      </div>
       <div class="field">
         <label>学号</label>
         <input type="text" placeholder="请输入学号" name="studentId" ng-model="editUser.studentId">
@@ -63,7 +68,7 @@
           <td class="center aligned" ng-bind="item.name"></td>
           <td class="center aligned" ng-bind="item.rank"></td>
           <td class="center aligned" ng-bind="item.time"></td>
-          <td class="center aligned" ng-click="$root.sendMsg(item.name, item.studentId, item.rank)">
+          <td class="pointer center aligned" ng-click="$root.sendMsg(item.name, item.studentId, item.rank)">
             {{item.count}} <i class="green comment icon"></i>
           </td>
         </tr>

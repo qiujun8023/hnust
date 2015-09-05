@@ -179,7 +179,7 @@
       fun: 'schedule',
       title: '实时课表',
       controller: 'schedule',
-      templateUrl: 'views/schedule.html?150818'
+      templateUrl: 'views/schedule.html?150903'
     }).when('/score', {
       fun: 'score',
       title: '成绩查询',
@@ -339,6 +339,9 @@
     });
     $scope.$emit('updateUserInfo');
     return $scope.logout = function() {
+      if ($rootScope.ws) {
+        $rootScope.ws.close();
+      }
       return request.query({
         fun: 'logout'
       });
@@ -349,20 +352,20 @@
     var deleteWatch;
     $('.ui.checkbox').checkbox('uncheck');
     $scope.scoreRemind = function(isCheck) {
-      var checkbox, mailField, ref;
-      mailField = $('#mailField');
+      var checkbox, ref, remindField;
+      remindField = $('.remind');
       checkbox = $('.ui.checkbox');
       $scope.user.scoreRemind = isCheck != null ? isCheck : !((ref = $scope.user) != null ? ref.scoreRemind : void 0);
       if ($scope.user.scoreRemind === true) {
         checkbox.checkbox('check');
-        if (mailField.attr('class').indexOf('visible') === -1) {
-          mailField.transition('slide down in');
+        if (remindField.attr('class').indexOf('visible') === -1) {
+          remindField.transition('slide down in');
         }
         return $scope.user.mail = $rootScope.user.mail;
       } else {
         checkbox.checkbox('uncheck');
-        if (mailField.attr('class').indexOf('hidden') === -1) {
-          mailField.transition('slide down out');
+        if (remindField.attr('class').indexOf('hidden') === -1) {
+          remindField.transition('slide down out');
         }
         return $scope.user.mail = '';
       }
@@ -387,6 +390,22 @@
             prompt: '请输入正确的邮件地址。'
           }
         ]
+      },
+      phone: {
+        identifier: 'phone',
+        optional: true,
+        rules: [
+          {
+            type: 'integer',
+            prompt: '手机号码格式有误。'
+          }, {
+            type: 'length[11]',
+            prompt: '手机号码长度不能少于11位。'
+          }, {
+            type: 'maxLength[11]',
+            prompt: '手机号码长度不能大于11位。'
+          }
+        ]
       }
     }, {
       inline: true,
@@ -396,7 +415,8 @@
         params = {
           fun: 'userUpdate',
           scoreRemind: $scope.user.scoreRemind ? '1' : '0',
-          mail: $scope.user.mail
+          mail: $scope.user.mail,
+          phone: $scope.user.phone
         };
         $scope.error = '';
         $scope.loading = true;
@@ -942,7 +962,7 @@
 
   adminController = function($scope, $rootScope, request, FileUploader) {
     var uploader;
-    $('.tabular .item').tab();
+    $('.tabular .item').tab('change tab', $rootScope.isClient ? 'editUser' : 'onlineUser');
     $scope.putApp = {};
     $scope.editUser = {};
     $scope.readablizeBytes = function(bytes) {

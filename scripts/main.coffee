@@ -161,7 +161,7 @@ hnust.config ($routeProvider, $animateProvider) ->
             fun: 'schedule',
             title: '实时课表',
             controller: 'schedule',
-            templateUrl: 'views/schedule.html?150818'
+            templateUrl: 'views/schedule.html?150903'
         .when '/score',
             fun: 'score',
             title: '成绩查询',
@@ -307,6 +307,7 @@ navbarController = ($scope, $rootScope, request) ->
     $scope.$emit 'updateUserInfo'
     #注销登录
     $scope.logout = ->
+        if $rootScope.ws then $rootScope.ws.close()
         request.query fun:'logout'
 
 #用户中心
@@ -315,18 +316,18 @@ userController = ($scope, $rootScope, request) ->
 
     #邮件输入框的显示与不显示
     $scope.scoreRemind = (isCheck) ->
-        mailField = $('#mailField')
+        remindField = $('.remind')
         checkbox  = $('.ui.checkbox')
         $scope.user.scoreRemind = if isCheck? then isCheck else !$scope.user?.scoreRemind
         if $scope.user.scoreRemind is true
             checkbox.checkbox 'check'
-            if mailField.attr('class').indexOf('visible') is -1
-                mailField.transition 'slide down in'
+            if remindField.attr('class').indexOf('visible') is -1
+                remindField.transition 'slide down in'
             $scope.user.mail = $rootScope.user.mail
         else
             checkbox.checkbox 'uncheck'
-            if mailField.attr('class').indexOf('hidden') is -1
-                mailField.transition 'slide down out'
+            if remindField.attr('class').indexOf('hidden') is -1
+                remindField.transition 'slide down out'
             $scope.user.mail = ''
 
     #监视有无获取用户信息
@@ -348,6 +349,19 @@ userController = ($scope, $rootScope, request) ->
                 type  : 'email'
                 prompt: '请输入正确的邮件地址。'
             ]
+        , phone: 
+            identifier: 'phone'
+            optional   : true,
+            rules: [
+                type  : 'integer'
+                prompt: '手机号码格式有误。'
+            ,
+                type  : 'length[11]'
+                prompt: '手机号码长度不能少于11位。'
+            ,
+                type  : 'maxLength[11]'
+                prompt: '手机号码长度不能大于11位。'
+            ]
     ,
         inline: true
         on    : 'blur'
@@ -355,7 +369,8 @@ userController = ($scope, $rootScope, request) ->
             params =
                 fun: 'userUpdate'
                 scoreRemind: if $scope.user.scoreRemind then '1' else '0'
-                mail: $scope.user.mail
+                mail : $scope.user.mail
+                phone: $scope.user.phone
             $scope.error = ''
             $scope.loading = true
             request.query params, 10000, (error, info, data) ->
@@ -795,7 +810,7 @@ failRateController = ($scope, $timeout, request) ->
 
 #修改权限
 adminController = ($scope, $rootScope, request, FileUploader) ->
-    $('.tabular .item').tab()
+    $('.tabular .item').tab('change tab', if $rootScope.isClient then 'editUser' else 'onlineUser');
     $scope.putApp = {}
     $scope.editUser = {}
 
