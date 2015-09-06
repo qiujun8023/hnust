@@ -613,16 +613,18 @@ electiveConller = ($scope, request) ->
     $('.tabular .item').css 'width': (tabWidth - 4.2) / 2
 
     #个人信息
-    $scope.person = loading:true
-    request.query {}, 30000, (error, info, data) ->
-        $scope.person.error = error
-        $scope.person.logs  = data?.logs
-        $scope.person.courses = data?.courses
-        $scope.person.loading = false
+    $scope.getPerson = ->
+        $scope.person = loading:true
+        request.query {}, 30000, (error, info, data) ->
+            $scope.person.error = error
+            $scope.person.logs  = data?.logs
+            $scope.person.courses = data?.courses
+            $scope.person.loading = false
 
     #选/退
     $scope.action = (title, url) ->
         if !confirm('您确定要' + title + '吗？') then return
+        layer.msg '提交中...'
         params =
             method : 'action'
             title  : title
@@ -644,6 +646,8 @@ electiveConller = ($scope, request) ->
             $scope.list.info  = info
             $scope.list.data  = data
             $scope.list.loading = false
+
+    $scope.getPerson()
     $scope.search()
 
 #教学评价

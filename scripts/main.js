@@ -695,20 +695,23 @@
     $('.tabular .item').css({
       'width': (tabWidth - 4.2) / 2
     });
-    $scope.person = {
-      loading: true
+    $scope.getPerson = function() {
+      $scope.person = {
+        loading: true
+      };
+      return request.query({}, 30000, function(error, info, data) {
+        $scope.person.error = error;
+        $scope.person.logs = data != null ? data.logs : void 0;
+        $scope.person.courses = data != null ? data.courses : void 0;
+        return $scope.person.loading = false;
+      });
     };
-    request.query({}, 30000, function(error, info, data) {
-      $scope.person.error = error;
-      $scope.person.logs = data != null ? data.logs : void 0;
-      $scope.person.courses = data != null ? data.courses : void 0;
-      return $scope.person.loading = false;
-    });
     $scope.action = function(title, url) {
       var params;
       if (!confirm('您确定要' + title + '吗？')) {
         return;
       }
+      layer.msg('提交中...');
       params = {
         method: 'action',
         title: title,
@@ -740,6 +743,7 @@
         return $scope.list.loading = false;
       });
     };
+    $scope.getPerson();
     return $scope.search();
   };
 
