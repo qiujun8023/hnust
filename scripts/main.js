@@ -209,7 +209,7 @@
       fun: 'elective',
       title: '选课平台',
       controller: 'elective',
-      templateUrl: 'views/elective.html?150905'
+      templateUrl: 'views/elective.html?150906'
     }).when('/judge', {
       fun: 'judge',
       title: '教学评价',
