@@ -209,7 +209,7 @@
       fun: 'elective',
       title: '选课平台',
       controller: 'elective',
-      templateUrl: 'views/elective.html?150906'
+      templateUrl: 'views/elective.html?150907'
     }).when('/judge', {
       fun: 'judge',
       title: '教学评价',
@@ -689,12 +689,7 @@
   };
 
   electiveConller = function($scope, request) {
-    var tabWidth;
     $('.tabular .item').tab();
-    tabWidth = $('.tabular')[0].scrollWidth;
-    $('.tabular .item').css({
-      'width': (tabWidth - 4.2) / 2
-    });
     $scope.getPerson = function() {
       $scope.person = {
         loading: true
@@ -803,12 +798,7 @@
   };
 
   bookController = function($scope, $timeout, request) {
-    var tabWidth;
     $('.tabular .item').tab();
-    tabWidth = $('.tabular')[0].scrollWidth;
-    $('.tabular .item').css({
-      'width': (tabWidth - 4.2) / 2
-    });
     $('.ui.form').form({}, {
       onSuccess: function() {
         return $scope.$apply(function() {

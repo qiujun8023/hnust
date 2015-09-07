@@ -191,7 +191,7 @@ hnust.config ($routeProvider, $animateProvider) ->
             fun: 'elective',
             title: '选课平台',
             controller: 'elective',
-            templateUrl: 'views/elective.html?150906'
+            templateUrl: 'views/elective.html?150907'
         .when '/judge', 
             fun: 'judge',
             title: '教学评价',
@@ -609,8 +609,6 @@ classroomConller = ($scope, $rootScope, request) ->
 #选课平台
 electiveConller = ($scope, request) ->
     $('.tabular .item').tab()
-    tabWidth = $('.tabular')[0].scrollWidth
-    $('.tabular .item').css 'width': (tabWidth - 4.2) / 2
 
     #个人信息
     $scope.getPerson = ->
@@ -695,8 +693,6 @@ judgeController = ($scope, request) ->
 #图书借阅
 bookController = ($scope, $timeout, request) ->
     $('.tabular .item').tab()
-    tabWidth = $('.tabular')[0].scrollWidth
-    $('.tabular .item').css 'width': (tabWidth - 4.2) / 2
     #回车键Submit
     $('.ui.form').form {}, 
         onSuccess: ->

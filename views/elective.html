@@ -83,7 +83,7 @@
       <div class="header" ng-bind="list.error"></div>
     </div>
     <div class="animate" ng-if="!list.loading && !list.error && list.data">
-      <div class="ui vertical segment" ng-repeat="item in list.data">
+      <div class="ui vertical segment" ng-style="{'opacity':item.opacity}" ng-repeat="item in list.data">
         <h4 class="ui header" style="padding-right:65px" ng-bind="item.course + '(' + item.teacher + ')'"></h4>
         <div class="ui teal button" style="position: absolute;right: 10px;top: 10px;padding: 0.5em 1.0em;" ng-click="action('选修 ' + item.course + ' ', item.url)">选</div>
         <div class="ui selection list">
