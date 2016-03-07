@@ -1,0 +1,17 @@
+{
+  "name": "Socket And Wechat",
+  "version": "0.0.8",
+  "description": "Socket.io and wechat-enterprise",
+  "main": "main.js",
+  "author": "qiujun",
+  "dependencies": {
+    "socket.io": "latest",
+    "wechat-enterprise":"latest",
+    "express": "latest",
+    "body-parser":"latest",
+    "request": "latest",
+    "moment":"latest",
+    "memcached":"latest",
+    "log4js":"latest"
+  }
+}

@@ -1,0 +1,48 @@
+<div class="container">
+  <form class="ui attached fluid form segment">
+    <h3 class="ui dividing header">用户中心</h3>
+    <div class="field">
+      <label>姓名</label>
+      <input type="text" name="name" ng-model="user.name" placeholder="您的姓名" disabled>
+    </div>
+    <div class="field">
+      <label>学号</label>
+      <input type="text" name="id" ng-model="user.uid" placeholder="您的学号" disabled>
+    </div>
+    <div class="field">
+      <label>API Token<a class="ui left teal pointing label" href="#/api">API文档</a></label>
+      <input type="text" name="apiToken" ng-model="user.apiToken" placeholder="Api调用Token" disabled>
+    </div>
+    <div class="field">
+      <label>手机号码</label>
+      <input type="text" name="phone" ng-model="user.phone" placeholder="常用手机号码" data-content="填写常用的手机号码，以便提醒能及时通知" data-variation="wide">
+    </div>
+    <div class="field">
+      <label>邮箱地址</label>
+      <input type="email" name="mail" ng-model="user.mail" placeholder="常用邮箱地址" data-content="填写常用的邮箱地址，以便提醒能及时通知" data-variation="wide">
+    </div>
+    <div class="ui accordion" style="margin-bottom:10px">
+      <div class="title">
+        <i class="dropdown icon"></i> 修改密码
+      </div>
+      <div class="content" style="margin-bottom:10px">
+        <div class="field">
+          <label>原密码</label>
+          <input type="password" name="oldPasswd" ng-model="oldPasswd" placeholder="请输入原密码" data-content="只有需要修改密码时才需要填写这三个输入框的哦" data-variation="wide">
+        </div>
+        <div class="field">
+          <label>新密码</label>
+          <input type="password" name="newPasswd" ng-model="newPasswd" placeholder="请输入新密码">
+        </div>
+        <div class="field">
+          <label>重复密码</label>
+          <input type="password" name="newPasswd2" ng-model="newPasswd2" placeholder="请重复新密码">
+        </div>
+      </div>
+    </div>
+    <div class="positive ui submit button" ng-class="{loading:loading}">保存</div>
+  </form>
+  <div class="ui bottom attached warning message" ng-if="error && error.length">
+    <i class="info circle icon"></i> {{error}}
+  </div>
+</div>

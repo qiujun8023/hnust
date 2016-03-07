@@ -1,0 +1,32 @@
+<div class="container">
+  <div others></div>
+  <div ng-include="'static/views/index/loading.html'" ng-if="loading"></div>
+  <div class="ui warning message" ng-if="!loading && error">
+    <div class="header" ng-bind="error"></div>
+  </div>
+  <div class="animate" ng-if="!loading && !error">
+    <div class="ui segment" ng-repeat="item in data | orderBy:'begin':false">
+      <h4 class="ui header" ng-bind="item.course"></h4>
+      <div class="ui divided selection list">
+        <div class="item">
+          <div class="ui green horizontal label">
+            <i class="alarm outline icon"></i> 开始
+          </div>
+          <span style="color:#333" ng-bind="item.begin"></span>
+        </div>
+        <div class="item">
+          <div class="ui orange horizontal label">
+            <i class="wait icon"></i> 结束
+          </div>
+          <span style="color:#333" ng-bind="item.end"></span>
+        </div>
+        <div class="item">
+          <div class="ui teal horizontal label">
+            <i class="building icon"></i> 地点
+          </div>
+          <span style="color:#333" ng-bind="item.room"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,49 @@
+<div class="container">
+  <div ng-include="'static/views/index/loading.html'" ng-if="loading"></div>
+  <div class="ui warning message" ng-if="!loading && error">
+    <div class="header" ng-bind="error"></div>
+  </div>
+  <div class="animate" ng-if="!loading && !error">
+    <div class="ui positive message" style="padding-right:65px">
+      <div class="header">
+        <a style="color: #356e36;" ng-href="{{$root.url}}student/scoreAll?course={{info.course}}&sid={{info.sid}}&scope={{info.scope}}&download=true"
+           ng-bind="info.scoreName + ' ' + info.course + '（' + info.credit + '学分）'">
+        </a>
+        <a class="ui horizontal pointer teal right label"
+           ng-href="#/scoreAll?course={{info.course}}&sid={{info.sid}}&scope={{(info.scope == 'class')? 'major':'class'}}"
+           ng-bind="(info.scope == 'class')? '查专业':'查班级'">
+        </a>
+      </div>
+    </div>
+    <table class="ui three column teal striped unstackable attached table">
+      <thead>
+        <tr ng-init="name = 'score'; by = false">
+          <th class="six wide center aligned">
+            <span class="pointer" ng-click="by = (name == 'sid')? !by:true; name = 'sid';">
+              学号 <i class="sort icon"></i>
+            </span>
+          </th>
+          <th class="five wide center aligned">姓名</th>
+          <th class="five wide center aligned">
+            <span class="pointer" ng-click="by = (name == 'score')? !by:false; name = 'score';">
+              分数 <i class="sort icon"></i>
+            </span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="item in data | sortBy:name:by" ng-class="{warning:(item.score == -1), error: ((item.score != -1) && ((item.score < 60) || (item.score == '不及格') || !item.score))}">
+          <td class="center aligned" ng-bind="item.sid" ng-if="$root.user.rank < 4"></td>
+          <td class="center aligned" ng-if="$root.user.rank >= 4">
+            <a ng-href="#/score?sid={{item.sid}}" ng-bind="item.sid"></a>
+          </td>
+          <td class="center aligned" ng-bind="item.name"></td>
+          <td class="center aligned" ng-bind="item.score" ng-if="!item.resit"></td>
+          <td class="center aligned" ng-if="item.resit">
+            <span class="ui orange circular label" ng-bind="item.score"></span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

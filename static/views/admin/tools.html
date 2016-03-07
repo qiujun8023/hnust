@@ -1,0 +1,170 @@
+<div class="container">
+  <div class="ui top attached three fluid item tabular menu">
+    <a class="item" data-tab="room">教室</a>
+    <a class="active item" data-tab="time">有课</a>
+    <a class="item" data-tab="elective">选修</a>
+  </div>
+  <div class="ui bottom attached tab segment" data-tab="room">
+    <form class="ui room form">
+      <div class="field">
+        <label>节次</label>
+        <div class="ui room fluid selection dropdown">
+          <input type="hidden" name="session">
+          <i class="dropdown icon"></i>
+          <div class="default text">请选择上课节次</div>
+          <div class="menu">
+            <div class="item" data-value="1">第一节大课</div>
+            <div class="item" data-value="2">第二节大课</div>
+            <div class="item" data-value="3">第三节大课</div>
+            <div class="item" data-value="4">第四节大课</div>
+            <div class="item" data-value="5">第五节大课</div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>地点</label>
+        <input type="text" placeholder="请输入上课教室名称" name="classroom" ng-model="room.classroom">
+      </div>
+      <div class="ui positive submit button" ng-class="{loading:room.loading}">查询</div>
+    </form>
+    <h4 class="ui horizontal divider header" ng-if="room.data">查询结果</h4>
+    <div class="ui divided selection list" ng-if="room.data">
+      <div class="item">
+        <div class="ui teal horizontal label">
+          <i class="book icon"></i> 课程
+        </div>
+        <span style="color:#333" ng-bind="room.data.course + '(' + room.data.teacher + ')'"></span>
+      </div>
+      <div class="item">
+        <div class="ui green horizontal label">
+          <i class="wait icon"></i> 周次
+        </div>
+        <span style="color:#333" ng-bind="room.data.time"></span>
+      </div>
+      <div class="item">
+        <div class="ui orange horizontal label">
+          <i class="building icon"></i> 班级
+        </div>
+        <span style="color:#333" ng-bind="room.data.class"></span>
+      </div>
+      <div class="item">
+        <div class="ui red horizontal label">
+          <i class="time icon"></i> 耗时
+        </div>
+        <span style="color:#333" ng-bind="room.info.runTime + 's'"></span>
+      </div>
+    </div>
+    <div class="ui warning message" ng-if="room.error" ng-bind="room.error"></div>
+  </div>
+  <div class="ui bottom attached active tab segment" data-tab="time">
+    <form class="ui time form">
+      <div class="field">
+        <label>周次</label>
+        <div class="ui time week fluid selection dropdown">
+          <input type="hidden" name="week" ng-bind="time.week">
+          <i class="dropdown icon"></i>
+          <div class="default text">请选择周次</div>
+          <div class="menu">
+            <div class="item" data-value="{{$index + 1}}" ng-repeat="week in time.weeks" ng-bind="week"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>群组</label>
+        <div class="ui time group fluid selection dropdown">
+          <input type="hidden" name="group" value="0">
+          <i class="dropdown icon"></i>
+          <div class="default text">请选择待查询的群组</div>
+          <div class="menu">
+            <div class="item" data-value="0">不选择任何群组</div>
+            <div class="item" data-value="{{group.gid}}" ng-repeat="group in time.group" ng-bind="group.name"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>单个</label>
+        <textarea placeholder="请输入单个学号（多个请用换行分割，群组和单个可以混合使用）" name="list" ng-model="time.list"></textarea>
+      </div>
+      <div class="ui positive submit button" ng-class="{loading:time.loading}">查询</div>
+    </form>
+    <h4 class="ui horizontal divider header" ng-if="time.data">查询结果</h4>
+    <div class="ui warning break message" ng-if="time.info.error">
+      错误学号或无课表：<span ng-repeat="item in time.info.error" ng-bind="item" style="padding-right:5px"></span>
+    </div>
+    <div class="ui divided items" ng-if="time.data">
+      <div class="item" ng-repeat="item in time.data track by $index">
+        <div class="content">
+          <div class="header" ng-bind="item.title"></div>
+          <div class="description" ng-if="item.list.length">
+            <div class="ui right pointing orange basic mini label">有课人员</div>
+            <span ng-repeat="per in item.list" ng-bind="per.name" style="padding-right:5px"></span>
+          </div>
+          <div class="description" ng-if="!item.list.length">
+            <div class="ui teal tag label">全员无课</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ui warning message" ng-if="time.error" ng-bind="time.error"></div>
+  </div>
+  <div class="ui bottom attached tab segment" data-tab="elective">
+    <form class="ui elective form">
+      <div class="field">
+        <label>星期</label>
+        <div class="ui elective fluid selection dropdown">
+          <input type="hidden" name="day">
+          <i class="dropdown icon"></i>
+          <div class="default text">请选择选修上课星期</div>
+          <div class="menu">
+            <div class="item" data-value="1">星期一</div>
+            <div class="item" data-value="2">星期二</div>
+            <div class="item" data-value="3">星期三</div>
+            <div class="item" data-value="4">星期四</div>
+            <div class="item" data-value="5">星期五</div>
+            <div class="item" data-value="6">星期六</div>
+            <div class="item" data-value="7">星期日</div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>节次</label>
+        <div class="ui elective fluid selection dropdown">
+          <input type="hidden" name="session2">
+          <i class="dropdown icon"></i>
+          <div class="default text">请选择选修课程节次</div>
+          <div class="menu">
+            <div class="item" data-value="1">第一节大课</div>
+            <div class="item" data-value="2">第二节大课</div>
+            <div class="item" data-value="3">第三节大课</div>
+            <div class="item" data-value="4">第四节大课</div>
+            <div class="item" data-value="5">第五节大课</div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>课程</label>
+        <input type="text" placeholder="请输入选修课程名称" name="course" ng-model="elective.course">
+      </div>
+      <div class="ui positive submit button" ng-class="{loading:elective.loading}">查询</div>
+    </form>
+    <h4 class="ui horizontal divider header" ng-if="elective.data">查询结果</h4>
+    <div class="ui info message" ng-if="elective.data" ng-bind="'共找到 ' + elective.data.length + ' 人在星期 ' + elective.info.day + ' 第 ' + elective.info.session + ' 节大课上 ' + elective.info.course"></div>
+    <table class="ui teal striped unstackable attached table" ng-if="elective.data">
+      <thead>
+        <tr>
+          <th class="five wide center aligned">学号</th>
+          <th class="four wide center aligned">姓名</th>
+          <th class="seven wide center aligned">班级</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="item in elective.data track by $index">
+          <td class="center aligned" ng-bind="item.sid"></td>
+          <td class="center aligned" ng-bind="item.name"></td>
+          <td class="center aligned" ng-bind="item.class"></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="ui warning message" ng-if="elective.error" ng-bind="elective.error"></div>
+  </div>
+</div>
