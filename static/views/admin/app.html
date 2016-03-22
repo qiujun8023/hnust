@@ -33,7 +33,7 @@
         </div>
         <div class="field">
           <label>APK上传</label>
-          <input type="file" name="file" style="display:none" nv-file-select="" uploader="put.uploader">
+          <input type="file" name="file" ng-hide="true" nv-file-select="" uploader="put.uploader">
           <input class="pointer" type="text" placeholder="选择APK" ng-model="put.name" onclick="document.getElementsByName('file')[0].click()" readonly>
         </div>
         <div class="ui positive submit button" ng-class="{loading:put.loading}">发布APP</div>

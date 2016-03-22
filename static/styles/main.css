@@ -43,35 +43,34 @@
   padding-bottom: 13px !important;
 }
 
+/* 导航栏图标 */
 .right.menu .icon.item {
   font-size: 16px;
 }
 
+/* 导航栏图片 */
 .ui.avatar.image {
   display: inline-block !important;
   width: 20px !important;
   height: 20px !important;
 }
 
+/* 分页 */
 paging {
   float: right;
 }
 
-.agreement p {
-  text-indent: 2em;
+/* 搜索按钮 */
+.search.form .field {
+  padding-right:80px;
 }
-
-.download.button {
-  position: fixed;
-  bottom: 28px;
-  left: 28px;
-}
-.search.button {
+.search.form .button {
   position: absolute;
   top: 1px;
   right: 0px;
 }
 
+/* 右侧操作 */
 .ui.right.horizontal.label {
   position: absolute;
   right: 8px;
@@ -81,6 +80,56 @@ paging {
   height: 21.5px;
 }
 
+/* 自动补全 */
+.ui.search.dropdown {
+  border-color: rgba(39,41,43,.15) !important;
+  box-shadow: none !important;
+}
+.ui.search.dropdowm .menu,
+.ui.selection.dropdown .menu {
+  max-height: 15em;
+}
+
+/* 登陆 */
+.download.button {
+  position: fixed;
+  bottom: 28px;
+  left: 28px;
+}
+
+/* 用户协议 */
+.agreement p {
+  text-indent: 2em;
+}
+
+/* 用户中心 */
+.user .accordion,
+.user .accordion .content {
+  margin-bottom:10px;
+}
+
+/* API */
+.api p {
+  text-indent: 2em;
+  margin-top: 10px;
+}
+.api p span.red {
+  color:red
+}
+
+/* 图书 */
+.book .remain {
+  font-weight: bold;
+}
+.book .red.remain {
+  color:#d95c5c;
+}
+.book .orange.remain {
+  color:#E07B53;
+}
+.book .green.remain {
+  color:#21BA45;
+}
 .book.title {
   font-weight: 500 !important;
   color: rgba(0,0,0,.8) !important;
@@ -97,25 +146,18 @@ paging {
   background-color: rgba(0,0,50,.03);
 }
 
-.ui.search.dropdown {
-  border-color: rgba(39,41,43,.15) !important;
-  box-shadow: none !important;
-}
-.ui.search.dropdowm .menu,
-.ui.selection.dropdown .menu {
-  max-height: 15em;
-}
-
-.setting.field {
+/* 系统配置 */
+.setting .field {
   padding-right: 80px;
   position: relative;
 }
-.setting.field button {
+.setting .field button {
   position: absolute;
   bottom: 1px;
   right: 0px;
 }
 
+/* 用户管理 */
 .reset.operate {
   cursor: pointer;
   color: #5BBD72;
@@ -132,14 +174,12 @@ paging {
   color: #E84D4D;
 }
 
-.ui.buttons .button {
-  font-size: 13px;
-}
-
+/* 日志记录 */
 .log .content .list .item {
   word-break: break-all;
 }
 
+/* 资料查询 */
 .data.avatar {
   max-width: 100px;
   position: absolute;

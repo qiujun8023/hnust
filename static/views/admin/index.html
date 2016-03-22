@@ -7,7 +7,7 @@
   <title ng-bind="(title? (title + '-') : '') + '湖南科技大学内部网站'"></title>
   <!-- css -->
   <link rel="stylesheet" href="//cdn.bootcss.com/semantic-ui/1.12.3/semantic.min.css">
-  <link rel="stylesheet" href="static/styles/main.css?160225">
+  <link rel="stylesheet" href="static/styles/main.css?160322">
   <!-- js -->
   <script src="//cdn.bootcss.com/jquery/2.1.3/jquery.min.js"></script>
   <script src="//cdn.bootcss.com/semantic-ui/1.12.3/semantic.min.js"></script>
@@ -20,7 +20,7 @@
   <script src="//cdn.bootcss.com/socket.io/1.3.7/socket.io.min.js"></script>
   <script src="static/public/layer/2.1/layer.js"></script>
   <script src="static/scripts/paging.js"></script>
-  <script src="static/scripts/admin.js?160225"></script>
+  <script src="static/scripts/admin.js?160322"></script>
 </head>
 <body ng-cloak>
   <!-- 边栏 -->
@@ -60,20 +60,6 @@
       <div class="mobile only icon pointer left item" id="menu" ng-show="$root.user.rank >= 8">
         <i class="sidebar icon"></i>
         <span ng-bind="title"></span>
-      </div>
-      <a class="desktop only item" href="#/student" ng-show="$root.user.rank == 8">学生资料</a>
-      <a class="desktop only item" href="#/teacher" ng-show="$root.user.rank == 8">教师资料</a>
-      <div class="ui desktop only pointing dropdown link item" ng-show="$root.user.rank >= 9">
-        <span class="text">资料查询</span>
-        <i class="dropdown icon"></i>
-        <div class="menu">
-          <a class="item" href="#/student">
-            <i class="student icon"></i> 学生资料
-          </a>
-          <a class="item" href="#/teacher">
-            <i class="spy icon"></i> 教师资料
-          </a>
-        </div>
       </div>
       <div class="ui desktop only pointing dropdown link item" ng-show="$root.user.rank >= 9">
         <span class="text">系统管理</span>

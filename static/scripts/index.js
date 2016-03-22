@@ -262,72 +262,72 @@
       title: '用户登录',
       module: 'user',
       controller: 'login',
-      templateUrl: 'static/views/index/login.html?151104'
+      templateUrl: 'static/views/index/login.html?160313'
     }).when('/agreement', {
       title: '用户使用协议',
-      templateUrl: 'static/views/index/agreement.html?151104'
+      templateUrl: 'static/views/index/agreement.html?160313'
     }).when('/user', {
       title: '用户中心',
       module: 'user',
       controller: 'user',
-      templateUrl: 'static/views/index/user.html?151104'
+      templateUrl: 'static/views/index/user.html?160313'
     }).when('/api', {
       title: 'API文档',
       controller: 'api',
-      templateUrl: 'static/views/index/api.html?151104'
+      templateUrl: 'static/views/index/api.html?160313'
     }).when('/schedule', {
       title: '实时课表',
       controller: 'schedule',
-      templateUrl: 'static/views/index/schedule.html?151104'
+      templateUrl: 'static/views/index/schedule.html?160313'
     }).when('/score', {
       title: '成绩查询',
       controller: 'score',
-      templateUrl: 'static/views/index/score.html?151207'
+      templateUrl: 'static/views/index/score.html?160313'
     }).when('/scoreAll', {
       title: '全班成绩',
       controller: 'scoreAll',
-      templateUrl: 'static/views/index/scoreAll.html?151207'
+      templateUrl: 'static/views/index/scoreAll.html?160313'
     }).when('/exam', {
       title: '考试安排',
       controller: 'exam',
-      templateUrl: 'static/views/index/exam.html?151104'
+      templateUrl: 'static/views/index/exam.html?160313'
     }).when('/credit', {
       title: '学分绩点',
       controller: 'credit',
-      templateUrl: 'static/views/index/credit.html?151104'
+      templateUrl: 'static/views/index/credit.html?160313'
     }).when('/classroom', {
       title: '空闲教室',
       controller: 'classroom',
-      templateUrl: 'static/views/index/classroom.html?151104'
+      templateUrl: 'static/views/index/classroom.html?160313'
     }).when('/elective', {
       title: '选课平台',
       controller: 'elective',
-      templateUrl: 'static/views/index/elective.html?160229'
+      templateUrl: 'static/views/index/elective.html?160313'
     }).when('/judge', {
       title: '教学评价',
       controller: 'judge',
-      templateUrl: 'static/views/index/judge.html?151115'
+      templateUrl: 'static/views/index/judge.html?160313'
     }).when('/rank', {
       title: '成绩排名',
       controller: 'rank',
-      templateUrl: 'static/views/index/rank.html?151104'
+      templateUrl: 'static/views/index/rank.html?160313'
     }).when('/book', {
       title: '图书借阅',
       controller: 'book',
-      templateUrl: 'static/views/index/book.html?151104'
+      templateUrl: 'static/views/index/book.html?160313'
     }).when('/tuition', {
       title: '学年学费',
       controller: 'tuition',
-      templateUrl: 'static/views/index/tuition.html?151104'
+      templateUrl: 'static/views/index/tuition.html?160313'
     }).when('/card', {
       title: '一卡通',
       controller: 'card',
-      templateUrl: 'static/views/index/card.html?151104'
+      templateUrl: 'static/views/index/card.html?160313'
     }).when('/failRate', {
       title: '挂科率',
       module: 'data',
       controller: 'failRate',
-      templateUrl: 'static/views/index/failRate.html?151104'
+      templateUrl: 'static/views/index/failRate.html?160313'
     }).otherwise({
       redirectTo: '/schedule'
     });
@@ -438,7 +438,7 @@
     });
   });
 
-  navbarController = function($scope, request) {
+  navbarController = function($scope, $rootScope, request) {
     layer.config({
       extend: 'extend/layer.ext.js'
     });
@@ -451,6 +451,11 @@
       return $('.ui.sidebar').sidebar('hide');
     });
     $scope.$emit('updateUserInfo');
+    $rootScope.scrollTop = function() {
+      $('body,html').animate({
+        scrollTop: 0
+      }, 500);
+    };
     return $scope.logout = function() {
       return request.query({
         params: {
@@ -1038,7 +1043,9 @@
       }, function(error, info, data) {
         $scope.person.loading = false;
         if (data.indexOf('应还日期:') !== -1) {
-          return item.time = data.substr(-10);
+          item.time = data.substr(-10);
+          item.remain = new Date(item.time).getTime() - new Date().getTime();
+          return item.remain = Math.ceil(item.remain / 86400000);
         }
       });
     };
@@ -1147,14 +1154,32 @@
     });
   };
 
-  cardController = function($scope, request) {
+  cardController = function($scope, $rootScope, $filter, request) {
+    $scope.data = {
+      per: 30,
+      page: 1,
+      data: [],
+      result: [],
+      action: function(page) {
+        if (this.data.lenght === 0) {
+          return;
+        }
+        this.page = page || this.page;
+        this.total = this.data.length;
+        this.offset = (this.page - 1) * this.per;
+        this.result = $filter('cut')(this.data, this.offset, this.offset + this.per);
+        return $rootScope.scrollTop();
+      }
+    };
     $scope.error = '';
     $scope.loading = true;
     request.query({}, function(error, info, data) {
       $scope.loading = false;
       $scope.error = error;
       $scope.info = info;
-      return $scope.data = data;
+      $scope.data.page = 1;
+      $scope.data.data = data;
+      return $scope.data.action();
     });
     return $scope.card = function(type) {
       var msg;
@@ -1188,6 +1213,7 @@
         this.total = this.data.length;
         this.offset = (this.page - 1) * this.per;
         this.result = $filter('cut')(this.data, this.offset, this.offset + this.per);
+        $rootScope.scrollTop();
         return $timeout(function() {
           return $('.progress').progress();
         });

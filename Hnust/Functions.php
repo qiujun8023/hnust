@@ -47,6 +47,17 @@ function num2alpha($num)
     return $result;
 }
 
+//大小转换
+function sizeFormat($bytes)
+{
+    $s = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
+    $e = floor(log($bytes, 1024));
+    if (is_infinite($e)) {
+        return '0.00Bytes';
+    }
+    return number_format($bytes / pow(1024, $e), 2) . $s[$e];
+}
+
 //成绩比较
 function scoreCompare($a, $b)
 {
@@ -70,6 +81,15 @@ function templet($message, $context = array())
 
     // 替换记录信息中的占位符，最后返回修改后的记录信息。
     return strtr($message, $replace);
+}
+
+function array_map_recursive($func, $arr)
+{
+    $out = [];
+    foreach ($arr as $k => $x) {
+        $out[$k] = is_array($x)? array_map_recursive($func, $x):$func($x);
+    }
+    return $out;
 }
 
 //获取输入参数

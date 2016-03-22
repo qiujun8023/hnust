@@ -17,11 +17,11 @@ class Config
     const DEBUG = false;
 
     //Mysql相关
-    const MYSQL_HOST = 'localhost';
-    const MYSQL_PORT = '3306';
-    const MYSQL_DB   = '';
-    const MYSQL_USER = '';
-    const MYSQL_PWD  = '';
+    const MYSQL_HOST = '数据库用户名';
+    const MYSQL_PORT = '数据库端口';
+    const MYSQL_DB   = '数据库库名';
+    const MYSQL_USER = '数据库用户';
+    const MYSQL_PWD  = '数据库密码';
     //数据库检测重连时间
     const RECHECK_FREQUENCY = 300;
 

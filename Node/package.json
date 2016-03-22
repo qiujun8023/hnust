@@ -1,5 +1,5 @@
 {
-  "name": "Socket And Wechat",
+  "name": "Hnust",
   "version": "0.0.8",
   "description": "Socket.io and wechat-enterprise",
   "main": "main.js",
@@ -12,6 +12,8 @@
     "request": "latest",
     "moment":"latest",
     "memcached":"latest",
-    "log4js":"latest"
+    "log4js":"latest",
+    "async":"latest",
+    "gm":"latest"
   }
 }

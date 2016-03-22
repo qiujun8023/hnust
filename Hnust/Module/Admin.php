@@ -146,9 +146,12 @@ class Admin extends Auth
             }
 
             //添加新用户
-            $sql = "INSERT INTO `user`(`uid`, `passwd`, `token`, `apiToken`, `loginTime`, `regTime`, `rank`)
-                      VALUES (?, ?, ?, ?, NOW(), NOW(), ?)";
-            if (Mysql::execute($sql, array($uid, $passwd, $token, $token, $rank))) {
+            $sql = "INSERT INTO `user`(
+                        `uid`, `inviter`, `passwd`, `token`, `apiToken`,
+                        `loginTime`, `regTime`, `rank`
+                    ) VALUES (?, ?, ?, ?, ?, NOW(), NOW(), ?)";
+            $sqlArr = array($uid, $this->uid, $passwd, $token, $token, $rank);
+            if (Mysql::execute($sql, $sqlArr)) {
                 $push = new \Hnust\Analyse\Push();
                 $push->add($uid, 1, '系统安全提示：', '您的密码过弱，请立即修改密码！', '#/user');
 	            $this->msg  = '成功添加网站用户。';
@@ -208,14 +211,12 @@ class Admin extends Auth
             $this->data['last'] = Mysql::execute($sql);
 
             //获取全部用户
-            $sql  = 'SELECT `u`.`uid`, `s`.`name`, `u`.`error`,`u`.`rank`, `u`.`loginTime`,
-                     `u`.`regTime`, IF(`a`.`apiCount` IS NULL, 0, `a`.`apiCount`) `apiCount`
-                     FROM `student` `s`, `user` `u`
-                     LEFT JOIN (
-                        SELECT `uid`, COUNT(*) `apiCount` FROM `logs` WHERE `state` = 7 GROUP BY `uid`
-                     ) `a` ON `u`.`uid` = `a`.`uid`
-                     WHERE `s`.`sid` = `u`.`uid`
-                     ORDER BY `u`.`rank` DESC, `a`.`apiCount` DESC, `u`.`loginTime` DESC';
+            $sql  = "SELECT `u`.`uid`, `s1`.`name`,
+                      IF(`s2`.`name` IS NULL, '', `s2`.`name`) `inviter`,
+                      `u`.`apiCount`, `u`.`error`, `u`.`rank`,
+                      `u`.`loginTime`, `u`.`regTime` FROM `user` `u`
+                    LEFT JOIN `student` `s1` ON `s1`.`sid` = `u`.`uid`
+                    LEFT JOIN `student` `s2` ON `s2`.`sid` = `u`.`inviter`";
             $result = Mysql::execute($sql);
             //计算用户状态
             $maxError = Config::getConfig('max_passwd_error');
@@ -229,6 +230,11 @@ class Admin extends Auth
                 }
             }
             $this->data['user'] = $result;
+
+            //获取微信用户
+            $sql = 'SELECT `w`.`uid`, `s`.`name`, `w`.`wid`, `w`.`status`, `w`.`time` FROM `weixin` `w`
+                    LEFT JOIN `student` `s` ON `w`.`uid` = `s`.`sid`';
+            $this->data['weixin'] = Mysql::execute($sql);
         }
     }
 
@@ -265,14 +271,14 @@ class Admin extends Auth
             foreach ($result as $item) {
                 $clientInfo = explode('   ',$item['ua']);
                 $this->data[] = array(
-                    'name'      => $item['name'],
-                    'uid'       => $item['uid'],
-                    'time'      => $item['time'],
-                    'version'   => $clientInfo[1],
-                    'model'     => $clientInfo[2],
-                    'system'    => $clientInfo[3],
-                    'network'   => $clientInfo[4] . ' / ' . $clientInfo[5],
-                    'resolution'=> $clientInfo[6],
+                    'name'       => $item['name'],
+                    'uid'        => $item['uid'],
+                    'time'       => $item['time'],
+                    'version'    => $clientInfo[1],
+                    'model'      => $clientInfo[2],
+                    'system'     => $clientInfo[3],
+                    'network'    => $clientInfo[4] . ' / ' . $clientInfo[5],
+                    'resolution' => $clientInfo[6],
                 );
             }
             //获取七牛Token
@@ -287,12 +293,12 @@ class Admin extends Auth
     //消息推送
     public function push()
     {
-        $type  = \Hnust\input('type', '');
-        $key   = \Hnust\input('key', '');
-        $id    = \Hnust\input('id', '');
-        $uid   = \Hnust\input('uid', '');
-        $mode  = \Hnust\input('mode', '');
-        $title = \Hnust\input('title', '');
+        $type    = \Hnust\input('type', '');
+        $key     = \Hnust\input('key', '');
+        $id      = \Hnust\input('id', '');
+        $uid     = \Hnust\input('uid', '');
+        $mode    = \Hnust\input('mode', '');
+        $title   = \Hnust\input('title', '');
         $content = \Hnust\input('content', '');
         $success = \Hnust\input('success', '');
 
@@ -357,8 +363,8 @@ class Admin extends Auth
         $url = Config::getConfig('local_base_url') . 'update/' . $type;
         try {
             new Http(array(
-                CURLOPT_URL      => $url,
-                CURLOPT_TIMEOUT  => 3,
+                CURLOPT_URL     => $url,
+                CURLOPT_TIMEOUT => 1,
             ));
         } catch (\Exception $e) {
             //pass

@@ -62,11 +62,11 @@ class Wechat
     }
 
     //获取用户信息
-    public static function getUser($uid)
+    public static function getUser($uid, $useCache = true)
     {
         self::init();
         $info = self::$cache->get($uid);
-        if (empty($info) || !is_array($info)) {
+        if (!$useCache || empty($info) || !is_array($info)) {
             $info = self::getHttp('getUser', array('uid' => $uid));
             if ('0' != $info['errcode']) {
                 return false;
@@ -112,6 +112,14 @@ class Wechat
     //发送消息
     public static function sendMsg($uid, $type, $data)
     {
+        //判断用户是否关注微信
+        $sql = 'SELECT `status` FROM `weixin` WHERE `uid` = ? LIMIT 1';
+        $result = Mysql::execute($sql, array($uid));
+        if (empty($result) || (1 != $result[0]['status'])) {
+            return false;
+        }
+
+        //调用接口发送消息
         self::init();
         $result = self::getHttp('sendMsg', array(
             'to'      => array(

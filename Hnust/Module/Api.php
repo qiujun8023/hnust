@@ -8,11 +8,11 @@ use Hnust\Utils\Mysql;
 
 class Api extends Base
 {
-    public $key = '';
-    public $sid = '';
-    public $uid = '';
-    public $name = '游客';
-    public $rank = 0;
+    public $key   = '';
+    public $sid   = '';
+    public $uid   = '';
+    public $name  = '游客';
+    public $rank  = 0;
     public $token = '';
     protected $module;
     protected $method;
@@ -86,6 +86,10 @@ class Api extends Base
                 Config::getConfig('api_forbid_others_msg')
             );
         }
+
+        //更新API调用次数
+        $sql = 'UPDATE `user` SET `apiCount` = `apiCount` + 1 WHERE `uid` = ?';
+        Mysql::execute($sql, array($this->uid));
 
         //返回记录
         return $this->checkAuth(
@@ -185,6 +189,28 @@ class Api extends Base
         );
     }
 
+    //一卡通
+    public function card()
+    {
+        $type       = \Hnust\input('type', '');
+        $startDate  = \Hnust\input('startDate', null);
+        $endDate    = \Hnust\input('endDate', null);
+        $card       = new \Hnust\Analyse\Card($this->sid, $this->passwd);
+        $this->info = $card->getInfo();
+        if ('bill' === $type) {
+            $this->data = $card->getBill($this->info['cardId'], $startDate, $endDate);
+            $student = new \Hnust\Analyse\Student();
+            if ($info = $student->info($this->sid)) {
+                $this->data['assess'] = $info['assess'];
+            } else {
+                $this->data['assess'] = '适中';
+            }
+        } else {
+            $this->data = $card->getRecord($this->info['cardId'], $startDate, $endDate);
+        }
+        $this->info['sid'] = $this->sid;
+    }
+
     //排名
     public function rank()
     {
@@ -196,7 +222,7 @@ class Api extends Base
         } elseif (('term' === $by) && (11 !== strlen($term))) {
             $term = Config::getConfig('current_term');
         }
-        $term  = ('term' !== $by)? substr($term, 0, 9):$term;
+        $term = ('term' !== $by)? substr($term, 0, 9):$term;
         $rank = new \Hnust\Analyse\Rank($this->sid);
         $this->data = $rank->getRank($term, $scope, $by);
         $this->info = array(

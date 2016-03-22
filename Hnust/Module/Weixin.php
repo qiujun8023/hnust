@@ -5,12 +5,13 @@ namespace Hnust\Module;
 use Hnust\Config;
 use Hnust\Utils\Log;
 use Hnust\Utils\Mysql;
+use Hnust\Utils\Wechat;
 
 class Weixin extends Base
 {
     public $key;
-    public $uid = '';
-    public $sid = '';
+    public $uid  = '';
+    public $sid  = '';
     public $name = '游客';
     public $rank = 0;
     protected $secret;
@@ -117,6 +118,22 @@ class Weixin extends Base
         }
     }
 
+    //关注与取消关注
+    public function follow()
+    {
+        $info = Wechat::getUser($this->uid, false);
+        if (!empty($info) && is_array($info)) {
+            $wid    = empty($info['weixinid'])? '':$info['weixinid'];
+            $status = empty($info['status'])? -1:$info['status'];
+            $sql    = "INSERT INTO `weixin`(`uid`, `wid`, `status`) VALUES(?, ?, ?)
+                       ON DUPLICATE KEY UPDATE `wid` = IF(? = '', `wid`, ?), `status` = ?";
+            $sqlArr = array($this->uid, $wid, $status, $wid, $wid, $status);
+            Mysql::execute($sql, $sqlArr);
+        }
+        $this->code = Config::RETURN_NORMAL;
+        $this->msg  = '欢迎关注小水表...';
+    }
+
     //成绩
     public function score()
     {
@@ -220,12 +237,59 @@ class Weixin extends Base
         $this->data = trim($content);
     }
 
+    //人脸识别
+    public function face()
+    {
+        //无权访问
+        if ($this->rank < Config::RANK_OTHER) {
+            $this->code = Config::RETURN_ERROR;
+            $this->msg  = '权限不足，无法进行识别';
+            return;
+        }
+
+        $res  = \Hnust\input('res/a');
+        $sids = $confidence = array();
+        foreach ($res as $item) {
+            $sid = $item['person_id'];
+            $sids[] = $sid;
+            $confidences[$sid] = round($item['confidence'], 4);
+        }
+        //查询数据库取结果
+        $student = new \Hnust\Analyse\Student();
+        $data    = $student->wechat($sids);
+        if (!$data) {
+            $this->code = Config::RETURN_ERROR;
+            $this->msg  = '未找到相关结果';
+            return;
+        }
+        usort($data, function($a, $b) use($confidences) {
+            return $confidences[$a['sid']] > $confidences[$b['sid']]? -1:1;
+        });
+        //数据处理为微信数据
+        $this->data = array(array(
+            'title' => "上述图片识别结果如下："
+        ));
+        $templet = "姓名：{name}\n学号：{sid}\n班级：{class}\n相似：{confidence}%";
+        for ($i = 0; (($i <= 7) && ($i < count($data))); $i++) {
+            $data[$i]['confidence'] = $confidences[$data[$i]['sid']];
+            $this->data[] = array(
+                'title'  => \Hnust\templet($templet, $data[$i]),
+                'picurl' => $student->avatar($data[$i]['sid'])
+            );
+        }
+        $this->data[] = array(
+            'title' => "以上只显示相似度最高的{$i}条记录"
+        );
+    }
+
     //资料查询
     public function student()
     {
         //无权访问
-        if ($this->rank < Config::RANK_DATA) {
-            return $this->data = '水表一下，你就知道';
+        if ($this->rank < Config::RANK_ADMIN) {
+            $this->code = Config::RETURN_ERROR;
+            $this->msg  = '水表一下，你就知道';
+            return;
         }
 
         if (empty($this->key)) {
@@ -238,7 +302,7 @@ class Weixin extends Base
         $data    = $result['data'];
         //无记录
         if (empty($data)) {
-            $this->msg = '未找到相关记录，请修改关键词';
+            $this->msg  = '未找到相关记录，请修改关键词';
             $this->code = Config::RETURN_ERROR;
         //单人
         } elseif (1 === count($data)) {
@@ -260,12 +324,13 @@ class Weixin extends Base
             $templet = "姓名：{name}\n学号：{sid}\n班级：{class}";
             for ($i = 0; (($i <= 7) && ($i < count($data))); $i++) {
                 $this->data[] = array(
-                    'title' => \Hnust\templet($templet, $data[$i])
+                    'title'  => \Hnust\templet($templet, $data[$i]),
+                    'picurl' => $student->avatar($data[$i]['sid'])
                 );
             }
             if ($i !== count($data)) {
                 $this->data[] = array(
-                    'title' => "以上只显示{$i}条记录..."
+                    'title' => "以上只显示{$i}条记录"
                 );
             }
         }

@@ -2,7 +2,7 @@
 APISDK = require('wechat-enterprise').API
 
 # 自定义模块
-config = require('./config')
+config = require(__dirname + '/config')
 
 # log4js日志
 logger = config.logger
@@ -14,7 +14,8 @@ agentid = config.wechat.agentid
 partyid = config.wechat.partyid
 apisdk  = new APISDK(corpId, secret, agentid)
 
-module.exports = (req, res) ->
+exports.apisdk = apisdk
+exports.route  = (req, res) ->
     body = req.body
 
     # 错误格式化

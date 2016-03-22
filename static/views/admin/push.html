@@ -38,11 +38,11 @@
     <div class="ui teal message" ng-if="add.error" ng-bind="add.error"></div>
   </div>
   <div class="ui bottom attached active tab segment" data-tab="list">
-    <div class="ui list form">
-      <div class="field" style="padding-right:80px">
+    <div class="ui list search form">
+      <div class="field">
         <input type="text" placeholder="请输入关键词" ng-model="info.key">
       </div>
-      <button class="ui submit positive search button">筛选</button>
+      <button class="ui submit positive button">筛选</button>
     </div>
     <div ng-include="'static/views/admin/loading.html'" ng-if="loading"></div>
     <div class="ui warning message" ng-if="!loading && error">

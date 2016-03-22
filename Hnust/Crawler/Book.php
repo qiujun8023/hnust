@@ -69,12 +69,15 @@ class Book
 
         $result = array();
         for ($i = 0; $i < count($temp[0]); $i++) {
+            $time     = strtotime(trim($temp[3][$i]));
+            $remain   = ceil(($time - time()) / 86400);
             $result[] = array(
                 'title'      => $temp[1][$i],
                 'barcode'    => $temp[2][$i],
                 'department' => $temp[4][$i],
                 'library'    => $temp[5][$i],
-                'time'       => $temp[3][$i]
+                'time'       => $temp[3][$i],
+                'remain'     => $remain
             );
         }
         return $result;
@@ -159,7 +162,7 @@ class Book
             '统一题名:'        => 'unified_title',
             '载体形态:'        => 'describe',
             '责任者:'          => 'author',
-            '中图分类号:'      => 'CLC',
+            '中图分类号:'       => 'CLC',
             '主题:'            => 'subject',
         );
         //正则书籍基本信息

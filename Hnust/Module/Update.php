@@ -10,16 +10,70 @@ use Hnust\Utils\Cache;
 
 class Update extends Base
 {
+    protected $sid;
+    protected $cookie;
+    protected $cache = null;
+
     //推送实时日志
     protected function log($uid, $name, $data)
     {
         Log::realtime(array(
-            'uid'      => $uid,
-            'name'     => $name,
-            'data'     => $data,
-            'state'    => Config::STATE_UPDATE,
-            'time'     => date('H:i:s', time())
+            'uid'   => $uid,
+            'name'  => $name,
+            'data'  => $data,
+            'state' => Config::STATE_UPDATE,
+            'time'  => date('H:i:s', time())
         ));
+    }
+
+    //通过缓存获取用户信息
+    protected function getCache($key)
+    {
+        if (is_null($this->cache)) {
+            $this->cache = new Cache('update');
+        }
+
+        //获取缓存数据
+        $cacheData = $this->cache->get($key);
+        $this->sid    = $cacheData['sid'];
+        $this->cookie = $cacheData['cookie'];
+        return $cacheData;
+    }
+
+    //缓存用户信息
+    protected function setCache($key, $sid = null, $cookie = null)
+    {
+        if (is_null($this->cache)) {
+            $this->cache = new Cache('update');
+        }
+
+        //获取缓存数据
+        $cacheData = $this->cache->get($key);
+
+        //更新缓存学号
+        if (!empty($sid)) {
+            $cacheData['sid'] = $sid;
+        }
+
+        //更新缓存cookie
+        if (!empty($cookie)) {
+            $cacheData['cookie'] = $cookie;
+        }
+        return $this->cache->set($key, $cacheData, 259200);
+    }
+
+    //递归
+    protected function recursion($method)
+    {
+        $baseUrl = Config::getConfig('local_base_url');
+        try {
+            new Http(array(
+                CURLOPT_URL     => $baseUrl . 'update/' . $method,
+                CURLOPT_TIMEOUT => 3,
+            ));
+        } catch (\Exception $e) {
+            //不处理
+        }
     }
 
     //日常任务
@@ -30,7 +84,7 @@ class Update extends Base
         $num = Mysql::execute($sql);
         $log = "更新年龄{$num}人";
 
-        //密码初始化
+        //一卡通密码初始化
         $sql = "INSERT INTO passwd(`id`, `part`, `passwd`)
                   SELECT `sid`, 'ykt', RIGHT(`idcard`, 6)
                   FROM `student` WHERE `sid` NOT IN (SELECT `id` FROM `passwd` WHERE `part` = 'ykt')";
@@ -70,7 +124,7 @@ class Update extends Base
 
         //清除日志
         $sql = "DELETE FROM `logs`
-                WHERE `uid` IN ('1305010117', '1305010119', '1305020233')
+                WHERE `uid` IN ('NO UID')
                 OR (`ip` != ? AND `location` LIKE '%阿里%')
                 OR`time` < DATE_SUB(NOW(), INTERVAL 3 MONTH)";
         $num = Mysql::execute($sql, array(Config::getConfig('local_out_ip')));
@@ -106,14 +160,10 @@ class Update extends Base
     //全部成绩
     public function allScore()
     {
-        $name = '成绩更新';
-
-        //获取开始学号
-        $cache = new Cache('update');
-        $cacheData = $cache->get('allScore');
-        $sid = $cacheData['sid'];
-        if (empty($sid)) {
-            return $this->log('', $name, '学号为空，不更新成绩。');
+        //获取起始学号
+        $this->getCache(__FUNCTION__);
+        if (empty($this->sid)) {
+            return $this->log('', '成绩更新', '学号为空，不更新成绩。');
         }
 
         //全负荷运行
@@ -121,48 +171,34 @@ class Update extends Base
 
         $baseUrl = Config::getConfig('local_base_url');
         for ($i = 0; $i < 20; $i++) {
-            $this->log($sid, $name, '成绩更新至' . $sid);
-
             $sql = "SELECT `a`.`sid`, `a`.`name`, `a`.`idcard` FROM `student` `a`
                     LEFT JOIN `score` `b` ON `a`.`sid` = `b`.`sid`
                     WHERE (`b`.`sid` IS NULL OR (`b`.`time` + INTERVAL 3 DAY) < NOW())
                     AND `a`.`sid` > ? LIMIT 20";
-            $students = Mysql::execute($sql, array($sid));
+            $students = Mysql::execute($sql, array($this->sid));
             if (empty($students)) {
-                return $this->log('', $name, '成绩更新完成。');
+                return $this->log('', '成绩更新', '成绩更新完成。');
             }
 
             $url = $baseUrl . 'update/score';
             Http::multi($url, $students);
 
-            $sid = end($students)['sid'];
+            $this->sid = end($students)['sid'];
+            $this->log($this->sid, '成绩更新', '成绩更新至' . $this->sid);
         }
 
-        //php递归
-        $cacheData['sid'] = $sid;
-        $cache->set('allScore', $cacheData);
-        try {
-            new Http(array(
-                CURLOPT_URL      => $baseUrl . 'update/allScore',
-                CURLOPT_TIMEOUT  => 3,
-            ));
-        } catch (\Exception $e) {
-            //不处理
-        }
-        $this->log($sid, $name, '进入下一次循环');
+        //递归
+        $this->setCache(__FUNCTION__, $this->sid);
+        $this->recursion(__FUNCTION__);
     }
 
     //课表
     public function schedule()
     {
-        $name = '课表更新';
-
-        //获取开始学号
-        $cache = new Cache('update');
-        $cacheData = $cache->get('schedule');
-        $sid = $cacheData['sid'];
-        if (empty($sid)) {
-            return $this->log('', $name, '学号为空，不更新课表。');
+        //获取起始学号
+        $this->getCache(__FUNCTION__);
+        if (empty($this->sid)) {
+            return $this->log('', '课表更新', '学号为空，不更新课表。');
         }
 
         //全负荷运行
@@ -172,57 +208,46 @@ class Update extends Base
                 LEFT JOIN `schedule` `b` ON `a`.`sid` = `b`.`sid`
                 WHERE (`b`.`sid` IS NULL OR (`b`.`time` + INTERVAL 1 WEEK) < NOW())
                 AND `a`.`sid` > ? LIMIT 1";
-        $result = Mysql::execute($sql, array($sid));
+        $result = Mysql::execute($sql, array($this->sid));
         if (empty($result)) {
-            return $this->log('', $name, '课表更新完成。');
+            return $this->log('', '课表更新', '课表更新完成。');
         }
 
-        $sid = $result[0]['sid'];
-        $school = $result[0]['school'];
-        $schedule = new \Hnust\Analyse\Schedule($sid, '');
+        $this->sid = $result[0]['sid'];
+        $term      = Config::getConfig('current_term');
+        $school    = $result[0]['school'];
+        $schedule  = new \Hnust\Analyse\Schedule($this->sid, '');
 
         $sql = 'SELECT `a`.`sid` FROM `student` `a`
                 LEFT JOIN `schedule` `b` ON `a`.`sid` = `b`.`sid`
                 WHERE `a`.`sid` >= ? AND `a`.`school` = ?
                 AND (`b`.`sid` IS NULL OR (`b`.`time` + INTERVAL 1 WEEK) < NOW())
                 LIMIT 100';
-        $students = Mysql::execute($sql, array($sid, $school));
+        $students = Mysql::execute($sql, array($this->sid, $school));
         foreach ($students as $student) {
-            $this->log($student['sid'], $name, '课表更新至' . $student['sid']);
             try {
-                $schedule->getSchdule($student['sid']);
+                $schedule->getSchdule($student['sid'], $term);
+                $this->log($student['sid'], '课表更新', '课表更新至' . $student['sid']);
             } catch (\Exception $e) {
                 //pass
             }
         }
 
-        //php递归
-        $cacheData['sid'] = $sid;
-        $cache->set('schedule', $cacheData);
-        $baseUrl = Config::getConfig('local_base_url');
-        try {
-            new Http(array(
-                CURLOPT_URL      => $baseUrl . 'update/schedule',
-                CURLOPT_TIMEOUT  => 3,
-            ));
-        } catch (\Exception $e) {
-            //不处理
-        }
-        $this->log('', $name, '进入下一次循环');
+        //递归
+        $this->setCache(__FUNCTION__, $this->sid);
+        $this->recursion(__FUNCTION__);
     }
 
     //挂科率统计
     public function failRate()
     {
-        $name = '挂科率统计';
-
         //全负荷运行
         Config::fullLoad();
 
         //清空FailRate
         $sql = 'TRUNCATE TABLE `failRate`';
         Mysql::execute($sql);
-        $this->log('', $name, '已清空所有挂科率信息。');
+        $this->log('', '挂科率统计', '已清空所有挂科率信息。');
         //获取所有学院
         $sql = 'SELECT DISTINCT `college` FROM `student`';
         $colleges = Mysql::execute($sql);
@@ -274,20 +299,20 @@ class Update extends Base
             //计算挂科率并写入数据库
             $sql = 'INSERT INTO `failRate`(`name`, `course`, `all`, `fail`, `rate`) VALUES(?, ?, ?, ?, ?)';
             if (Mysql::executeMultiple($sql, $sqlArr)) {
-                $this->log('', $name, $college . '挂科率更新成功。');
+                $this->log('', '挂科率统计', $college . '挂科率更新成功。');
             } else {
-                $this->log('', $name, $college . '挂科率更新失败。');
+                $this->log('', '挂科率统计', $college . '挂科率更新失败。');
             }
         }
 
         $sql = "INSERT INTO `failRate`
-                SELECT '科大本部',`course`, SUM(`all`) `all`, SUM(`fail`) `fail`, (SUM(`fail`) / SUM(`all`) * 100) `rate`, CURRENT_TIMESTAMP 
+                SELECT '科大本部',`course`, SUM(`all`) `all`, SUM(`fail`) `fail`, (SUM(`fail`) / SUM(`all`) * 100) `rate`, CURRENT_TIMESTAMP
                 FROM `failRate` WHERE `name` LIKE '%学院' GROUP BY `course`;
                 INSERT INTO `failRate`
-                SELECT '潇湘学院',`course`, SUM(`all`) `all`, SUM(`fail`) `fail`, (SUM(`fail`) / SUM(`all`) * 100) `rate`, CURRENT_TIMESTAMP 
+                SELECT '潇湘学院',`course`, SUM(`all`) `all`, SUM(`fail`) `fail`, (SUM(`fail`) / SUM(`all`) * 100) `rate`, CURRENT_TIMESTAMP
                 FROM `failRate` WHERE `name` LIKE '%系' GROUP BY `course`;";
         Mysql::execute($sql);
-        $this->log('', $name, '已更新全校挂科率信息。');
+        $this->log('', '挂科率统计', '已更新全校挂科率信息。');
     }
 
     //更新弱密码数据库

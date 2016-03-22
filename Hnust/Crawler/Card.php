@@ -98,9 +98,9 @@ class Card
     {
         try {
             $http = new Http(array(
-                CURLOPT_URL        => $this->baseUrl . 'accountcardUser.action',
-                CURLOPT_COOKIE     => $this->cookies,
-                CURLOPT_TIMEOUT    => 5,
+                CURLOPT_URL     => $this->baseUrl . 'accountcardUser.action',
+                CURLOPT_COOKIE  => $this->cookies,
+                CURLOPT_TIMEOUT => 5,
             ));
         } catch (\Exception $e) {
             throw new \Exception('获取一卡通信息失败。', Config::RETURN_ERROR);
@@ -123,7 +123,7 @@ class Card
         return array(
             'name'    => trim($temp[1]),
             'cardId'  => trim($temp[2]),
-            'balance' => trim($temp[5]),
+            'balance' => rtrim(trim($temp[5]), '元'),
             'status'  => $status,
         );
     }
@@ -138,9 +138,9 @@ class Card
         //获取密码加密图片
         try {
             $http = new Http(array(
-                CURLOPT_URL        => $this->baseUrl . 'getpasswdPhoto.action',
-                CURLOPT_COOKIE     => $this->cookies,
-                CURLOPT_TIMEOUT    => 5,
+                CURLOPT_URL     => $this->baseUrl . 'getpasswdPhoto.action',
+                CURLOPT_COOKIE  => $this->cookies,
+                CURLOPT_TIMEOUT => 5,
             ));
         } catch (\Exception $e) {
             throw new \Exception('获取一卡通映射值失败', Config::RETURN_ERROR);
@@ -170,25 +170,30 @@ class Card
         return $temp[1];
     }
 
-    public function getRecord($cardId)
+    public function getRecord($cardId, $startDate = null, $endDate = null)
     {
-        $result = array();
+        $startDate = empty($startDate)? date('Ymd', strtotime('-1 month')):$startDate;
+        $endDate   = empty($endDate)? date('Ymd', time()):$endDate;
+        $result    = array();
         try {
+            $records = '';
             //查询当日记录
-            $http = new Http(array(
-                CURLOPT_URL        => $this->baseUrl . 'accounttodatTrjnObject.action',
-                CURLOPT_POSTFIELDS => "account={$cardId}&inputObject=all",
-                CURLOPT_COOKIE     => $this->cookies,
-                CURLOPT_TIMEOUT    => 5,
-            ));
-            //记录当天记录
-            $records = $http->content;
+            if ($endDate >= date('Ymd', time())) {
+                $http = new Http(array(
+                    CURLOPT_URL        => $this->baseUrl . 'accounttodatTrjnObject.action',
+                    CURLOPT_POSTFIELDS => "account={$cardId}&inputObject=all",
+                    CURLOPT_COOKIE     => $this->cookies,
+                    CURLOPT_TIMEOUT    => 5,
+                ));
+                //记录当天记录
+                $records .= $http->content;
+            }
 
             //获取下一步地址
             $http = new Http(array(
-                CURLOPT_URL        => $this->baseUrl . 'accounthisTrjn.action',
-                CURLOPT_COOKIE     => $this->cookies,
-                CURLOPT_TIMEOUT    => 5,
+                CURLOPT_URL     => $this->baseUrl . 'accounthisTrjn.action',
+                CURLOPT_COOKIE  => $this->cookies,
+                CURLOPT_TIMEOUT => 5,
             ));
             preg_match('/action="\/(.*?)"/', $http->content, $temp);
 
@@ -204,7 +209,7 @@ class Card
             //选择时间
             $http = new Http(array(
                 CURLOPT_URL        => $this->baseUrl . $temp[1],
-                CURLOPT_POSTFIELDS => 'inputStartDate=' . date('Ymd', strtotime('-10 day')) . '&inputEndDate=' . date('Ymd', time()),
+                CURLOPT_POSTFIELDS => "inputStartDate={$startDate}&inputEndDate={$endDate}",
                 CURLOPT_COOKIE     => $this->cookies,
                 CURLOPT_TIMEOUT    => 5,
             ));
@@ -212,11 +217,25 @@ class Card
 
             //取查询结果
             $http = new Http(array(
-                CURLOPT_URL        => $this->baseUrl . 'accounthisTrjn.action' . $temp[1],
-                CURLOPT_COOKIE     => $this->cookies,
-                CURLOPT_TIMEOUT    => 5,
+                CURLOPT_URL     => $this->baseUrl . 'accounthisTrjn.action' . $temp[1],
+                CURLOPT_COOKIE  => $this->cookies,
+                CURLOPT_TIMEOUT => 15,
             ));
             $records .= $http->content;
+
+            for ($i = 2; $i < 30; $i++) {
+                if (false === stripos($http->content, 'button14_Onclick();')) {
+                    break;
+                }
+                $http = new Http(array(
+                    CURLOPT_URL        => $this->baseUrl . 'accountconsubBrows.action',
+                    CURLOPT_POSTFIELDS => 'pageNum=' . $i,
+                    CURLOPT_COOKIE     => $this->cookies,
+                    CURLOPT_TIMEOUT    => 5,
+                ));
+                $records .= $http->content;
+            }
+
             $records = mb_convert_encoding($records, 'UTF-8', 'GBK');
         } catch (\Exception $e) {
             throw new \Exception('获取交易记录失败', Config::RETURN_ERROR);
@@ -237,8 +256,8 @@ class Card
                     'time'    => substr(trim($temp[1][$i]), 5),
                     'type'    => trim($temp[2][$i]),
                     'system'  => trim($temp[3][$i]),
-                    'trade'   => trim($temp[5][$i]) . '元',
-                    'balance' => trim($temp[6][$i]) . '元',
+                    'trade'   => trim($temp[5][$i]),
+                    'balance' => trim($temp[6][$i]),
                     'count'   => trim($temp[7][$i]),
                     'status'  => trim($temp[8][$i])
                 );

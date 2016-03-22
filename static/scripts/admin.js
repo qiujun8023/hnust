@@ -231,32 +231,32 @@
     return $routeProvider.when('/system', {
       title: '系统配置',
       controller: 'system',
-      templateUrl: 'static/views/admin/system.html?160201'
+      templateUrl: 'static/views/admin/system.html?160316'
     }).when('/statistic', {
       title: '数据统计',
       controller: 'statistic',
-      templateUrl: 'static/views/admin/statistic.html?151207'
+      templateUrl: 'static/views/admin/statistic.html?160316'
     }).when('/user', {
       title: '用户管理',
       controller: 'user',
-      templateUrl: 'static/views/admin/user.html?151207'
+      templateUrl: 'static/views/admin/user.html?160316'
     }).when('/app', {
       title: 'APP管理',
       controller: 'app',
-      templateUrl: 'static/views/admin/app.html?151207'
+      templateUrl: 'static/views/admin/app.html?160316'
     }).when('/push', {
       title: '消息推送',
       controller: 'push',
-      templateUrl: 'static/views/admin/push.html?160201'
+      templateUrl: 'static/views/admin/push.html?160316'
     }).when('/logs', {
       title: '访问日志',
       controller: 'logs',
-      templateUrl: 'static/views/admin/logs.html?151104'
+      templateUrl: 'static/views/admin/logs.html?160316'
     }).when('/tools', {
       title: '实用工具',
       module: 'tools',
       controller: 'tools',
-      templateUrl: 'static/views/admin/tools.html?151104'
+      templateUrl: 'static/views/admin/tools.html?160316'
     }).otherwise({
       redirectTo: '/student'
     });
@@ -418,7 +418,7 @@
     };
   });
 
-  navbarController = function($scope, request) {
+  navbarController = function($scope, $rootScope, request) {
     layer.config({
       extend: 'extend/layer.ext.js'
     });
@@ -431,6 +431,11 @@
       return $('.ui.sidebar').sidebar('hide');
     });
     $scope.$emit('updateUserInfo');
+    $rootScope.scrollTop = function() {
+      $('body,html').animate({
+        scrollTop: 0
+      }, 500);
+    };
     return $scope.logout = function() {
       return request.query({
         params: {
@@ -494,17 +499,19 @@
   systemController = function($scope, request) {
     $('.tabular.menu .item').tab();
     $('.ui.update.dropdown').dropdown();
-    $scope.loading = true;
+    $scope.setting = {
+      loading: true
+    };
     request.query({
       params: {
         method: 'setting'
       }
     }, function(error, info, data) {
-      $scope.loading = false;
-      $scope.error = error;
-      return $scope.data = data;
+      $scope.setting.loading = false;
+      $scope.setting.error = error;
+      return $scope.setting.data = data;
     });
-    $scope.update = function(item) {
+    $scope.setting.update = function(item) {
       return request.query({
         params: {
           method: 'setting'
@@ -520,6 +527,7 @@
         }
       });
     };
+    $scope.update = {};
     return $('.ui.update.form').form({
       type: {
         identifier: 'type',
@@ -548,15 +556,17 @@
       on: 'blur',
       onSuccess: function() {
         var type;
+        $scope.update.loading = true;
         type = $('.ui.update.dropdown').dropdown('get value');
         request.query({
           params: {
             method: 'update',
             type: type,
-            sid: $scope.sid,
-            cookie: $scope.cookie
+            sid: $scope.update.sid,
+            cookie: $scope.update.cookie
           }
         }, function(error) {
+          $scope.update.loading = false;
           if (error) {
             return layer.msg(error);
           }
@@ -614,9 +624,10 @@
     };
   };
 
-  userController = function($scope, $timeout, $filter, request) {
+  userController = function($scope, $rootScope, $timeout, $filter, request) {
     $('.tabular.menu .item').tab();
     $('.add.dropdown').dropdown();
+    $('.sort.dropdown').dropdown();
     $scope.rank2group = {
       1: "查自己",
       2: "查全班",
@@ -629,18 +640,28 @@
       key: '',
       per: 15,
       page: 1,
+      sortName: 'regTime',
+      sortBy: false,
       data: [],
       result: [],
-      action: function(key, page) {
+      action: function(key, page, sortName, sortBy) {
         if (this.data.lenght === 0) {
           return;
         }
         this.key = key || this.key;
         this.page = page || this.page;
+        if (sortName === this.sortName) {
+          this.sortBy = !this.sortBy;
+        } else if (typeof sortBy === 'boolean') {
+          this.sortBy = sortBy;
+        }
+        this.sortName = sortName || this.sortName;
         this.offset = (this.page - 1) * this.per;
         this.result = $filter('filter')(this.data, this.key);
+        this.result = $filter('sortBy')(this.result, this.sortName, this.sortBy);
         this.total = this.result.length;
         this.result = $filter('cut')(this.result, this.offset, this.offset + this.per);
+        $rootScope.scrollTop();
         return $timeout(function() {
           return $('.change.dropdown').dropdown({
             action: 'hide'
@@ -649,9 +670,12 @@
       }
     };
     $scope.list = function() {
+      $scope.loading = true;
       return request.query({}, function(error, info, data) {
+        $scope.loading = false;
         $scope.error = error;
         $scope.last = data.last || {};
+        $scope.weixin = data.weixin || {};
         $scope.user.data = data.user || {};
         return $scope.user.action();
       });
@@ -758,7 +782,7 @@
     return $scope.list();
   };
 
-  appController = function($scope, request, $filter, FileUploader) {
+  appController = function($scope, $rootScope, request, $filter, FileUploader) {
     var uploader;
     $('.tabular.menu .item').tab();
     $scope.loading = true;
@@ -784,7 +808,8 @@
         this.offset = (this.page - 1) * this.per;
         this.result = $filter('filter')(this.data, this.key);
         this.total = this.result.length;
-        return this.result = $filter('cut')(this.result, this.offset, this.offset + this.per);
+        this.result = $filter('cut')(this.result, this.offset, this.offset + this.per);
+        return $rootScope.scrollTop();
       }
     };
     $scope.put = {};

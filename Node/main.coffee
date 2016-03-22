@@ -9,21 +9,24 @@ moment     = require('moment')
 wechatLib  = require('wechat-enterprise')
 
 # 自定义模块
-config     = require('./config')
-wechat     = require('./wechat')
-wechatApi  = require('./wechatApi')
+config     = require(__dirname + '/config')
+wechat     = require(__dirname + '/wechat')
+wechatApi  = require(__dirname + '/wechatApi')
 
 # log4js日志
 logger = config.logger
 
-# Json
-app.use(bodyParser.json())
+# 处理JSON
+app.use bodyParser.json
+    limit: '1mb'
+app.use bodyParser.urlencoded
+    extended: true
 
 # 微信企业号回调
 app.use '/wechat/callback', wechatLib config.wechat, wechat
 
 # 企业号API
-app.all "/wechat/:apiName", wechatApi
+app.all "/wechat/:apiName", wechatApi.route
 
 # 发送Socket消息
 app.all '/socket/:room', (req, res) ->
@@ -118,7 +121,7 @@ io.on 'connection', (socket) ->
 
     # 弹幕
     socket.on 'barrage', (data) ->
-        logger.debug '弹幕', data
+        logger.info '弹幕', data
         io.emit 'barrage', (data)
 
     # 推送实时日志

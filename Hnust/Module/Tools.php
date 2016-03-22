@@ -14,10 +14,10 @@ class Tools extends Auth
         $session   = \Hnust\input('session');
         $classroom = \Hnust\input('classroom');
         if (empty($session) || empty($classroom)) {
-            $this->msg = '参数有误';
+            $this->msg  = '参数有误';
             $this->code = Config::RETURN_ERROR;
         } elseif (!in_array($session, array(1, 2, 3, 4, 5))) {
-            $this->msg = '上课时间有误，注意：一天只有1-5节课';
+            $this->msg  = '上课时间有误，注意：一天只有1-5节课';
             $this->code = Config::RETURN_ERROR;
         } else {
             $week  = \Hnust\week();
@@ -34,13 +34,13 @@ class Tools extends Auth
         $day     = \Hnust\input('day');
         $session = \Hnust\input('session');
         if (empty($course) || empty($day) || empty($session)) {
-            $this->msg = '参数有误';
+            $this->msg  = '参数有误';
             $this->code = Config::RETURN_ERROR;
         } elseif (!in_array($day, array(1, 2, 3, 4, 5, 6 ,7))) {
-            $this->msg = '星期参数有误';
+            $this->msg  = '星期参数有误';
             $this->code = Config::RETURN_ERROR;
         } elseif (!in_array($session, array(1, 2, 3, 4, 5))) {
-            $this->msg = '节次参数有误';
+            $this->msg  = '节次参数有误';
             $this->code = Config::RETURN_ERROR;
         } else {
             $schedule = new \Hnust\Analyse\Schedule('1301010101');
@@ -62,7 +62,7 @@ class Tools extends Auth
 
         //判断周次
         if (($week < 1) || ($week > 20)) {
-            $this->msg = '周次有误，请重新选择';
+            $this->msg  = '周次有误，请重新选择';
             $this->code = Config::RETURN_ERROR;
             return;
         }
@@ -90,7 +90,7 @@ class Tools extends Auth
 
         //判断学号
         if (empty($student)) {
-            $this->msg = '学号不能为空，请选择群组或者输入学号';
+            $this->msg  = '学号不能为空，请选择群组或者输入学号';
             $this->code = Config::RETURN_ERROR;
             return;
         }

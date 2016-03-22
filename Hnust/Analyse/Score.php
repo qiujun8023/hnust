@@ -33,13 +33,13 @@ Class Score extends \Hnust\Crawler\Score
             $score = parent::getScore();
 
             //从成绩中获取个人信息
-            $sid      = $score['info']['sid'];
-            $class    = $score['info']['class'];
-            $major    = $score['info']['major'];
-            $college  = $score['info']['college'];
-            $grade    = $class[0] . $class[1] . "级";
-            $time     = $score['info']['time'];
-            $score    = $score['data'];
+            $sid     = $score['info']['sid'];
+            $class   = $score['info']['class'];
+            $major   = $score['info']['major'];
+            $college = $score['info']['college'];
+            $grade   = $class[0] . $class[1] . "级";
+            $time    = $score['info']['time'];
+            $score   = $score['data'];
 
             //更新资料表
             $sql = 'UPDATE `student` SET `sid` = ?, `class` = ?, `major` = ?, `college` = ?, `grade` = ? WHERE `sid` = ?';

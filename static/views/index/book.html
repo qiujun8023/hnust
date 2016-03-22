@@ -12,20 +12,37 @@
     <div class="animate" ng-if="!person.loading && !person.error && person.data">
       <div class="ui segment" ng-repeat="item in person.data track by $index">
         <h4 class="ui header" ng-bind="item.title"></h4>
-        <div class="ui divided selection list">
+        <div class="ui divided selection book list">
           <div class="item">
-            <div class="ui green horizontal label">
+            <div class="ui teal horizontal label">
               <i class="barcode icon"></i> 条码
             </div>
             <span style="color:#333" ng-bind="item.barcode"></span>
           </div>
           <div class="item">
-            <div class="ui teal horizontal label">
+            <div class="ui green horizontal label">
+              <i class="alarm icon"></i> 额度
+            </div>
+            <span style="color:#333" ng-if="item.remain > 0">
+              请在
+              <span class="orange remain" ng-bind="item.remain" ng-if="item.remain < 15"></span>
+              <span class="green remain" ng-bind="item.remain" ng-if="item.remain >= 15"></span>
+              天内归还
+            </span>
+            <span style="color:#333" ng-if="item.remain == 0">
+              请务必在<span class="red remain">今天</span>内归还
+            </span>
+            <span style="color:#333" ng-if="item.remain < 0">
+              您的书已过期<span class="red remain" ng-bind="-item.remain"></span>天
+            </span>
+          </div>
+          <div class="item">
+            <div class="ui orange horizontal label">
               <i class="wait outline icon"></i> 期限
             </div>
             <span style="color:#333" ng-bind="item.time"></span>
             <div class="circular ui icon orange mini button" style="padding: 5px 10px;" ng-click="renew(item)">
-              <i class="history icon"></i> 续借
+              <i class="history icon"></i> 续期
             </div>
           </div>
         </div>
@@ -34,11 +51,11 @@
   </div>
   <div class="ui tab " data-tab="list">
     <div class="ui segment" style="margin-bottom: 0;border-radius: 0;">
-      <div class="ui form">
-        <div class="field" style="padding-right:80px">
+      <div class="ui search form">
+        <div class="field">
           <input type="text" placeholder="请输入关键词" ng-model="key">
         </div>
-        <button class="ui submit positive search button">搜索</button>
+        <button class="ui submit positive button">搜索</button>
       </div>
       <div ng-include="'static/views/index/loading.html'" ng-if="list.loading"></div>
       <div class="ui warning message" ng-if="!list.loading && list.error">

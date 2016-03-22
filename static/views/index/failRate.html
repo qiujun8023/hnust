@@ -1,6 +1,6 @@
 <div class="container">
-  <form class="ui form">
-    <div class="field" style="padding-right:80px">
+  <form class="ui search form">
+    <div class="field">
       <div class="ui fluid search selection dropdown active visible" autocomplete>
         <input type="hidden" name="key">
         <div class="default text"></div>
@@ -9,7 +9,7 @@
           <div class="item" ng-repeat="item in keys| limitTo:6" ng-bind="item" ng-click="search(item)"></div>
         </div>
       </div>
-      <button class="ui positive search button" ng-click="search()">搜索</button>
+      <button class="ui positive button" ng-click="search()">搜索</button>
     </div>
   </form>
   <div ng-include="'static/views/index/loading.html'" ng-if="loading"></div>

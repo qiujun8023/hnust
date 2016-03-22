@@ -1,4 +1,4 @@
-# 还需运行Node/JavaScript/main.js，并且将访问反向代理socket与wechat目录的访问
+# 还需运行Node/main.coffee，并且将访问反向代理socket与wechat目录的访问
 
 Options +FollowSymlinks
 RewriteEngine On

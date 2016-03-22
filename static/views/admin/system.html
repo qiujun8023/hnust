@@ -4,18 +4,18 @@
     <a class="item" data-tab="update">更新</a>
   </div>
   <div class="ui bottom attached active tab segment" data-tab="setting">
-    <div ng-include="'static/views/admin/loading.html'" ng-if="loading"></div>
-    <div class="ui warning message" ng-if="!loading && error">
-      <div class="header" ng-bind="error"></div>
+    <div ng-include="'static/views/admin/loading.html'" ng-if="setting.loading"></div>
+    <div class="ui warning message" ng-if="!setting.loading && setting.error">
+      <div class="header" ng-bind="setting.error"></div>
     </div>
-    <form class="ui animate form" ng-show="!loading && !error">
-      <div class="setting field" ng-repeat="item in data track by $index">
+    <form class="ui setting form" ng-show="!setting.loading && !setting.error">
+      <div class="field" ng-repeat="item in setting.data track by $index">
         <label ng-bind="item.mark + '：'" ng-init="item.changed = false"></label>
         <input type="text" ng-model="item.value" ng-change="item.changed = true">
-        <button class="ui positive button" ng-class="{disabled:!item.changed}" ng-click="update(item)">保存</button>
+        <button class="ui positive button" ng-class="{disabled:!item.changed}" ng-click="setting.update(item)">保存</button>
       </div>
     </form>
-  </div> 
+  </div>
   <div class="ui bottom attached tab segment" data-tab="update">
     <div class="ui update form">
       <div class="ui info message">
@@ -40,13 +40,13 @@
       </div>
       <div class="field">
         <label>学号</label>
-        <input type="text" name="sid" ng-model="sid" placeholder="更新的起始学号（不填即为继续上次更新）">
+        <input type="text" name="sid" ng-model="update.sid" placeholder="更新的起始学号（不填即为继续上次更新）">
       </div>
       <div class="field">
         <label>Cookie</label>
-        <textarea name="cookie" ng-model="cookie" placeholder="更新需要用到的Cookie"></textarea>
+        <textarea name="cookie" ng-model="update.cookie" placeholder="更新需要用到的Cookie"></textarea>
       </div>
-      <div class="ui submit positive button">更新</div>
+      <div class="ui submit positive button" ng-class="{loading:update.loading}">更新</div>
     </div>
   </div>
 </div>

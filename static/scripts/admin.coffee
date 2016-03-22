@@ -197,32 +197,32 @@ hnust.config ($animateProvider, $httpProvider, $routeProvider) ->
         .when '/system',
             title: '系统配置'
             controller: 'system'
-            templateUrl: 'static/views/admin/system.html?160201'
+            templateUrl: 'static/views/admin/system.html?160316'
         .when '/statistic',
             title: '数据统计'
             controller: 'statistic'
-            templateUrl: 'static/views/admin/statistic.html?151207'
+            templateUrl: 'static/views/admin/statistic.html?160316'
         .when '/user',
             title: '用户管理'
             controller: 'user'
-            templateUrl: 'static/views/admin/user.html?151207'
+            templateUrl: 'static/views/admin/user.html?160316'
         .when '/app',
             title: 'APP管理'
             controller: 'app'
-            templateUrl: 'static/views/admin/app.html?151207'
+            templateUrl: 'static/views/admin/app.html?160316'
         .when '/push',
             title: '消息推送'
             controller: 'push'
-            templateUrl: 'static/views/admin/push.html?160201'
+            templateUrl: 'static/views/admin/push.html?160316'
         .when '/logs',
             title: '访问日志'
             controller: 'logs'
-            templateUrl: 'static/views/admin/logs.html?151104'
+            templateUrl: 'static/views/admin/logs.html?160316'
         .when '/tools',
             title: '实用工具'
             module: 'tools'
             controller: 'tools'
-            templateUrl: 'static/views/admin/tools.html?151104'
+            templateUrl: 'static/views/admin/tools.html?160316'
         .otherwise
             redirectTo: '/student'
 
@@ -364,7 +364,7 @@ hnust.run ($rootScope, $cookies, request) ->
                 content: value
 
 #导航栏控制器
-navbarController = ($scope, request) ->
+navbarController = ($scope, $rootScope, request) ->
     #加载layer扩展方法
     layer.config
         extend: 'extend/layer.ext.js'
@@ -381,6 +381,13 @@ navbarController = ($scope, request) ->
 
     #获取用户信息
     $scope.$emit 'updateUserInfo'
+
+    #滚动到指定位置
+    $rootScope.scrollTop = ->
+        $('body,html').animate
+            scrollTop:0
+        , 500
+        return
 
     #注销登录
     $scope.logout = ->
@@ -439,17 +446,17 @@ systemController = ($scope, request) ->
     $('.ui.update.dropdown').dropdown()
 
     #获取配置列表
-    $scope.loading = true
+    $scope.setting = loading:true
     request.query
         params:
             method: 'setting'
     , (error, info, data) ->
-        $scope.loading = false
-        $scope.error   = error
-        $scope.data    = data
+        $scope.setting.loading = false
+        $scope.setting.error   = error
+        $scope.setting.data    = data
 
     #更新配置
-    $scope.update = (item) ->
+    $scope.setting.update = (item) ->
         request.query
             params:
                 method: 'setting'
@@ -461,6 +468,7 @@ systemController = ($scope, request) ->
             if !error then item.changed = false
 
     # 数据更新
+    $scope.update = {}
     $('.ui.update.form').form
         type:
             identifier: 'type'
@@ -483,14 +491,16 @@ systemController = ($scope, request) ->
         inline: true
         on    : 'blur'
         onSuccess: ->
+            $scope.update.loading = true
             type = $('.ui.update.dropdown').dropdown('get value')
             request.query
                 params:
                     method: 'update'
                     type  : type
-                    sid   : $scope.sid
-                    cookie: $scope.cookie
+                    sid   : $scope.update.sid
+                    cookie: $scope.update.cookie
             , (error) ->
+                $scope.update.loading = false
                 if error then layer.msg error
             return false
 
@@ -539,9 +549,10 @@ statisticController = ($scope, $timeout ,request) ->
             window.open(url, '_blank', 'width=500,height=300,menubar=yes')
 
 #用户管理
-userController = ($scope, $timeout, $filter, request) ->
+userController = ($scope, $rootScope, $timeout, $filter, request) ->
     $('.tabular.menu .item').tab()
     $('.add.dropdown').dropdown()
+    $('.sort.dropdown').dropdown()
     $scope.rank2group =
         1: "查自己"
         2: "查全班"
@@ -551,28 +562,40 @@ userController = ($scope, $timeout, $filter, request) ->
         9: "管理员"
 
     $scope.user =
-        key   : ''
-        per   : 15
-        page  : 1
-        data  : []
-        result: []
-        action: (key, page)->
+        key     : ''
+        per     : 15
+        page    : 1
+        sortName: 'regTime'
+        sortBy  : false
+        data    : []
+        result  : []
+        action: (key, page, sortName, sortBy)->
             if this.data.lenght is 0 then return
-            this.key    = key  || this.key
-            this.page   = page || this.page
+            this.key      = key      || this.key
+            this.page     = page     || this.page
+            if sortName is this.sortName
+                this.sortBy = !this.sortBy
+            else if typeof sortBy is 'boolean'
+                this.sortBy = sortBy
+            this.sortName = sortName || this.sortName
             this.offset = (this.page - 1) * this.per
             this.result = $filter('filter')(this.data, this.key)
+            this.result = $filter('sortBy')(this.result, this.sortName, this.sortBy)
             this.total  = this.result.length
             this.result = $filter('cut')(this.result, this.offset, this.offset + this.per)
+            $rootScope.scrollTop()
             $timeout ->
                 $('.change.dropdown').dropdown
                     action: 'hide'
 
     #获取用户列表
     $scope.list = ->
+        $scope.loading = true
         request.query {}, (error, info, data) ->
-            $scope.error = error
-            $scope.last  = data.last || {}
+            $scope.loading   = false
+            $scope.error     = error
+            $scope.last      = data.last || {}
+            $scope.weixin    = data.weixin || {}
             $scope.user.data = data.user || {}
             $scope.user.action()
 
@@ -657,7 +680,7 @@ userController = ($scope, $timeout, $filter, request) ->
     $scope.list()
 
 #APP管理
-appController = ($scope, request, $filter, FileUploader) ->
+appController = ($scope, $rootScope, request, $filter, FileUploader) ->
     $('.tabular.menu .item').tab()
 
     #获取配置列表
@@ -684,6 +707,7 @@ appController = ($scope, request, $filter, FileUploader) ->
             this.result = $filter('filter')(this.data, this.key)
             this.total  = this.result.length
             this.result = $filter('cut')(this.result, this.offset, this.offset + this.per)
+            $rootScope.scrollTop()
 
     #发布App
     $scope.put = {}

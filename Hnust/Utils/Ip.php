@@ -46,9 +46,9 @@ class Ip
 
         //判断本机IP调用
         if ($ip === Config::getConfig('local_in_ip')) {
-            return '本机内网IP';
+            return '服务器内网IP';
         } elseif ($ip === Config::getConfig('local_out_ip')) {
-            return '本机外网IP';
+            return '服务器外网IP';
         }
 
         //读取本地缓存

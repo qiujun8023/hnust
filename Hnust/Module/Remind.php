@@ -392,6 +392,8 @@ class Remind extends Base
         //设置日志文件
         $this->logFileName = 'book';
 
+        $cache = new Cache('remind_book');
+
         //全负荷运行
         Config::fullLoad();
 
@@ -404,6 +406,11 @@ class Remind extends Base
                 WHERE `sid` IN (SELECT `uid` FROM `user`)';
         $students = Mysql::execute($sql);
         foreach ($students as $student) {
+            //判断是否需要获取借阅列表
+            if ($cache->get($student['sid'])) {
+                continue;
+            }
+
             try {
                 $bookClass = new \Hnust\Analyse\Book($student['sid']);
                 $loanList  = $bookClass->getLoanList();
@@ -411,9 +418,14 @@ class Remind extends Base
                 $this->record("获取【{$student['name']}】的借阅列表失败：" . $e->getMessage());
                 continue;
             }
+
+            $minDiff = 20;
             foreach ($loanList as $item) {
                 $time = strtotime($item['time']);
-                $diff = round(($time - $nowdate) / 3600 / 24);
+                $diff = round(($time - $nowdate) / 86400);
+
+                $minDiff = ($minDiff > $diff)? $diff:$minDiff;
+
                 if (!in_array($diff, $remain)) {
                     continue;
                 }
@@ -423,9 +435,15 @@ class Remind extends Base
                 } catch (\Exception $e) {
                     $result = $e->getMessage();
                 }
-                $title = '图书借阅过期提醒 -- Tick团队';
-                $content  = "亲爱的 {$student['name']} 同学，您借阅的《{$item['title']}》将于{$diff}天内到期，我们已尝试为您进行续借操作，操作结果为：【{$result}】";
+                $title   = '图书借阅过期提醒 -- Tick团队';
+                $content = "亲爱的 {$student['name']} 同学，您借阅的《{$item['title']}》将于{$diff}天内到期，我们已尝试为您进行续借操作，操作结果为：【{$result}】";
                 $this->remind($student, $title, $content, '#/book');
+            }
+
+            //计算多少天秒内不需要获取借阅列表
+            $cacheTime = ($minDiff - $remain[0]) * 86400;
+            if ($cacheTime > 0) {
+                $cache->set($student['sid'], true, $cacheTime);
             }
         }
         $this->record("=== 图书提醒执行完成 ===");
@@ -438,7 +456,7 @@ class Remind extends Base
         $this->logFileName = 'account';
 
         //检查
-        $saveDay = Config::getConfig('save_account_time') / 60 / 60 / 24;
+        $saveDay = Config::getConfig('save_account_time') / 86400;
         $sql = "SELECT `s`.`sid`, `s`.`name`, `s`.`mail` FROM `user` `u`
                 LEFT JOIN `student` `s` ON `s`.`sid` = `u`.`uid`
                 WHERE DATE_SUB(CURDATE(), INTERVAL {$saveDay} DAY) = DATE(`u`.`loginTime`)";
@@ -453,5 +471,53 @@ class Remind extends Base
             $this->remind($user, $title, $content, '', '011');
         }
         $this->record("=== 销号提醒执行完成 ===");
+    }
+
+    //网络监控
+    public function network()
+    {
+        //设置日志文件
+        $this->logFileName = 'network';
+
+        //获取最新数据
+        $net     = file_get_contents('/proc/net/dev');
+        $pattern = "/eth1:\s*(\d+)\s+(\d+)\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+(\d+)\s+(\d+)/";
+        preg_match($pattern, $net, $matches);
+        $newRes  = array(
+            'in'   => array(
+                'bytes'   => $matches[1],
+                'packets' => $matches[2],
+            ),
+            'out'  => array(
+                'bytes'   => $matches[3],
+                'packets' => $matches[4],
+            ),
+            'time' => time()
+        );
+
+        //处理缓存数据
+        $cache  = new Cache('remind_network');
+        $oldRes = $cache->get('res');
+        $cache->set('res', $newRes);
+        if (empty($oldRes)) {
+            return;
+        }
+
+        //判断是否提醒
+        $minutes = number_format(($newRes['time'] - $oldRes['time']) / 60, 2);
+        $bytes   = $newRes['out']['bytes'] - $oldRes['out']['bytes'];
+        $currentSize = \Hnust\sizeFormat($bytes);
+        $totalSize   = \Hnust\sizeFormat($newRes['out']['bytes']);
+        $remindValue = Config::getConfig('network_remind_value');
+        $remindUser  = Config::getConfig('network_remind_user');
+        if ($bytes > $remindValue) {
+            $sql     = 'SELECT `sid`, `name`, `mail` FROM `student` WHERE `sid` = ?';
+            $result  = Mysql::execute($sql, array($remindUser));
+            $student = $result[0];
+            $title   = '服务器流量异常提醒 -- Tick团队';
+            $content = "尊敬的管理员您好，系统检测服务器出网流量在 {$minutes} 分钟内共消耗了 {$currentSize}，累计使用 {$totalSize}，请及时处理！" ;
+            $this->remind($student, $title, $content, '', '010');
+        }
+        $this->record("{$minutes} 分钟内共消耗出网流量 {$currentSize}，累计使用 {$totalSize}");
     }
 }

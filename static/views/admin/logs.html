@@ -18,11 +18,11 @@
         <div class="item" data-value="admin" ng-click="list('admin')">后台管理</div>
       </div>
     </div>
-    <div class="ui saved form">
-      <div class="field" style="padding-right:80px">
+    <div class="ui saved search form">
+      <div class="field">
         <input type="text" placeholder="请输入关键词" ng-model="info.key">
       </div>
-      <button class="ui submit positive search button">筛选</button>
+      <button class="ui submit positive button">筛选</button>
     </div>
     <div ng-include="'static/views/admin/loading.html'" ng-if="loading"></div>
     <div class="ui warning message" ng-if="!loading && error">

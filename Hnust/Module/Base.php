@@ -14,8 +14,8 @@ Class Base
     //初始化
     public function __construct($module, $method)
     {
-        $this->module  = $module;
-        $this->method  = $method;
+        $this->module    = $module;
+        $this->method    = $method;
         $this->beginTime = microtime(true);
     }
 

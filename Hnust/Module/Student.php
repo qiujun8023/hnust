@@ -234,15 +234,26 @@ class Student extends Auth
     //一卡通
     public function card()
     {
-        $type = \Hnust\input('type', '');
-        $card = new \Hnust\Analyse\Card($this->sid, $this->passwd);
-        if (in_array($type, array('loss', 'reloss'))) {
+        $type      = \Hnust\input('type', '');
+        $startDate = \Hnust\input('startDate', null);
+        $endDate   = \Hnust\input('endDate', null);
+        $card      = new \Hnust\Analyse\Card($this->sid, $this->passwd);
+        if ('bill' === $type) {
+            $this->info  = $card->getInfo();
+            $this->data  = $card->getBill($this->info['cardId'], $startDate, $endDate);
+            $student     = new \Hnust\Analyse\Student();
+            if ($info = $student->info($this->sid)) {
+                $this->data['assess'] = $info['assess'];
+            } else {
+                $this->data['assess'] = '适中';
+            }
+        } elseif (in_array($type, array('loss', 'reloss'))) {
             $loss = ('loss' === $type);
             $this->msg  = $card->doLoss($loss);
             $this->info = $card->getInfo();
         } else {
             $this->info = $card->getInfo();
-            $this->data = $card->getRecord($this->info['cardId']);
+            $this->data = $card->getRecord($this->info['cardId'], $startDate, $endDate);
         }
         $this->info['sid'] = $this->sid;
     }
@@ -258,7 +269,7 @@ class Student extends Auth
         } elseif (('term' === $by) && (11 !== strlen($term))) {
             $term = Config::getConfig('current_term');
         }
-        $term  = ('term' !== $by)? substr($term, 0, 9):$term;
+        $term = ('term' !== $by)? substr($term, 0, 9):$term;
         $isDownload = \Hnust\input('download/b', false);
         $rank = new \Hnust\Analyse\Rank($this->sid);
         if ($isDownload) {
