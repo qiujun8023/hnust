@@ -283,8 +283,8 @@ class Admin extends Auth
             }
             //获取七牛Token
             $bucket = 'ypan';
-            $accessKey = 'HDFk_P0orhoc9hmQS32-4uKxhQVZI67Cr3mgF-kv';
-            $secretKey = 'ERNsjIybLKO45K0sNoYXWYhJu_A0O5f34QXvwWUc';
+            $accessKey = '';
+            $secretKey = '';
             $auth = new \Qiniu\Auth($accessKey, $secretKey);
             $this->info['qiniu'] = $auth->uploadToken($bucket);
         }
