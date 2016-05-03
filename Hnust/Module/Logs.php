@@ -12,15 +12,22 @@ class Logs extends Base
     //获取日志内容
     protected function getContent($file)
     {
-        $lines  = 1000;
-        $result = '';
-        $path   = Config::BASE_PATH . Config::LOGS_PATH . '/' . $file . $this->suffix;
-        $handle = fopen($path, 'r');
+        $result  = array();
+        $path    = Config::BASE_PATH . Config::LOGS_PATH . '/' . $file . $this->suffix;
+        $handle  = fopen($path, 'r');
+        $pattern = "/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/";
         while ($handle && !feof($handle)) {
-            $result = fgets($handle) . $result;
+            $temp = fgets($handle);
+            if (preg_match($pattern, $temp)) {
+                array_unshift($result, $temp);
+            } elseif (empty($result)) {
+                $result[0] = $temp;
+            } elseif (!empty($temp)) {
+                $result[0] .= $temp;
+            }
         }
         fclose($handle);
-        return $result;
+        return implode('', $result);
     }
 
     //获取日志列表
@@ -28,13 +35,13 @@ class Logs extends Base
     {
         $result = array();
         $path   = Config::BASE_PATH . Config::LOGS_PATH . '/';
-        $handle = opendir(Config::BASE_PATH . Config::LOGS_PATH);
+        $handle = opendir($path);
         while ($handle && (false !== ($file = readdir($handle)))) {
             $suffix = strrchr(strtolower($file), $this->suffix);
             if ($suffix !== $this->suffix) {
                 continue;
             }
-            $result[] = rtrim($file, $this->suffix);
+            $result[] = substr($file, 0, -strlen($this->suffix));
         }
         closedir($handle);
         return $result;

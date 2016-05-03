@@ -71,7 +71,7 @@ class Wechat
             if ('0' != $info['errcode']) {
                 return false;
             }
-            self::$cache->set($uid, $info, 3600);
+            self::$cache->set($uid, $info, 86400);
         }
         return $info;
     }

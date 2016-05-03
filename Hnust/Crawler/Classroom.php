@@ -21,7 +21,7 @@ class Classroom extends Jwc
                 CURLOPT_TIMEOUT    => 5,
             ));
         } catch (\Exception $e) {
-            throw new \Exception('网络异常，空闲教室查询失败！', Config::RETURN_ERROR);
+            throw new \Exception('网络异常，空闲教室查询失败', Config::RETURN_ERROR);
         }
 
         $classroom = array();

@@ -32,7 +32,7 @@ Class Card extends \Hnust\Crawler\Card
     {
         $result = parent::doLoss($loss);
         if (!$loss && '操作成功' === $result) {
-            $result = '解挂成功，如卡状态仍未更改，请稍等1分钟再刷新页面。';
+            $result = '解挂成功，如卡状态仍未更改，请稍等1分钟再刷新页面';
         }
         return $result;
     }

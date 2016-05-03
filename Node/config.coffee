@@ -1,7 +1,10 @@
 # 第三方模块
-path      = require('path')
-log4js    = require('log4js')
-memcached = require('memcached')
+path   = require('path')
+log4js = require('log4js')
+redis  = require('redis')
+
+# 配置缓存
+exports.cache = redis.createClient()
 
 # 企业号相关信息
 exports.wechat =
@@ -20,18 +23,14 @@ exports.tencentyun  =
     userid    : 'userid'
     faceGroups: []
 
-# 本机内外网地址
-exports.inUrl  = 'http://in.hnust.ticknet.cn'
-exports.outUrl = 'http://hnust.ticknet.cn'
-
 # 临时文件目录
-exports.tempUrl  = 'http://hnust.ticknet.cn/runtime/temp'
+exports.baseUrl  = 'https://hnust.ticknet.cn'
 exports.tempPath = path.resolve __dirname, '../runtime/temp'
 
 # 配置日志输出
 logger = log4js.getLogger()
-logger.setLevel('info')
+logger.setLevel('warn')
 exports.logger = logger
 
-# 配置缓存
-exports.mmc = new memcached('127.0.0.1:11211')
+# 默认头像地址
+exports.defaultAvatar = path.resolve __dirname, '../static/src/img/user.png'

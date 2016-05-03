@@ -22,7 +22,7 @@ class Jwc
     public function __construct($sid, $passwd = '', $nocache = false)
     {
         if (empty($sid)) {
-            throw new \Exception('服务器错误，学号为空。', Config::RETURN_ERROR);
+            throw new \Exception('服务器错误，学号为空', Config::RETURN_ERROR);
         }
 
         $this->sid    = $sid;
@@ -85,7 +85,7 @@ class Jwc
                 CURLOPT_TIMEOUT => 3,
             ));
         } catch (\Exception $e) {
-            throw new \Exception('验证码获取失败。', Config::RETURN_ERROR);
+            throw new \Exception('验证码获取失败', Config::RETURN_ERROR);
         }
         $this->cookies = $http->cookies;
 
@@ -110,7 +110,7 @@ class Jwc
                 CURLOPT_TIMEOUT => 3,
             ));
         } catch (\Exception $e) {
-            throw new \Exception('教务网网络过慢。', Config::RETURN_ERROR);
+            throw new \Exception('教务网网络过慢', Config::RETURN_ERROR);
         }
 
         //检查登录状态
@@ -148,7 +148,7 @@ class Jwc
                     CURLOPT_TIMEOUT    => 3,
                 ));
             } catch (\Exception $e) {
-                throw new \Exception('登录失败，无法提交验证码。', Config::RETURN_ERROR);
+                throw new \Exception('登录失败，无法提交验证码', Config::RETURN_ERROR);
             }
             //登录成功
             if (false !== stripos($http->content, 'framework/main.jsp')) {
@@ -166,11 +166,11 @@ class Jwc
                 return true;
             //密码错误，抛出异常
             } else if (false !== stripos($http->content, '帐号不存在或密码错误')) {
-                throw new \Exception('登录失败，教务网密码错误！', Config::RETURN_NEED_PASSWORD);
+                throw new \Exception('登录失败，教务网密码错误', Config::RETURN_NEED_PASSWORD);
             } else {
                 continue;
             }
         }
-        throw new \Exception('登录失败，验证码识别失败。', Config::RETURN_ERROR);
+        throw new \Exception('登录失败，验证码识别失败', Config::RETURN_ERROR);
     }
 }

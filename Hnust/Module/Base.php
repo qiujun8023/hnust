@@ -44,8 +44,8 @@ Class Base
         if (isset($this->anser) && is_array($this->anser)) {
             //统计代码执行时间及Mysql执行次数
             if (isset($this->anser['info']) && is_array($this->anser['info'])) {
-                $this->anser['info']['runTime']  = microtime(true) - $this->beginTime;
-                $this->anser['info']['mysql'] = Mysql::$count;
+                $this->anser['info']['runTime'] = microtime(true) - $this->beginTime;
+                $this->anser['info']['mysql']   = Mysql::$count;
             }
             Output::output($this->anser);
         }

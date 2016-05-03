@@ -1,0 +1,61 @@
+<div class="container">
+  <div others></div>
+  <div ng-include="'loading.html'" ng-if="loading"></div>
+  <div class="ui warning message" ng-if="!loading && error">
+    <div class="header" ng-bind="error"></div>
+  </div>
+  <!-- 评教列表 -->
+  <div class="animate" ng-if="!loading && !error && data && data.length && !judging">
+    <table class="ui teal celled striped unstackable attached table">
+      <thead>
+        <tr>
+          <th class="seven wide center aligned">科目</th>
+          <th class="center aligned">教师</th>
+          <th class="center aligned">分数</th>
+          <th class="center aligned">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-init="isSubmit = ((item.submit == '是') && (item.mark >= 55))" ng-repeat="item in data track by $index">
+          <td class="center aligned" ng-bind="item.course"></td>
+          <td class="center aligned" ng-bind="item.teacher"></td>
+          <td class="center aligned">
+            <i class="green checkmark icon" ng-if="isSubmit"></i> {{item.mark}}
+          </td>
+          <td class="center aligned">
+            <a href="javascript:void(0)" ng-click="judge(item)" ng-bind="isSubmit? '修改':'评价'"></a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <button class="ui fluid teal button" style="margin:15px 0" ng-click="auto.action()">自动评教</button>
+    <div class="ui inverted dimmer" ng-class="{active:auto.loading}">
+      <div class="ui text loader">
+        <p>评教中，请稍后....</p>
+        <p ng-bind="'已评：' + auto.success + '门；失败：' + auto.error + '门'"></p>
+      </div>
+    </div>
+  </div>
+  <!-- 评教中 -->
+  <div class="ui judging form segment animate" ng-show="judging">
+    <h3 class="ui header" ng-bind="judging.course"></h3>
+    <div class="ui vertical teal segment" ng-repeat="title in ['老师讲课有吸引力，能激发我思考和探究的兴趣。','我的学习在课内课外都能够得到老师的指导和帮助。','我感觉老师是用心备课。','老师关注学生的课堂表现并能维持良好的学习环境。','老师能布置课内或课外作业，及时进行批改或点评。','老师评价学生的表现时公正合理，对作业及测验成绩很重视。','老师着装得体、普通话标准，具有人格魅力，对我的影响很大。','老师帮助我进一步掌握了知识的获取方法和理解途径。','老师能合理运用板书和课件等多种教学媒体，便于我理解教学内容。','老师会结合学科前沿或社会热点，对教材知识进行拓展性讲解。'];">
+      <h5 ng-bind="(index + 1) + '、' + title"></h5>
+      <div class="four fields" ng-init="index = $index">
+        <div class="field" ng-repeat="radio in ['非常满意','满意','一般','较差']">
+          <div class="ui radio checkbox">
+            <input type="radio" name="radio{{index}}" ng-value="$index">  
+            <label ng-bind="radio"></label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ui vertical segment" style="text-align:right">
+      <div class="ui buttons">
+        <div class="ui green button" ng-class="{loading:judging.loading}" ng-click="submit()">提交并保存</div>
+        <div class="or" ng-show="!judging.loading"></div>
+        <div class="ui orange button" ng-show="!judging.loading" ng-click="judging = false">返回上级</div>
+      </div>
+    </div>
+  </div>
+</div>

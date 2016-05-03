@@ -2,21 +2,16 @@
 request = require('request')
 
 # 自定义模块
-config    = require(__dirname + '/config')
-youtu     = require(__dirname + '/youtu')
-wechatApi = require(__dirname + '/wechatApi')
+config  = require(__dirname + '/config')
 
 # log4js日志
 logger = config.logger
-
-# 微信SDK
-apisdk = wechatApi.apisdk
 
 # 请求数据
 getData = (method, params, callback) ->
     params.secret = config.wechat.secret
     options =
-        url : config.outUrl + "/weixin/" + method
+        url : config.baseUrl + "/weixin/" + method
         form: params
     request.post options, (err, res, body) ->
         if err then return callback err
@@ -28,35 +23,6 @@ getData = (method, params, callback) ->
             logger.error "JSON如下：#{body}"
             return callback "JSON解析失败"
         callback null, body
-
-# 图片识别
-faceidentify = (sid, url, callback) ->
-    youtu url, (err, res) ->
-        if err then return apisdk.send
-            touser:sid
-        ,
-            msgtype: 'text',
-            text   :
-                content: err
-        , callback
-        params =
-            sid: sid
-            uid: sid
-            res: res
-        getData 'face', params, (err, res) ->
-            if err then res = code:-1
-            res.code = parseInt res.code
-            if res.code is 0
-                msg =
-                    msgtype: 'news'
-                    news   :
-                        articles: res.data
-            else
-                msg =
-                    msgtype: 'text',
-                    text   :
-                       content: res.msg || '服务器发生错误，请稍后再试...'
-            apisdk.send touser:sid, msg, callback
 
 # 消息回复
 message = (msg, session, callback) ->
@@ -81,11 +47,6 @@ message = (msg, session, callback) ->
     if key in ['?', '？', '菜单', '首页', '索引']
         session.state = ''
         answer = '已经成功返回主菜单'
-    else if key is '识图'
-        session.state = ''
-        answer = '正在进行识别，请稍候...'
-        faceidentify params.sid, pic, (err) ->
-            if err then logger.error err
     # 密码状态
     else if session.state is '输入密码'
         method = session.last.method
@@ -115,6 +76,9 @@ message = (msg, session, callback) ->
             when '成绩' then method = 'score'
             when '课表' then method = 'schedule'
             when '考试' then method = 'exam'
+            when '识图'
+                method = 'face'
+                params.pic = pic
             when '解绑Ta'
                 session.ta = ''
                 answer = "解绑Ta完成"
@@ -151,17 +115,20 @@ message = (msg, session, callback) ->
 
 # 微信消息处理
 wechat = (req, res, next) ->
-    msg = req.weixin
-    mmcKey = "wechat_session_#{msg.FromUserName}"
-    config.mmc.get mmcKey, (err, session) ->
-        if err then return res.reply '服务器错误。'
-        message msg, session || {}, (err, answer, session) ->
+    msg        = req.weixin
+    cacheKey   = 'wechat_session'
+    cacheField = msg.FromUserName
+    config.cache.hget cacheKey, cacheField, (err, session) ->
+        if err then return res.reply '服务器出错了，请稍后再试'
+        session = JSON.parse(session || '{}')
+        message msg, session, (err, answer, session) ->
             if err
                 logger.error 'message error', err
                 return res.reply ''
             # 缓存临时数据
-            config.mmc.set mmcKey, session, 0, (err) ->
-                if err then logger.error 'memcache error', err
+            session = JSON.stringify session
+            config.cache.hset cacheKey, cacheField, session, (err) ->
+                if err then logger.error 'cache error', err
             res.reply answer
 
 module.exports = wechat

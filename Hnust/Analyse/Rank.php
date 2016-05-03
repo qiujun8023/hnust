@@ -190,7 +190,7 @@ Class Rank
         return $rank;
     }
 
-    public function getExcel($term, $scope, $by)
+    public function getExcel($uid, $term, $scope, $by)
     {
         //获取排名情况
         $rank = $this->getRank($term, $scope, $by);
@@ -271,9 +271,11 @@ Class Rank
         $activeSheet->getStyle($marksIndex)->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
 
         //缓存与下载
-        $fileName = $this->title . '.xls';
+        $download  = new Download($uid);
+        $fileName  = $this->title . '.xls';
+        $fileInfo  = $download->set($fileName);
         $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-        $objWriter->save(Config::BASE_PATH . Config::TEMP_PATH . '/' . $fileName);
-        return Config::TEMP_PATH . '/' . $fileName;
+        $objWriter->save($fileInfo['path']);
+        $download->rewrite($fileInfo['rand']);
     }
 }

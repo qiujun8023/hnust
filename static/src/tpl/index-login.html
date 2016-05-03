@@ -1,0 +1,45 @@
+<div class="container">
+  <div class="ui warning message" ng-bind="prompt || '您需要登陆后才能访问'"></div>
+  <!-- 触发浏览器保存密码 -->
+  <iframe name='iframe' style="display:none"></iframe> 
+  <form class="ui attached fluid form segment" action="https://localhost" method="post" target="iframe">
+    <div class="field">
+      <label>学号</label>
+      <input type="text" style="font-size:1.1em" placeholder="请输入学号" name="uid" ng-model="uid">
+    </div>
+    <div class="field">
+      <label>密码</label>
+      <input type="password" style="font-size:1.1em" placeholder="请输入密码" name="passwd" ng-model="passwd">
+    </div>
+    <div class="field">
+      <div class="ui checkbox">
+        <input type="checkbox" name="agreement" checked>
+        <label>我同意</label>
+      </div>
+      <div style="display: inline-block;vertical-align: middle;">
+        《<a href="#/agreement">用户使用协议</a>》
+      </div>
+    </div>
+    <div class="positive ui submit button" ng-class="{loading:loading}">登录</div>
+    <div class="ui bottom right attached label" style="padding:0" ng-show="$root.tick.isClient == false">
+      <a class="ui android label" ng-href="{{$root.url}}app">
+        <i class="android icon"></i> 安卓
+      </a>
+      <a class="ui wechat label">
+        <i class="wechat icon"></i> 微信
+      </a>
+    </div>
+    <div class="ui wechat popup" style="width: 200px">
+      <img class="ui medium rounded image" src="dist/img/qrcode.jpg" style="margin:auto">
+      <div class="ui positive message">
+        <div class="content" style="text-align:center">
+          关注【Tick网络工作室】<br/>
+          享受更便捷的提醒功能
+        </div>
+      </div>
+    </div>
+  </form>
+  <div class="ui bottom attached warning message" ng-if="error">
+    <i class="info circle icon"></i> {{error}}
+  </div>
+</div>

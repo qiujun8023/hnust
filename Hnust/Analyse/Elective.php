@@ -150,7 +150,7 @@ Class Elective extends \Hnust\Crawler\Elective
                    VALUES (?, ?, ?, CURRENT_TIMESTAMP)";
         $sqlArr = array($this->sid, $title, $url);
         if (!Mysql::execute($sql, $sqlArr)) {
-            throw new \Exception('加入队列失败，数据库异常。', Config::RETURN_ALERT);
+            throw new \Exception('加入队列失败，数据库异常', Config::RETURN_ALERT);
         }
 
         $id = Mysql::lastInsertId();

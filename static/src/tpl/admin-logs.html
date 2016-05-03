@@ -1,0 +1,80 @@
+<div class="container">
+  <div class="ui top attached fluid two item tabular menu">
+    <a class="item" data-tab="saved">日志记录</a>
+    <a class="active item" data-tab="realtime">实时日志</a>
+  </div>
+  <div class="ui bottom attached tab segment" data-tab="saved">
+    <div class="ui fluid selection type dropdown" style="margin-bottom:11px">
+      <input type="hidden" name="type" ng-value="info.type">
+      <i class="dropdown icon"></i>
+      <div class="default text">请选择日志类型</div>
+      <div class="menu">
+        <div class="item" data-value="all" ng-click="list('all')">全部日志</div>
+        <div class="item" data-value="visitor" ng-click="list('visitor')">游客日志</div>
+        <div class="item" data-value="error" ng-click="list('error')">异常日志</div>
+        <div class="item" data-value="loss" ng-click="list('loss')">404错误</div>
+        <div class="item" data-value="wechat" ng-click="list('wechat')">微信调用</div>
+        <div class="item" data-value="api" ng-click="list('api')">API调用</div>
+        <div class="item" data-value="admin" ng-click="list('admin')">后台管理</div>
+      </div>
+    </div>
+    <div class="ui saved search form">
+      <div class="field">
+        <input type="text" placeholder="请输入关键词" ng-model="info.key">
+      </div>
+      <button class="ui submit positive button">筛选</button>
+    </div>
+    <div ng-include="'loading.html'" ng-if="loading"></div>
+    <div class="ui warning message" ng-if="!loading && error">
+      <div class="header" ng-bind="error"></div>
+    </div>
+    <div class="animate" ng-if="!loading && !error">
+      <div class="ui positive message" ng-bind="'当前第' + info.page + '页,共' + info.pages + '页,总计' + info.nums + '条.'"></div>
+      <div class="ui fluid log card" ng-class="state2Color[item.state]" ng-repeat="item in data | sortBy:'time':false">
+        <div class="content">
+          <div class="right floated" ng-bind="state2Type[item.state]"></div>
+          <div class="header" ng-bind="item.name || '游客'" ng-if="!item.uid"></div>
+          <div class="header" ng-bind="item.name + '（' + item.uid + '）'" ng-if="item.uid"></div>
+          <div class="meta" ng-bind="item.time"></div>
+          <div class="ui middle aligned list">
+            <div class="item">
+              <div class="content" ng-bind="'地点：' + item.location + '（' + item.ip + '）'"></div>
+            </div>
+            <div class="item" ng-if="item.url">
+              <div class="content" ng-bind="'网址：' + item.url"></div>
+            </div>
+            <div class="item" ng-if="item.ua">
+              <div class="content" ng-bind="'设备：' + item.ua"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <paging style="margin-bottom:15px" page="info.page" page-size="info.per" total="info.nums" paging-action="list(info.type, info.key, page)"></paging>
+    </div>
+  </div>
+  <div class="ui bottom attached active tab segment" data-tab="realtime">
+    <div class="ui positive message" ng-bind="$root.rtLogs.title"></div>
+    <div class="ui fluid animate log card" ng-class="state2Color[item.state]" ng-repeat="item in $root.rtLogs.data | sortBy:'time':false">
+      <div class="content">
+        <div class="right floated" ng-bind="state2Type[item.state]"></div>
+        <div class="header" ng-bind="item.name || '游客'" ng-if="!item.uid"></div>
+        <div class="header" ng-bind="item.name + '（' + item.uid + '）'" ng-if="!!item.uid"></div>
+        <div class="meta" ng-bind="item.time"></div>
+        <div class="ui middle aligned list">
+          <div class="item" ng-if="item.ip">
+            <div class="content" ng-bind="'地点：' + item.location + '（' + item.ip + '）'"></div>
+          </div>
+          <div class="item" ng-if="item.url">
+            <div class="content" ng-bind="'网址：' + item.url"></div>
+          </div>
+          <div class="item" ng-if="item.data">
+            <div class="content" ng-bind="'数据：' + item.data"></div>
+          </div>
+          <div class="item" ng-if="item.ua">
+            <div class="content" ng-bind="'设备：' + item.ua"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

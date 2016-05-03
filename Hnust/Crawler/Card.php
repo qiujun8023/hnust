@@ -74,7 +74,7 @@ class Card
         $imgPath = tempnam(Config::TMP_PATH, 'img');
         file_put_contents($imgPath, $content);
         if (!($res = imagecreatefrompng($imgPath))) {
-            throw new \Exception('获取一卡通映射值失败。', Config::RETURN_ERROR);
+            throw new \Exception('获取一卡通映射值失败', Config::RETURN_ERROR);
         }
 
         $result = array();
@@ -103,13 +103,13 @@ class Card
                 CURLOPT_TIMEOUT => 5,
             ));
         } catch (\Exception $e) {
-            throw new \Exception('获取一卡通信息失败。', Config::RETURN_ERROR);
+            throw new \Exception('获取一卡通信息失败', Config::RETURN_ERROR);
         }
         $content  = str_replace(array('&nbsp;', ' ', "\r\n"), '', strip_tags($http->content));
         $pattern  = '/姓名：(.*?)帐号：(.*?)性别：(?:.*?)卡状态：(.*?)冻结状态：(.*?)余额：(.*?)（卡余额）(?:.*?)检查状态：(.*?)挂失状态：(.*)$/';
         preg_match($pattern, $content, $temp);
         if (empty($temp)) {
-            throw new \Exception('获取一卡通信息失败。', Config::RETURN_ERROR);
+            throw new \Exception('获取一卡通信息失败', Config::RETURN_ERROR);
         }
 
         //检查一卡通状态
@@ -162,7 +162,7 @@ class Card
                 CURLOPT_TIMEOUT    => 5,
             ));
         } catch (\Exception $e) {
-            throw new \Exception('网络异常，' . ($loss? '挂失':'解挂') . '失败。', Config::RETURN_ERROR);
+            throw new \Exception('网络异常，' . ($loss? '挂失':'解挂') . '失败', Config::RETURN_ERROR);
         }
         $content = mb_convert_encoding($http->content, 'UTF-8', 'GBK');
         $pattern = '/<p class="biaotou" ?>(.*)<\/p>/';
@@ -189,51 +189,53 @@ class Card
                 $records .= $http->content;
             }
 
-            //获取下一步地址
-            $http = new Http(array(
-                CURLOPT_URL     => $this->baseUrl . 'accounthisTrjn.action',
-                CURLOPT_COOKIE  => $this->cookies,
-                CURLOPT_TIMEOUT => 5,
-            ));
-            preg_match('/action="\/(.*?)"/', $http->content, $temp);
-
-            //选择类型为所有
-            $http = new Http(array(
-                CURLOPT_URL        => $this->baseUrl . $temp[1],
-                CURLOPT_POSTFIELDS => "account={$cardId}&inputObject=all",
-                CURLOPT_COOKIE     => $this->cookies,
-                CURLOPT_TIMEOUT    => 5,
-            ));
-            preg_match('/action="\/(.*?)"/', $http->content, $temp);
-
-            //选择时间
-            $http = new Http(array(
-                CURLOPT_URL        => $this->baseUrl . $temp[1],
-                CURLOPT_POSTFIELDS => "inputStartDate={$startDate}&inputEndDate={$endDate}",
-                CURLOPT_COOKIE     => $this->cookies,
-                CURLOPT_TIMEOUT    => 5,
-            ));
-            preg_match('/action="(.*?)"/', $http->content, $temp);
-
-            //取查询结果
-            $http = new Http(array(
-                CURLOPT_URL     => $this->baseUrl . 'accounthisTrjn.action' . $temp[1],
-                CURLOPT_COOKIE  => $this->cookies,
-                CURLOPT_TIMEOUT => 15,
-            ));
-            $records .= $http->content;
-
-            for ($i = 2; $i < 30; $i++) {
-                if (false === stripos($http->content, 'button14_Onclick();')) {
-                    break;
-                }
+            if ($startDate < date('Ymd', time())) {
+                //获取下一步地址
                 $http = new Http(array(
-                    CURLOPT_URL        => $this->baseUrl . 'accountconsubBrows.action',
-                    CURLOPT_POSTFIELDS => 'pageNum=' . $i,
+                    CURLOPT_URL     => $this->baseUrl . 'accounthisTrjn.action',
+                    CURLOPT_COOKIE  => $this->cookies,
+                    CURLOPT_TIMEOUT => 5,
+                ));
+                preg_match('/action="\/(.*?)"/', $http->content, $temp);
+
+                //选择类型为所有
+                $http = new Http(array(
+                    CURLOPT_URL        => $this->baseUrl . $temp[1],
+                    CURLOPT_POSTFIELDS => "account={$cardId}&inputObject=all",
                     CURLOPT_COOKIE     => $this->cookies,
                     CURLOPT_TIMEOUT    => 5,
                 ));
+                preg_match('/action="\/(.*?)"/', $http->content, $temp);
+
+                //选择时间
+                $http = new Http(array(
+                    CURLOPT_URL        => $this->baseUrl . $temp[1],
+                    CURLOPT_POSTFIELDS => "inputStartDate={$startDate}&inputEndDate={$endDate}",
+                    CURLOPT_COOKIE     => $this->cookies,
+                    CURLOPT_TIMEOUT    => 5,
+                ));
+                preg_match('/action="(.*?)"/', $http->content, $temp);
+
+                //取查询结果
+                $http = new Http(array(
+                    CURLOPT_URL     => $this->baseUrl . 'accounthisTrjn.action' . $temp[1],
+                    CURLOPT_COOKIE  => $this->cookies,
+                    CURLOPT_TIMEOUT => 15,
+                ));
                 $records .= $http->content;
+
+                for ($i = 2; $i < 30; $i++) {
+                    if (false === stripos($http->content, 'button14_Onclick();')) {
+                        break;
+                    }
+                    $http = new Http(array(
+                        CURLOPT_URL        => $this->baseUrl . 'accountconsubBrows.action',
+                        CURLOPT_POSTFIELDS => 'pageNum=' . $i,
+                        CURLOPT_COOKIE     => $this->cookies,
+                        CURLOPT_TIMEOUT    => 5,
+                    ));
+                    $records .= $http->content;
+                }
             }
 
             $records = mb_convert_encoding($records, 'UTF-8', 'GBK');

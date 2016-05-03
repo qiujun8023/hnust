@@ -44,13 +44,6 @@ class Ip
     {
         $ip = empty($ip)? self::value():$ip;
 
-        //判断本机IP调用
-        if ($ip === Config::getConfig('local_in_ip')) {
-            return '服务器内网IP';
-        } elseif ($ip === Config::getConfig('local_out_ip')) {
-            return '服务器外网IP';
-        }
-
         //读取本地缓存
         if (null == self::$cache) {
             self::$cache = new Cache('ip');

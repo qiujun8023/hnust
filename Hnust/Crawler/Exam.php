@@ -19,7 +19,7 @@ class Exam extends Jwc
                 CURLOPT_TIMEOUT => 3,
             ));
         } catch (\Exception $e) {
-            throw new \Exception('网络异常，考试安排批次获取失败！', Config::RETURN_ERROR);
+            throw new \Exception('网络异常，考试安排批次获取失败', Config::RETURN_ERROR);
         }
 
         $content = substr($http->content, strpos($http->content, '考试名称：'));
@@ -58,7 +58,7 @@ class Exam extends Jwc
                     CURLOPT_TIMEOUT    => 5,
                 ));
             } catch (\Exception $e) {
-                throw new \Exception('网络异常，考试安排获取失败！', Config::RETURN_ERROR);
+                throw new \Exception('网络异常，考试安排获取失败', Config::RETURN_ERROR);
             }
 
             $content = str_replace('&nbsp;', '', $http->content);

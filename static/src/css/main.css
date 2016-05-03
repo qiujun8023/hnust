@@ -1,0 +1,273 @@
+.pointer {
+  cursor: pointer;
+}
+
+.break {
+  word-wrap: break-word;
+  word-break: break-all;
+}
+
+.container {
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+}
+@media (max-width: 768px) {
+  .desktop.only {
+    display: none !important;
+  }
+}
+@media (min-width: 768px) {
+  .container {
+    width: 750px;
+  }
+  .mobile.only {
+    display: none !important;
+  }
+}
+@media (min-width: 992px) {
+  .container {
+    width: 970px;
+  }
+}
+@media (min-width: 1200px) {
+  .container {
+    width: 1170px;
+  }
+}
+
+.left.item,
+.desktop.only.item {
+  padding-top: 14px !important;
+  padding-bottom: 13px !important;
+}
+
+/* 导航栏图标 */
+.right.menu .icon.item {
+  font-size: 16px;
+}
+
+/* 导航栏图片 */
+.ui.avatar.image {
+  display: inline-block !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* 打赏 */
+.ui.menu .alipay.item {
+  display: none;
+  cursor: pointer;
+}
+@media (min-width: 375px) {
+  .ui.menu .alipay.item {
+    display: inline-block;
+  }
+}
+
+/* 分页 */
+paging {
+  float: right;
+}
+
+/* 搜索按钮 */
+.search.form .field {
+  padding-right:80px;
+}
+.search.form .button {
+  position: absolute;
+  top: 1px;
+  right: 0px;
+}
+
+/* 右侧操作 */
+.ui.right.horizontal.label {
+  position: absolute;
+  right: 8px;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  height: 21.5px;
+}
+
+/* 自动补全 */
+.ui.search.dropdown {
+  border-color: rgba(39,41,43,.15) !important;
+  box-shadow: none !important;
+}
+.ui.search.dropdowm .menu,
+.ui.selection.dropdown .menu {
+  max-height: 15em;
+}
+
+/* 登陆 */
+.download.button {
+  position: fixed;
+  bottom: 28px;
+  left: 28px;
+}
+
+/* 用户协议 */
+.agreement p {
+  text-indent: 2em;
+}
+
+/* 用户中心 */
+.user .accordion,
+.user .accordion .content {
+  margin-bottom:10px;
+}
+
+/* API */
+.api p {
+  text-indent: 2em;
+  margin-top: 10px;
+}
+.api p span.red {
+  color:red
+}
+
+/* 图书 */
+.book .remain {
+  font-weight: bold;
+}
+.book .red.remain {
+  color:#d95c5c;
+}
+.book .orange.remain {
+  color:#E07B53;
+}
+.book .green.remain {
+  color:#21BA45;
+}
+.book.title {
+  font-weight: 500 !important;
+  color: rgba(0,0,0,.8) !important;
+}
+.bookList.table tr td:first-child {
+  width: 75px;
+}
+.book.more {
+  cursor: pointer;
+  text-align: center;
+  font-size: 15px;
+  line-height: 45px;
+}
+.ui.fluid.accordion > div:nth-child(2n) {
+  background-color: rgba(0,0,50,.03);
+}
+
+/* 系统配置 */
+.setting .field {
+  padding-right: 80px;
+  position: relative;
+}
+.setting .field button {
+  position: absolute;
+  bottom: 1px;
+  right: 0px;
+}
+
+/* 数据统计 */
+.statistic table tr td {
+  word-break: break-all;
+}
+
+/* 用户管理 */
+.reset.operate {
+  cursor: pointer;
+  color: #5BBD72;
+}
+
+.unlock.operate {
+  cursor: pointer;
+  color: #5BBD72;
+  padding-left: 8px;
+}
+
+.delete.operate {
+  cursor: pointer;
+  color: #E84D4D;
+}
+
+/* 日志记录 */
+.log .content .list .item {
+  word-break: break-all;
+}
+
+/* 资料查询 */
+.data.avatar {
+  max-width: 100px;
+  position: absolute;
+  top: 15%;
+  right: 10%;
+  z-index: 10;
+}
+.divided.list .item {
+  word-break: break-all;
+}
+
+/* 弹窗组件样式的修改 */
+.layui-layer-prompt textarea.layui-layer-input {
+  width: 100% !important;
+}
+.layui-layer-content pre {
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
+  word-break: break-all;
+  font-size: 14px;
+  margin: 0;
+}
+.layui-layer-content span {
+  position: fixed;
+  bottom: 12px;
+  line-height: 28px;
+  color: #aaa;
+}
+
+/* 加载动画 */
+.spinner {
+  margin: 20px auto 0;
+  width: 108px;
+  text-align: center;
+}
+.spinner > div {
+  width: 18px;
+  height: 18px;
+  background-color: #67CF22;
+  border-radius: 100%;
+  display: inline-block;
+  -webkit-animation: bouncedelay 1.4s infinite ease-in-out;
+  animation: bouncedelay 1.4s infinite ease-in-out;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+}
+.spinner .bounce1 {
+  -webkit-animation-delay: -0.32s;
+  animation-delay: -0.32s;
+}
+.spinner .bounce2 {
+  -webkit-animation-delay: -0.16s;
+  animation-delay: -0.16s;
+}
+@-webkit-keyframes bouncedelay {
+  0%, 80%, 100% {
+    -webkit-transform: scale(0.0);
+  }
+  40% {
+    -webkit-transform: scale(1.0);
+  }
+}
+@keyframes bouncedelay {
+  0%, 80%, 100% {
+    transform: scale(0.0);
+    -webkit-transform: scale(0.0);
+  } 40% {
+    transform: scale(1.0);
+    -webkit-transform: scale(1.0);
+  }
+}

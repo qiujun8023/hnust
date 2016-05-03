@@ -21,7 +21,7 @@ class Schedule extends Jwc
                 CURLOPT_TIMEOUT    => 5,
             ));
         } catch (\Exception $e) {
-            throw new \Exception('课表获取失败。', Config::RETURN_ERROR);
+            throw new \Exception('课表获取失败', Config::RETURN_ERROR);
         }
 
         $content = str_replace(
@@ -64,7 +64,7 @@ class Schedule extends Jwc
         }
 
         if (false === $false) {
-            throw new \Exception('课表获取失败。', Config::RETURN_ERROR);
+            throw new \Exception('课表获取失败', Config::RETURN_ERROR);
         } else {
             return $schedule;
         }

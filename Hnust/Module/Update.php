@@ -34,10 +34,13 @@ class Update extends Base
         }
 
         //获取缓存数据
-        $cacheData = $this->cache->get($key);
-        $this->sid    = $cacheData['sid'];
+        $cacheData    = $this->cache->get($key);
+        $this->sid    = $cacheData['start'];
         $this->cookie = $cacheData['cookie'];
-        return $cacheData;
+        return array(
+            'sid'    => $this->sid,
+            'cookie' => $this->cookie
+        );
     }
 
     //缓存用户信息
@@ -52,7 +55,7 @@ class Update extends Base
 
         //更新缓存学号
         if (!empty($sid)) {
-            $cacheData['sid'] = $sid;
+            $cacheData['start'] = $sid;
         }
 
         //更新缓存cookie
@@ -76,77 +79,6 @@ class Update extends Base
         }
     }
 
-    //日常任务
-    public function daily()
-    {
-        //更新年龄
-        $sql = "UPDATE `student` SET age = CONCAT(YEAR(NOW()) - SUBSTRING(`idCard`, 7, 4) - 1 + (SUBSTRING(`idCard`, 11, 4) < DATE_FORMAT(NOW(), '%m%d')), '岁') WHERE LENGTH(`idCard`) = 18";
-        $num = Mysql::execute($sql);
-        $log = "更新年龄{$num}人";
-
-        //一卡通密码初始化
-        $sql = "INSERT INTO passwd(`id`, `part`, `passwd`)
-                  SELECT `sid`, 'ykt', RIGHT(`idcard`, 6)
-                  FROM `student` WHERE `sid` NOT IN (SELECT `id` FROM `passwd` WHERE `part` = 'ykt')";
-        Mysql::execute($sql);
-
-        //删除空密码
-        $sql = "DELETE FROM `passwd` WHERE `passwd` = ''";
-        $num = Mysql::execute($sql);
-        $log .= "，删除密码{$num}条";
-
-        //查询待删除用户
-        $saveTime = Config::getConfig('save_account_time') + Config::getConfig('max_remember_time');
-        $saveDay  = $saveTime / 60 / 60 / 24;
-        $sql = "SELECT `u`.`uid`, `s`.`name` FROM `user` `u`
-                LEFT JOIN `student` `s` ON `s`.`sid` = `u`.`uid`
-                WHERE DATE_SUB(CURDATE(), INTERVAL {$saveDay} DAY) >= DATE(`u`.`loginTime`)";
-        $users = Mysql::execute($sql);
-        $names = array();
-        foreach ($users as $user) {
-            $names[] = $user['name'];
-            \Hnust\Utils\Wechat::deleteUser($user['uid']);
-        }
-        if (!empty($names)) {
-            $log .= '，删除用户' . implode('、', $names);
-        }
-        //删除用户
-        $sql = "DELETE FROM `user`
-                WHERE DATE_SUB(CURDATE(), INTERVAL {$saveDay} DAY) >= DATE(`loginTime`)";
-        Mysql::execute($sql);
-
-        //删除失效提醒
-        $sql = 'DELETE FROM `push`
-                WHERE `uid` NOT IN (SELECT `uid` FROM `user`)
-                OR `time` < DATE_SUB(NOW(), INTERVAL 1 MONTH)';
-        $num = Mysql::execute($sql);
-        $log .= "，删除提醒{$num}条";
-
-        //清除日志
-        $sql = "DELETE FROM `logs`
-                WHERE `uid` IN ('NO UID')
-                OR (`ip` != ? AND `location` LIKE '%阿里%')
-                OR`time` < DATE_SUB(NOW(), INTERVAL 3 MONTH)";
-        $num = Mysql::execute($sql, array(Config::getConfig('local_out_ip')));
-        $sql = "DELETE FROM `logs` WHERE `uid` != ''
-                AND `uid` NOT IN (SELECT `uid` FROM `user`)";
-        $num += Mysql::execute($sql);
-        $log .= "，清除日志{$num}条";
-
-        //更新日志
-        $sql = "UPDATE `student` `s`, `logs` `l`
-                SET `l`.`key` = `s`.`name`
-                WHERE `l`.`key` = `s`.`sid`";
-        $num = Mysql::execute($sql);
-        $sql = "UPDATE `logs` SET `key` = ''
-                WHERE `key` in (`uid`, `name`, '湖南科技大学')";
-        $num += Mysql::execute($sql);
-        $log .= "，更新日志{$num}条";
-
-        //写入日志文件
-        Log::file('daily', $log);
-    }
-
     //单个成绩
     public function score()
     {
@@ -163,7 +95,7 @@ class Update extends Base
         //获取起始学号
         $this->getCache(__FUNCTION__);
         if (empty($this->sid)) {
-            return $this->log('', '成绩更新', '学号为空，不更新成绩。');
+            return $this->log('', '成绩更新', '学号为空，不更新成绩');
         }
 
         //全负荷运行
@@ -177,7 +109,7 @@ class Update extends Base
                     AND `a`.`sid` > ? LIMIT 20";
             $students = Mysql::execute($sql, array($this->sid));
             if (empty($students)) {
-                return $this->log('', '成绩更新', '成绩更新完成。');
+                return $this->log('', '成绩更新', '成绩更新完成');
             }
 
             $url = $baseUrl . 'update/score';
@@ -198,7 +130,7 @@ class Update extends Base
         //获取起始学号
         $this->getCache(__FUNCTION__);
         if (empty($this->sid)) {
-            return $this->log('', '课表更新', '学号为空，不更新课表。');
+            return $this->log('', '课表更新', '学号为空，不更新课表');
         }
 
         //全负荷运行
@@ -210,7 +142,7 @@ class Update extends Base
                 AND `a`.`sid` > ? LIMIT 1";
         $result = Mysql::execute($sql, array($this->sid));
         if (empty($result)) {
-            return $this->log('', '课表更新', '课表更新完成。');
+            return $this->log('', '课表更新', '课表更新完成');
         }
 
         $this->sid = $result[0]['sid'];
@@ -247,7 +179,7 @@ class Update extends Base
         //清空FailRate
         $sql = 'TRUNCATE TABLE `failRate`';
         Mysql::execute($sql);
-        $this->log('', '挂科率统计', '已清空所有挂科率信息。');
+        $this->log('', '挂科率统计', '已清空所有挂科率信息');
         //获取所有学院
         $sql = 'SELECT DISTINCT `college` FROM `student`';
         $colleges = Mysql::execute($sql);
@@ -299,9 +231,9 @@ class Update extends Base
             //计算挂科率并写入数据库
             $sql = 'INSERT INTO `failRate`(`name`, `course`, `all`, `fail`, `rate`) VALUES(?, ?, ?, ?, ?)';
             if (Mysql::executeMultiple($sql, $sqlArr)) {
-                $this->log('', '挂科率统计', $college . '挂科率更新成功。');
+                $this->log('', '挂科率统计', $college . '挂科率更新成功');
             } else {
-                $this->log('', '挂科率统计', $college . '挂科率更新失败。');
+                $this->log('', '挂科率统计', $college . '挂科率更新失败');
             }
         }
 
@@ -312,7 +244,7 @@ class Update extends Base
                 SELECT '潇湘学院',`course`, SUM(`all`) `all`, SUM(`fail`) `fail`, (SUM(`fail`) / SUM(`all`) * 100) `rate`, CURRENT_TIMESTAMP
                 FROM `failRate` WHERE `name` LIKE '%系' GROUP BY `course`;";
         Mysql::execute($sql);
-        $this->log('', '挂科率统计', '已更新全校挂科率信息。');
+        $this->log('', '挂科率统计', '已更新全校挂科率信息');
     }
 
     //更新弱密码数据库
@@ -348,7 +280,7 @@ class Update extends Base
             if (Mysql::executeMultiple($sql, $passwds)) {
                 Log::file('passwd', '成功更新' . count($passwds) . '条密码');
             } else {
-                Log::file('passwd', '密码更新失败。');
+                Log::file('passwd', '密码更新失败');
                 break;
             }
         }

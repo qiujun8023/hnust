@@ -5,15 +5,15 @@
   "main": "main.js",
   "author": "qiujun",
   "dependencies": {
-    "socket.io": "latest",
-    "wechat-enterprise":"latest",
+    "async": "latest",
+    "body-parser": "latest",
     "express": "latest",
-    "body-parser":"latest",
+    "gm": "latest",
+    "log4js": "latest",
+    "moment": "latest",
+    "redis": "^2.6.0-1",
     "request": "latest",
-    "moment":"latest",
-    "memcached":"latest",
-    "log4js":"latest",
-    "async":"latest",
-    "gm":"latest"
+    "socket.io": "latest",
+    "wechat-enterprise": "latest"
   }
 }

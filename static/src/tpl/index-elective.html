@@ -1,0 +1,108 @@
+<div class="container">
+  <div class="ui top attached fluid two item tabular menu">
+    <a class="active item" data-tab="me">我</a>
+    <a class="item" data-tab="list">选课</a>
+  </div>
+  <div class="ui bottom attached active tab segment" data-tab="me">
+    <div ng-include="'loading.html'" ng-if="person.loading"></div>
+    <div class="ui warning message" ng-if="!person.loading && person.error">
+      <div class="header">
+        <span ng-bind="person.error"></span>
+        <a href="javascript:void(0)" ng-click="getPerson()">
+          刷新<i class="refresh icon"></i>
+        </a>
+      </div>
+    </div>
+    <div class="animate" ng-if="!person.loading && !person.error">
+      <div class="ui info message" ng-if="!person.loading">
+        如显示不及时，可以
+        <a href="javascript:void(0)" ng-click="getPerson()">
+          手动刷新<i class="refresh icon"></i>
+        </a>
+      </div>
+      <h4 class="ui horizontal divider">
+        <i class="list icon"></i> 已选列表
+      </h4>
+      <div class="ui teal message" ng-if="!person.selected.length">
+        未找到已选的课程
+      </div>
+      <div class="ui vertical segment" ng-style="$last? {'box-shadow':'none'}:{}" ng-if="person.selected.length" ng-repeat="item in person.selected">
+        <h4 class="ui header" style="padding-right:65px" ng-bind="item.course"></h4>
+        <div class="ui orange button" style="position: absolute;right: 10px;top: 10px;padding: 0.5em 1.0em;" ng-click="action('退选 ' + item.course + ' ', item.url)">退</div>
+        <div class="ui selection list">
+          <div class="item">
+            <div class="ui orange horizontal label">时间</div>
+            <span style="color:#333" ng-bind="item.time"></span>
+          </div>
+          <div class="item">
+            <div class="ui teal horizontal label">地点</div>
+            <span style="color:#333" ng-bind="item.place"></span>
+          </div>
+          <div class="item">
+            <div class="ui green horizontal label">老师</div>
+            <span style="color:#333" ng-bind="item.teacher"></span>
+          </div>
+        </div>
+      </div>
+      <h4 class="ui horizontal divider">
+        <i class="history icon"></i> 选课队列
+      </h4>
+      <div class="ui teal message" ng-if="!person.queue.length">
+        选课队列为空
+      </div>
+      <div class="ui divided selection list" ng-if="person.queue.length">
+        <div class="item" ng-repeat="item in person.queue | sortBy:'upTime':false">
+          <div style="display: table-cell;vertical-align: middle;min-width: 65px;">
+            <div class="ui teal horizontal label" ng-if="!item.result">进行中</div>
+            <div class="ui green horizontal label" ng-if="item.result">已完成</div>
+          </div>
+          <div class="content" style="display: table-cell;">
+            <div class="header" ng-bind="item.title"></div>
+            <div class="description" ng-bind="item.result"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ui bottom attached tab segment" data-tab="list">
+    <form class="ui search form">
+      <div class="field">
+        <div class="ui fluid search selection dropdown active visible" autocomplete>
+          <input type="hidden" name="key">
+          <div class="default text"></div>
+          <input class="search" placeholder="请输入课程名称" ng-model="key" ng-change="check(key)">
+          <div class="menu" ng-click="dropdown('hide')">
+            <div class="item" ng-repeat="item in keys track by $index" ng-bind="item" ng-click="search(item)"></div>
+          </div>
+        </div>
+        <button class="ui positive button" ng-click="search()">搜索</button>
+      </div>
+    </form>
+    <div ng-include="'loading.html'" ng-if="list.loading"></div>
+    <div class="ui warning message" ng-if="!list.loading && list.error">
+      <div class="header" ng-bind="list.error"></div>
+    </div>
+    <div class="animate" ng-if="!list.loading && !list.error && list.data">
+      <div class="ui vertical segment" ng-style="{'opacity':item.opacity}" ng-repeat="item in list.data">
+        <h4 class="ui header" ng-class="{red: (item.credit == 2)}" style="padding-right:65px" ng-bind="item.course + '(' + item.teacher + ')'"></h4>
+        <div class="ui teal button" style="position: absolute;right: 10px;top: 10px;padding: 0.5em 1.0em;" ng-click="action('选修 ' + item.course + ' ', item.url)">选</div>
+        <div class="ui selection list">
+          <div class="item">
+            <div class="ui green horizontal label">时间</div>
+            <span style="color:#333" ng-bind="item.time"></span>
+          </div>
+          <div class="item">
+            <div class="ui teal horizontal label">地点</div>
+            <span style="color:#333" ng-bind="item.place"></span>
+          </div>
+          <div class="item">
+            <div class="ui orange horizontal label">其他</div>
+            <span style="color:#333" ng-bind="'余量：' + item.remain + '/' + item.total"></span>
+            <span style="color:#333;margin-left:10px" ng-bind="'挂科率：' + ((item.rate == -1)? '未知': ((item.rate | number:2) + '%'))"></span>
+          </div>
+        </div>
+      </div>
+      <paging style="margin: 20px 0 5px 0;" page="list.info.page" page-size="list.info.per" total="list.info.nums" paging-action="search(key, page)"></paging>
+    </div>
+  </div>
+</div>

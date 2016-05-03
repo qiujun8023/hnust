@@ -1,0 +1,32 @@
+<div class="container">
+  <div others></div>
+  <div ng-include="'loading.html'" ng-if="loading"></div>
+  <div class="ui warning message" ng-if="!loading && error">
+    <div class="header" ng-bind="error"></div>
+  </div>
+  <div class="animate" ng-if="!loading && !error">
+    <table class="ui teal striped unstackable attached table" ng-style="{'margin-bottom':$last? '0':'30px'}" ng-repeat="term in terms">
+      <thead>
+        <tr><th colspan="3" class="center aligned" ng-bind="'学年学期：' + term"></th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="nine wide center aligned">科目</td>
+          <td class="three wide center aligned">学分</td>
+          <td class="four wide center aligned">分数</td>
+        </tr>
+        <tr ng-repeat="item in data[term] track by $index" ng-class="{error: ((item.mark < 60) || (item.mark == '不及格') || !item.mark)}">
+          <td class="center aligned" ng-bind="item.course" ng-if="$root.user.rank < 2"></td>
+          <td class="center aligned" ng-if="$root.user.rank >= 2">
+            <a ng-href="#/scoreAll?course={{item.course}}&sid={{info.sid}}" ng-bind="item.course"></a>
+          </td>
+          <td class="center aligned" ng-bind="item.credit"></td>
+          <td class="center aligned" ng-bind="item.mark" ng-if="!item.resit"></td>
+          <td class="center aligned" ng-if="item.resit">
+            <span class="ui orange circular label" ng-bind="item.mark"></span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

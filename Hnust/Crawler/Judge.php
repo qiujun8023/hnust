@@ -20,14 +20,14 @@ class Judge extends Jwc
                 CURLOPT_TIMEOUT => 3,
             ));
         } catch (\Exception $e) {
-            throw new \Exception('网络异常，评教批次获取失败！', Config::RETURN_ERROR);
+            throw new \Exception('网络异常，评教批次获取失败', Config::RETURN_ERROR);
         }
         //获取评教学期
         $pattern  = '/selected>(.*?)<\/option>(?:.*?)';
         $pattern .= '---请选择---<\/option><option value="(.*?)">(?:.*?)';
         $pattern .= '---请选择---<\/option><option value="(.*?)">(?:.*?)<option value="(.*?)">/s';
         if (!preg_match($pattern, $http->content, $temp)) {
-            throw new \Exception('未找到相关评教数据！', Config::RETURN_ERROR);
+            throw new \Exception('未找到相关评教数据', Config::RETURN_ERROR);
         }
         $term  = $temp[1];
         $batch = $temp[2];
@@ -51,7 +51,7 @@ class Judge extends Jwc
                         CURLOPT_TIMEOUT    => 3,
                     ));
                 } catch (\Exception $e) {
-                    throw new \Exception('网络异常，评教列表获取失败！', Config::RETURN_ERROR);
+                    throw new \Exception('网络异常，评教列表获取失败', Config::RETURN_ERROR);
                 }
 
                 //正则评教列表
@@ -88,12 +88,12 @@ class Judge extends Jwc
                 CURLOPT_TIMEOUT => 3,
             ));
         } catch (\Exception $e) {
-            throw new \Exception('网络异常，评教参数获取失败！', Config::RETURN_ERROR);
+            throw new \Exception('网络异常，评教参数获取失败', Config::RETURN_ERROR);
         }
         $pattern = '/radioXh="0"  value="(.*?)">(?:.*?)radioXh="1"  value="(.*?)">(?:.*?)radioXh="2"  value="(.*?)">(?:.*?)radioXh="3"  value="(.*?)">/s';
         preg_match_all($pattern, $http->content, $temp);
         if (count($temp[0]) != 10) {
-            throw new \Exception('评教失败，请教参数有误！', Config::RETURN_ERROR);
+            throw new \Exception('评教失败，请教参数有误', Config::RETURN_ERROR);
         }
         $mark = array($temp[1], $temp[2], $temp[3], $temp[4]);
 
@@ -111,10 +111,10 @@ class Judge extends Jwc
                 CURLOPT_TIMEOUT    => 3,
             ));
         } catch (\Exception $e) {
-            throw new \Exception('网络异常，评教提交失败！', Config::RETURN_ERROR);
+            throw new \Exception('网络异常，评教提交失败', Config::RETURN_ERROR);
         }
         if (false === stripos($http->content, '提交成功!')) {
-            throw new \Exception('未知错误，评教提交失败！', Config::RETURN_ERROR);
+            throw new \Exception('未知错误，评教提交失败', Config::RETURN_ERROR);
         }
         return true;
     }

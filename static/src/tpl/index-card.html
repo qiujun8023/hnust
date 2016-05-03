@@ -1,0 +1,45 @@
+<div class="container">
+  <div others></div>
+  <div ng-include="'loading.html'" ng-if="loading"></div>
+  <div class="ui warning message" ng-if="!loading && error">
+    <div class="header" ng-bind="error"></div>
+  </div>
+  <div class="animate" ng-if="!loading && !error">
+    <div class="ui positive message" ng-if="info">
+      <div class="header">
+        <div class="ui green horizontal label">
+          余额<div class="detail" ng-bind="info.balance + '元'"></div>
+        </div>
+        <div class="ui horizontal label" ng-class="{true:'green', false:'orange'}[info.status != '挂失']">
+          状态<div class="detail" ng-bind="info.status"></div>
+        </div>
+        <div class="ui horizontal pointer right label"
+             ng-init="loss = (info.status == '挂失')"
+             ng-class="{true:'green',false:'orange'}[loss]"
+             ng-click="card(loss? 'reloss':'loss')"
+             ng-bind="loss? '解挂':'挂失'">
+        </div>
+      </div>
+    </div>
+    <div class="ui teal message" ng-if="data.data && !data.data.length">
+      <div class="header">您的一卡通最近无交易情况</div>
+    </div>
+    <table class="ui teal celled striped unstackable table" ng-if="data.data && data.data.length">
+      <thead>
+        <tr>
+          <th class="center aligned">交易时间</th>
+          <th class="center aligned">交易额</th>
+          <th class="center aligned">余额</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="item in data.result">
+          <td class="center aligned" ng-bind="item.time"></td>
+          <td class="center aligned" ng-bind="item.trade + '元'"></td>
+          <td class="center aligned" ng-bind="item.balance + '元'"></td>
+        </tr>
+      </tbody>
+    </table>
+    <paging style="margin-bottom:15px" page="data.page" page-size="data.per" total="data.total" paging-action="data.action(page)"></paging>
+  </div>
+</div>

@@ -36,11 +36,7 @@ class Log
         $ip       = Ip::value();
         $location = Ip::location($ip);
         $ua       = isset($_SERVER['HTTP_USER_AGENT'])? $_SERVER['HTTP_USER_AGENT']:'';
-        $url      = self::urlFormat($_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
-
-        if ($ip === Config::getConfig('local_in_ip')) {
-            return false;
-        }
+        $url      = self::urlFormat($_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI']);
 
         //写入数据库
         $sql = 'INSERT INTO `logs`(`uid`, `name`, `ip`, `location`, `module`, `method`, `key`, `ua`, `url`, `state`)

@@ -31,7 +31,7 @@ class Credit extends Jwc
                     CURLOPT_TIMEOUT    => 5,
                 ));
             } catch (\Exception $e) {
-                throw new \Exception('网络异常，学分绩点获取失败！', Config::RETURN_ERROR);
+                throw new \Exception('网络异常，学分绩点获取失败', Config::RETURN_ERROR);
             }
 
             //正则所有学分绩点

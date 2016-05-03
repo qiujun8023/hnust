@@ -50,7 +50,7 @@ Class Schedule extends \Hnust\Crawler\Schedule
         $week = trim(str_replace(array('(', ')', '单', '双', '周'), '', $week), ',');
         //校验字符串
         if (0 === strlen($week)) {
-            throw new Exception("周次有误。");
+            throw new Exception("周次有误");
         } elseif (!preg_match('/^[0-9|,|-]*$/', $week)) {
             throw new Exception("周次无法识别");
         }
@@ -104,7 +104,7 @@ Class Schedule extends \Hnust\Crawler\Schedule
         //返回课表类似 [周次][星期][节次][课程]{课程信息}
         } elseif (1 === $type) {
             $result = array();
-            for ($w = (($week === -1)? 0:$week); $w <= (($week === -1)? 20:$week); $w++) {
+            for ($w = 0; $w <= 20; $w++) {
                 for ($i = 1; $i <= 7; $i++) {
                     for ($j = 1; $j <= 5; $j++) {
                         $result[$w][$i][$j] = array();
@@ -115,9 +115,6 @@ Class Schedule extends \Hnust\Crawler\Schedule
                         }
                     }
                 }
-            }
-            if ($week !== -1) {
-                $result = $result[$week];
             }
             $result['remarks'] = $schedule['remarks'];
             return $result;
@@ -139,33 +136,99 @@ Class Schedule extends \Hnust\Crawler\Schedule
         }
     }
 
-    //计算选修课
-    public function getElectiveList($course, $day, $session)
+    public function weekToZh($week)
     {
-        $start = 0;
-        $limit = 5000;
-        $term  = Config::getConfig('current_term');
-        $result = array();
-        while (true) {
-            $sql = "SELECT `a`.`sid`, `a`.`name`, `a`.`class`, `b`.`schedule`
-                    FROM `student` `a`, `schedule` `b`
-                    WHERE `a`.`sid` = `b`.`sid` AND `b`.`term` = ?
-                    ORDER BY `a`.`sid` ASC LIMIT {$start}, {$limit}";
-            if (!($students = Mysql::execute($sql, array($term)))) {
-                break;
-            }
-            foreach ($students as $student) {
-                $schedule = json_decode($student['schedule'], true);
-                foreach ($schedule[$day][$session] as $item) {
-                    if ($item['course'] === $course) {
-                        unset($student['schedule']);
-                        $result[] = $student;
-                        break;
+        $weekToZh = array('', '一', '二', '三', '四', '五', '六', '日');
+        return '星期' . $weekToZh[$week];
+    }
+
+    public function sessionToZh($session)
+    {
+        return '第' . ($session * 2 - 1) . '-' . ($session * 2) . '节';
+    }
+
+    //计算教师课表
+    public function getTeacherSchedule($teacher)
+    {
+        //查询数据库
+        $term = Config::getConfig('current_term');
+        $sql  = "SELECT `schedule` FROM `schedule`
+                 WHERE `term` = ? AND `schedule` LIKE ?";
+        $sqlArr = array($term, '%' . $teacher . '%');
+        if (!($students = Mysql::execute($sql, $sqlArr))) {
+            throw new \Exception('未找到相关结果', Config::RETURN_ERROR);
+        }
+
+        //取不重复数据
+        $result = array(
+            'course' => array(),
+            'remarks' => array()
+        );
+        foreach ($students as $student) {
+            $schedule = json_decode($student['schedule'], true);
+            $schedule = $this->type($schedule, 2);
+            foreach ($schedule as $item) {
+                // 判断备注
+                if (is_string($item)) {
+                    $item = explode(';', $item);
+                    foreach ($item as $per) {
+                        if (stripos($per, $teacher) && !in_array($per, $result['remarks'])) {
+                            $result['remarks'][] = $per;
+                        }
+                    }
+                // 判断课程
+                } elseif (is_array($item) && ($item['teacher'] === $teacher)) {
+                    if (!in_array($item, $result['course'])) {
+                        $result['course'][] = $item;
                     }
                 }
             }
-            $start += $limit;
         }
+
+        //返回数据
+        if (empty($result['course']) && empty($result['remarks'])) {
+            throw new \Exception('未找到相关结果', Config::RETURN_ERROR);
+        } else {
+            usort($result['course'], function($a, $b) {
+                return ($a['day'] > $b['day'])? 1:(($a['session'] > $b['session'])? 1:-1);
+            });
+            foreach ($result['course'] as $key => $value) {
+                $result['course'][$key]['title'] =
+                  $this->weekToZh($value['day']). ' ' . $this->sessionToZh($value['session']);
+            }
+            return $result;
+        }
+    }
+
+    //计算选修课
+    public function getElectiveList($course, $day, $session)
+    {
+        //查询数据库获取满足条件的结果
+        $term = Config::getConfig('current_term');
+        $sql  = "SELECT `a`.`sid`, `a`.`name`, `a`.`class`, `b`.`schedule`
+                FROM `student` `a`
+                LEFT JOIN `schedule` `b` ON `a`.`sid` = `b`.`sid`
+                WHERE `b`.`term` = ? AND `b`.`schedule` LIKE ?
+                ORDER BY `a`.`sid` ASC";
+        $sqlArr = array($term, '%' . $course . '%');
+        if (!($students = Mysql::execute($sql, $sqlArr))) {
+            throw new \Exception('未找到相关结果', Config::RETURN_ERROR);
+        }
+
+        //统计数据
+        $result = array();
+        foreach ($students as $student) {
+            $schedule = json_decode($student['schedule'], true);
+            foreach ($schedule[$day][$session] as $item) {
+                if ($item['course'] === $course) {
+                    unset($student['schedule']);
+                    $result[] = $student;
+                    break;
+                }
+            }
+        }
+
+        //返回结果
         if (empty($result)) {
             throw new \Exception('未找到相关结果', Config::RETURN_ERROR);
         } else {
@@ -184,12 +247,11 @@ Class Schedule extends \Hnust\Crawler\Schedule
         $students = Mysql::execute($sql, array_merge($list, array($term)));
 
         //初始化
-        $numToZh = array('', '一', '二', '三', '四', '五', '六', '日');
         for ($i = 0; $i < 35; $i++) {
             $day = ($i + 1) / 5 + ((($i + 1) % 5)? 1:0);
             $session = $i % 5 + 1;
             $result[] = array(
-                'title' => "星期{$numToZh[$day]} 第{$numToZh[$session]}节大课",
+                'title' => $this->weekToZh($day) . ' ' . $this->sessionToZh($session),
                 'list'  => array(),
                 'free'  => array()
             );
@@ -223,15 +285,14 @@ Class Schedule extends \Hnust\Crawler\Schedule
     //通过教室获取上课班级
     public function getCourse($week, $day, $session, $classroom)
     {
-        $start = 0;
-        $limit = 5000;
+        //查询数据库
         $term = Config::getConfig('current_term');
-        while (true) {
-            $sql = "SELECT `schedule` FROM `schedule` WHERE `term` = ?
-                    ORDER BY `sid` DESC LIMIT {$start}, {$limit}";
-            if (!($result = Mysql::execute($sql, array($term)))) {
-                break;
-            }
+        $sql = "SELECT `schedule` FROM `schedule`
+                WHERE `term` = ? AND `schedule` LIKE ?
+                ORDER BY `sid` DESC";
+        $sqlArr = array($term, '%' . $classroom . '%');
+        if ($result = Mysql::execute($sql, $sqlArr)) {
+            //数据统计
             foreach ($result as $item) {
                 $item = json_decode($item['schedule'], true);
                 foreach ($item[$day][$session] as $course) {
@@ -248,7 +309,6 @@ Class Schedule extends \Hnust\Crawler\Schedule
                     }
                 }
             }
-            $start += $limit;
         }
         throw new \Exception('未找到相关上课班级', Config::RETURN_ERROR);
     }
@@ -292,7 +352,7 @@ Class Schedule extends \Hnust\Crawler\Schedule
     }
 
     //生成EXcel
-    public function getExcel($sid, $term)
+    public function getExcel($uid, $sid, $term)
     {
         $data = $this->getSchdule($sid, $term);
 
@@ -381,9 +441,11 @@ Class Schedule extends \Hnust\Crawler\Schedule
         $activeSheet->mergeCells($marksIndex);
 
         //缓存与下载
-        $fileName = $headline . $term . '.xls';
+        $download  = new Download($uid);
+        $fileName  = $headline . $term . '.xls';
+        $fileInfo  = $download->set($fileName);
         $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-        $objWriter->save(Config::BASE_PATH . Config::TEMP_PATH . '/' . $fileName);
-        return Config::TEMP_PATH . '/' . $fileName;
+        $objWriter->save($fileInfo['path']);
+        $download->rewrite($fileInfo['rand']);
     }
 }

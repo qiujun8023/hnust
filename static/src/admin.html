@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html ng-app="hnust">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title ng-bind="(title? (title + '-') : '') + '湖南科技大学内部网站'"></title>
+  <!-- css -->
+  <link rel="stylesheet" href="//cdn.bootcss.com/semantic-ui/1.12.3/semantic.min.css">
+  <link rel="stylesheet" href="dist/css/all.min.css">
+  <!-- js -->
+  <script src="//cdn.bootcss.com/jquery/2.1.3/jquery.min.js"></script>
+  <script src="//cdn.bootcss.com/semantic-ui/1.12.3/semantic.min.js"></script>
+  <script src="//cdn.bootcss.com/angular.js/1.2.28/angular.min.js"></script>
+  <script src="//cdn.bootcss.com/angular.js/1.2.28/angular-route.min.js"></script>
+  <script src="//cdn.bootcss.com/angular.js/1.2.28/angular-cookies.min.js"></script>
+  <script src="//cdn.bootcss.com/angular.js/1.2.28/angular-animate.min.js"></script>
+  <script src="//cdn.bootcss.com/angular-file-upload/1.1.6/angular-file-upload.min.js"></script>
+  <script src="//cdn.bootcss.com/socket.io/1.3.7/socket.io.min.js"></script>
+  <script src="dist/vendor/layer/2.1/layer.js"></script>
+  <script src="dist/js/ajs.min.js"></script>
+</head>
+<body ng-cloak>
+  <!-- 边栏 -->
+  <div class="ui left vertical inverted labeled icon sidebar menu" style="overflow-x:hidden">
+    <a class="item" href="#/system" ng-show="$root.user.rank >= 9">
+      <i class="setting icon"></i> 系统配置
+    </a>
+    <a class="item" href="#/statistic" ng-show="$root.user.rank >= 9">
+      <i class="bar chart icon"></i> 数据统计
+    </a>
+    <a class="item" href="#/user" ng-show="$root.user.rank >= 9">
+      <i class="user icon"></i> 用户管理
+    </a>
+    <a class="item" href="#/group" ng-show="$root.user.rank >= 9">
+      <i class="users icon"></i> 群组管理
+    </a>
+    <a class="item" href="#/app" ng-show="$root.user.rank >= 9">
+      <i class="cubes icon"></i> APP管理
+    </a>
+    <a class="item" href="#/push" ng-show="$root.user.rank >= 9">
+      <i class="send icon"></i> 消息推送
+    </a>
+    <a class="item" href="#/logs" ng-show="$root.user.rank >= 9">
+      <i class="history icon"></i> 访问日志
+    </a>
+    <a class="item" href="#/tools" ng-show="$root.user.rank >= 9">
+      <i class="wizard icon"></i> 实用工具
+    </a>
+    <a class="item" href="/">
+      <i class="home icon"></i> 网站前台
+    </a>
+  </div>
+
+  <!-- 顶部导航栏 -->
+  <div class="ui fixed inverted main menu" ng-controller="navbar" ng-show="$root.tick.isClient == false">
+    <div class="container">
+      <div class="icon pointer left item" ng-show="!$root.user.rank || $root.user.rank < 8">
+        <span ng-bind="title"></span>
+      </div>
+      <div class="mobile only icon pointer left item" id="menu" ng-show="$root.user.rank >= 8">
+        <i class="sidebar icon"></i>
+        <span ng-bind="title"></span>
+      </div>
+      <div class="ui desktop only pointing dropdown link item" ng-show="$root.user.rank >= 9">
+        <span class="text">系统管理</span>
+        <i class="dropdown icon"></i>
+        <div class="menu">
+          <a class="item" href="#/system">
+            <i class="setting icon"></i> 系统配置
+          </a>
+          <a class="item" href="#/user">
+            <i class="user icon"></i> 用户管理
+          </a>
+          <a class="item" href="#/group">
+            <i class="users icon"></i> 群组管理
+          </a>
+          <a class="item" href="#/app">
+            <i class="cubes icon"></i> APP管理
+          </a>
+          <a class="item" href="#/push">
+            <i class="send icon"></i> 消息推送
+          </a>
+        </div>
+      </div>
+      <div class="ui desktop only pointing dropdown link item" ng-show="$root.user.rank >= 9">
+        <span class="text">数据分析</span>
+        <i class="dropdown icon"></i>
+        <div class="menu">
+          <a class="item" href="#/statistic">
+            <i class="bar chart icon"></i> 数据统计
+          </a>
+          <a class="item" href="#/logs">
+            <i class="history icon"></i> 访问日志
+          </a>
+        </div>
+      </div>
+      <a class="desktop only item" href="#/tools" ng-if="$root.user.rank >= 9">实用工具</a>
+      <a class="desktop only item" href="/">网站前台</a>
+      <div class="right menu">
+        <a class="item" ng-href="{{($root.user.rank && ($root.user.rank > 0))? '/#/user':''}}">
+          <img class="ui avatar image" ng-src="{{$root.user.avatar}}" ng-if="$root.user.avatar">
+          <i class="user icon" ng-if="!$root.user.avatar"></i>
+          <span ng-bind="$root.user.name || '游客'"></span>
+        </a>
+        <div class="pointer alipay item">
+          <i class="heart icon"></i> 打赏
+          <div class="ui alipay popup" style="width: 300px;">
+            <img class="ui medium rounded image" src="dist/img/alipay.jpg">
+            <div class="ui positive message">
+              <div class="content" style="text-align:center">
+                您的支持就是我们最大的动力
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="icon pointer item" ng-click="logout()">
+          <i class="sign out icon"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 页面主体内容 -->
+  <div class="pusher">
+    <div style="padding-top:40px;" ng-if="$root.tick.isClient == false"></div>
+    <div style="padding:20px 0 20px 0" autoscroll ng-view></div>
+  </div>
+
+</body>
+</html>

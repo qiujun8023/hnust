@@ -25,11 +25,11 @@ class Weixin extends Base
         parent::__construct($module, $method);
 
         //初始化数据
-        $this->key    = \Hnust\input('key', '');
-        $this->uid    = \Hnust\input('uid', '');
-        $this->sid    = \Hnust\input('sid', '');
-        $this->secret = \Hnust\input('secret', '');
-        $this->passwd = \Hnust\input('passwd', '');
+        $this->key    = \Hnust\input('key');
+        $this->uid    = \Hnust\input('uid');
+        $this->sid    = \Hnust\input('sid');
+        $this->secret = \Hnust\input('secret');
+        $this->passwd = \Hnust\input('passwd');
 
         //权限验证
         $this->auth();
@@ -38,6 +38,16 @@ class Weixin extends Base
     //判断用户访问权限
     public function auth()
     {
+        //判断微信Secret
+        $wechatSecret = Config::getConfig('wechat_secret');
+        if ($wechatSecret !== $this->secret) {
+            return $this->checkAuth(
+                Config::STATE_FORBIDDEN,
+                Config::RETURN_ERROR,
+                Config::getConfig('forbid_access_msg')
+            );
+        }
+
         //账号及带查询的学号为空
         if (empty($this->sid) || empty($this->uid)) {
             return $this->checkAuth(
@@ -66,17 +76,14 @@ class Weixin extends Base
         $this->name = $result[0]['name'];
         $this->rank = $result[0]['rank']? (int)$result[0]['rank']:-1;
 
-        //判断微信Secret
-        $wechatSecret = Config::getConfig('wechat_secret');
-        if ($wechatSecret !== $this->secret) {
-            return $this->checkAuth(
-                Config::STATE_FORBIDDEN,
-                Config::RETURN_ERROR,
-                Config::getConfig('forbid_access_msg')
-            );
-        }
+        //更新API调用次数
+        $sql = 'UPDATE `user` SET
+                  `wxCount` = `wxCount` + 1,
+                  `lastTime` = NOW()
+                WHERE `uid` = ?';
+        Mysql::execute($sql, array($this->uid));
 
-        //处理Ta的学号
+        //处理学号
         if ($this->uid !== $this->sid) {
             $student = new \Hnust\Analyse\Student();
             $result = $student->search($this->sid);
@@ -92,7 +99,7 @@ class Weixin extends Base
                 return $this->checkAuth(
                     $this->NMStatus,
                     Config::RETURN_ERROR,
-                    '学号不唯一，请修改关键词。'
+                    '学号不唯一，请修改关键词'
                 );
             } else {
                 $this->sid = $result[0]['sid'];
@@ -102,19 +109,18 @@ class Weixin extends Base
         //返回记录
         return $this->checkAuth(
             Config::STATE_WECHAT,
-            Config::RETURN_NORMAL,
-            'Success'
+            Config::RETURN_NORMAL
         );
     }
 
     //记录访问记录并退出
-    public function checkAuth($state, $code, $msg)
+    public function checkAuth($state, $code, $msg = null)
     {
         Log::recode($this->uid, $this->name, $this->module, $this->method, $this->key, $state);
         if ($code !== Config::RETURN_NORMAL) {
             $this->code = $code;
             $this->msg  = $msg;
-            die;
+            exit;
         }
     }
 
@@ -130,8 +136,6 @@ class Weixin extends Base
             $sqlArr = array($this->uid, $wid, $status, $wid, $wid, $status);
             Mysql::execute($sql, $sqlArr);
         }
-        $this->code = Config::RETURN_NORMAL;
-        $this->msg  = '欢迎关注小水表...';
     }
 
     //成绩
@@ -235,104 +239,5 @@ class Weixin extends Base
             $content .= $exam->error;
         }
         $this->data = trim($content);
-    }
-
-    //人脸识别
-    public function face()
-    {
-        //无权访问
-        if ($this->rank < Config::RANK_OTHER) {
-            $this->code = Config::RETURN_ERROR;
-            $this->msg  = '权限不足，无法进行识别';
-            return;
-        }
-
-        $res  = \Hnust\input('res/a');
-        $sids = $confidence = array();
-        foreach ($res as $item) {
-            $sid = $item['person_id'];
-            $sids[] = $sid;
-            $confidences[$sid] = round($item['confidence'], 4);
-        }
-        //查询数据库取结果
-        $student = new \Hnust\Analyse\Student();
-        $data    = $student->wechat($sids);
-        if (!$data) {
-            $this->code = Config::RETURN_ERROR;
-            $this->msg  = '未找到相关结果';
-            return;
-        }
-        usort($data, function($a, $b) use($confidences) {
-            return $confidences[$a['sid']] > $confidences[$b['sid']]? -1:1;
-        });
-        //数据处理为微信数据
-        $this->data = array(array(
-            'title' => "上述图片识别结果如下："
-        ));
-        $templet = "姓名：{name}\n学号：{sid}\n班级：{class}\n相似：{confidence}%";
-        for ($i = 0; (($i <= 7) && ($i < count($data))); $i++) {
-            $data[$i]['confidence'] = $confidences[$data[$i]['sid']];
-            $this->data[] = array(
-                'title'  => \Hnust\templet($templet, $data[$i]),
-                'picurl' => $student->avatar($data[$i]['sid'])
-            );
-        }
-        $this->data[] = array(
-            'title' => "以上只显示相似度最高的{$i}条记录"
-        );
-    }
-
-    //资料查询
-    public function student()
-    {
-        //无权访问
-        if ($this->rank < Config::RANK_ADMIN) {
-            $this->code = Config::RETURN_ERROR;
-            $this->msg  = '水表一下，你就知道';
-            return;
-        }
-
-        if (empty($this->key)) {
-            return $this->data = '请回复相关关键词，多个关键词可用空格分隔：';
-        }
-
-        $this->data = array();
-        $student = new \Hnust\Analyse\Student();
-        $result  = $student->search($this->key, 1);
-        $data    = $result['data'];
-        //无记录
-        if (empty($data)) {
-            $this->msg  = '未找到相关记录，请修改关键词';
-            $this->code = Config::RETURN_ERROR;
-        //单人
-        } elseif (1 === count($data)) {
-            $data = $student->info($data[0]['sid']);
-            $templet = "姓名：{name}\n学号：{sid}\n身高：{height}\n体重：{weight}\n"
-                     . "班级：{class}\n学院：{college}\n宿舍：{dorm}\n电话：{phone}\n"
-                     . "邮箱：{mail}\n住址：{city}\n爱好：{hobby}\n其他：{mark}\n";
-            $description = \Hnust\templet($templet, $data);
-            $description = preg_replace("/\n(.*)?：\s*\n/", "\n", $description);
-            $this->data = array(array(
-                'title'       => '水表一下，你就知道',
-                'description' => trim($description)
-            ));
-        //多人
-        } else {
-            $this->data = array(array(
-                'title' => "与 {$this->key} 有关的记录如下："
-            ));
-            $templet = "姓名：{name}\n学号：{sid}\n班级：{class}";
-            for ($i = 0; (($i <= 7) && ($i < count($data))); $i++) {
-                $this->data[] = array(
-                    'title'  => \Hnust\templet($templet, $data[$i]),
-                    'picurl' => $student->avatar($data[$i]['sid'])
-                );
-            }
-            if ($i !== count($data)) {
-                $this->data[] = array(
-                    'title' => "以上只显示{$i}条记录"
-                );
-            }
-        }
     }
 }

@@ -23,7 +23,6 @@
 * [实用工具(通过教室反查班级、查询选修课成员等)](#实用工具)
 
 ## 全局介绍
-
 * 本项目所有代码均为个人编写（类库除外）
 * 其中特别感谢[`陈康`](http://kchen.cn/) 、[`王克纯`](http://blog.hi-hi.cn/)提供的帮助与技术支持
 * 其中所有数据来源均通过`模拟登陆`、`验证码识别`等实现
@@ -34,7 +33,8 @@
 
 ### PHP端
 * 代码全部遵循 `PHP-FIG`规范
-* 自写简单框架，入口文件为 `/action.php` 使用反射执行代码
+* 对外访问文件夹为 `/public`
+* 自写简单框架，入口文件为 `/public/action.php` 使用反射执行代码
 * 所有PHP代码均在 /Hnust/ 目录下，一级命名空间 `Hnust`
 * `\Hnust\Config.php` 为配置文件，定义全局的一些配置，部分动态配置从`MySQL`中读取（中间通过`Memcache`缓存），动态配置使用`惰性加载`
 * `\Hnust\functions.php` 文件定义一些常用的函数，其中`input函数`参考了`ThinkPHP中的I`函数
@@ -54,8 +54,8 @@
 
 ### 前端
 * 前端主要使用`Semantic UI`以及`AngularJS`
-* 前端所有文件位于`/static`目录下，全静态模板文件
-* 访问时默认通过`.htaccess`发送前端index.html文件
+* 前端所有文件位于`/public/static`目录下，全静态模板文件
+* 访问时默认通过`rewrite`发送前端index.html文件
 
 ## 提醒及定时任务相关
 * 提醒主要包括 `成绩提醒`、`选课提醒`、`图书续期提醒`、`图书续期提醒`，提醒通过WebSocket推送(Socket.io)、短信提醒（阿里大鱼）、邮件提醒（PHPMailer）、微信企业号提醒、安卓客户端（其他同学利用本网站API开发的查询APP）
@@ -70,9 +70,9 @@
 * `全班成绩图片` 使用PHP生成
 * 截图如下：
 
-![个人成绩](/static/images/score.png)
-![全班成绩](/static/images/score-all.png)
-![成绩图片](/static/images/score-image.png)
+![个人成绩](/static/src/img/score.png)
+![全班成绩](/static/src/img/score-all.png)
+![成绩图片](/static/src/img/score-image.png)
 
 ## 课表查询功能
 * 课表查询主要提供`个人课表` `个人课表Excel版本下载`
@@ -80,26 +80,26 @@
 * `Excel课表`使用PHPExcel实现
 * 截图如下：
 
-![个人课表](/static/images/schedule.png)
-![Excel课表](/static/images/schedule-excel.png)
+![个人课表](/static/src/img/schedule.png)
+![Excel课表](/static/src/img/schedule-excel.png)
 
 ## 考试安排查询
 * 截图如下：
 
-![考试安排](/static/images/exam.png)
+![考试安排](/static/src/img/exam.png)
 
 ## 学分绩点查询
 * 截图如下：
 
-![学分绩点](/static/images/credit.png)
+![学分绩点](/static/src/img/credit.png)
 
 ## 空闲教室
 * 空闲教室查询主要获取当前时间，判断当前周次、星期、节次
 * 节次分析时充分考试夏季作息时间表及冬季作息时间表
 * 截图如下：
 
-![空闲教室](/static/images/classroom-1.png)
-![空闲教室](/static/images/classroom-2.png)
+![空闲教室](/static/src/img/classroom-1.png)
+![空闲教室](/static/src/img/classroom-2.png)
 
 ## 教学评价
 * 教学评价，使用惰性提交，在用户评价页面并未先获取评价参数
@@ -113,27 +113,27 @@
 * `消息队列` 由于选课时教务网压力过大，服务器宕机几率大，并不能及时返回选课结果，在本项目上选课时，`用户的操作只是加入消息队列`，服务器后端会有其他的进行对消息队列进行处理，只有当教务网返回选课成功或失败时，服务端才会认为该任务执行完成，并且通过`socket推送或者邮件提醒等`方式提醒用户
 * 截图如下：
 
-![选课平台](/static/images/elective.png)
-![选课列表](/static/images/elective-list.png)
+![选课平台](/static/src/img/elective.png)
+![选课列表](/static/src/img/elective-list.png)
 
 ## 图书借阅
 * 图书借阅使用了内网代理等方式实现
 * 截图如下：
 
-![图书续借](/static/images/book.png)
-![图书列表](/static/images/book-list.png)
-![图书详情](/static/images/book-details.png)
+![图书续借](/static/src/img/book.png)
+![图书列表](/static/src/img/book-list.png)
+![图书详情](/static/src/img/book-details.png)
 
 ## 学年学费
 * 截图如下：
 
-![学年学费](/static/images/tuition.png)
+![学年学费](/static/src/img/tuition.png)
 
 ## 校园一卡通
 * 校园一卡通点击随机图片键盘的方式输入密码，在开发时遇到了一点困难，但依旧顺利解决
 * 截图如下：
 
-![校园一卡通](/static/images/card.png)
+![校园一卡通](/static/src/img/card.png)
 
 ## 挂科率统计
 * 挂科率统计主要对成绩数据进行统计分析
@@ -141,39 +141,39 @@
 * 提供自动补全功能
 * 截图如下：
 
-![挂科率统计](/static/images/failRate-1.png)
-![挂科率统计](/static/images/failRate-2.png)
+![挂科率统计](/static/src/img/failRate-1.png)
+![挂科率统计](/static/src/img/failRate-2.png)
 
 ## 系统配置
 * 使用动态配置，配置存于MySQL，中间通过Memcache进行缓存
 * 配置可以随时修改，修改后会同时刷新Memcache
 * 截图如下：
 
-![系统配置](/static/images/system-ini.png)
+![系统配置](/static/src/img/system-ini.png)
 
 ## 数据统计
 * 对网站数据进行一些简单统计分析
 * 部分数据调用标签云进行显示
 * 截图如下：
 
-![数据统计](/static/images/statistic-1.png)
-![数据统计](/static/images/statistic-2.png)
-![数据统计](/static/images/statistic-3.png)
+![数据统计](/static/src/img/statistic-1.png)
+![数据统计](/static/src/img/statistic-2.png)
+![数据统计](/static/src/img/statistic-3.png)
 
 ## 用户管理
 * 对用户的一些增加、删除、修改、锁定、等操作
 * 统计用户的访问等
 * 截图如下：
 
-![用户管理](/static/images/user-1.png)
-![用户管理](/static/images/user-2.png)
-![用户管理](/static/images/user-3.png)
+![用户管理](/static/src/img/user-1.png)
+![用户管理](/static/src/img/user-2.png)
+![用户管理](/static/src/img/user-3.png)
 
 ## 消息推送
 * 通过Socket或者其他方式对用户进行消息推送及统计推送情况等
 * 截图如下：
 
-![消息推送](/static/images/push.png)
+![消息推送](/static/src/img/push.png)
 
 ## APP管理
 * APP为其他同学调用网站API开发
@@ -181,15 +181,15 @@
 * APP存于七牛
 * 截图如下：
 
-![APP管理](/static/images/app.png)
+![APP管理](/static/src/img/app.png)
 
 ## 日志记录
 * 提供实时日志（Socket.io）
 * 访问日志的查询、检索等
 * 截图如下：
 
-![实时日志](/static/images/logs-1.png)
-![访问日志](/static/images/logs-2.png)
+![实时日志](/static/src/img/logs-1.png)
+![访问日志](/static/src/img/logs-2.png)
 
 ## 实用工具
 * 提供查找相同选课的同学

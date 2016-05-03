@@ -25,9 +25,9 @@ class Api extends Base
         $this->access  = Config::getAccess($this->module, $this->method);
 
         //初始化数据
-        $this->token  = \Hnust\input('server.HTTP_TOKEN', '');
-        $this->sid    = \Hnust\input('sid', '');
-        $this->passwd = \Hnust\input('passwd', '');
+        $this->token  = \Hnust\input('server.HTTP_TOKEN');
+        $this->sid    = \Hnust\input('sid');
+        $this->passwd = \Hnust\input('passwd');
         $this->page   = \Hnust\input('page/d', 1);
         $this->page   = ($this->page < 1)? 1:$this->page;
 
@@ -39,7 +39,7 @@ class Api extends Base
     public function auth()
     {
         //获取用户信息
-        $sql = 'SELECT `u`.`uid`, `s`.`name`, `u`.`error`, `u`.`rank`, `u`.`loginTime`
+        $sql = 'SELECT `u`.`uid`, `s`.`name`, `u`.`rank`
                 FROM `user` `u`, `student` `s`
                 WHERE `u`.`uid` = `s`.`sid` AND `u`.`apiToken` = ? LIMIT 1';
         $result = Mysql::execute($sql, array($this->token));
@@ -60,6 +60,7 @@ class Api extends Base
 
         //404错误
         if (empty($this->method) || is_null($this->access)) {
+            http_response_code(404);
             return $this->checkAuth(
                 Config::STATE_NOT_FOUND,
                 Config::RETURN_ALERT,
@@ -88,25 +89,27 @@ class Api extends Base
         }
 
         //更新API调用次数
-        $sql = 'UPDATE `user` SET `apiCount` = `apiCount` + 1 WHERE `uid` = ?';
+        $sql = 'UPDATE `user` SET
+                  `apiCount` = `apiCount` + 1,
+                  `lastTime` = NOW()
+                WHERE `uid` = ?';
         Mysql::execute($sql, array($this->uid));
 
         //返回记录
         return $this->checkAuth(
             Config::STATE_API,
-            Config::RETURN_NORMAL,
-            'Success'
+            Config::RETURN_NORMAL
         );
     }
 
     //记录访问记录并退出
-    public function checkAuth($state, $code, $msg)
+    public function checkAuth($state, $code, $msg = null)
     {
         Log::recode($this->uid, $this->name, $this->module, $this->method, $this->key, $state);
         if ($code !== Config::RETURN_NORMAL) {
             $this->code = $code;
             $this->msg  = $msg;
-            die;
+            exit;
         }
     }
 
@@ -120,6 +123,21 @@ class Api extends Base
     public function term()
     {
         $this->data = \Hnust\Config::getConfig('current_term');
+    }
+
+    //群组
+    public function group()
+    {
+        $group = new \Hnust\Analyse\Group();
+        $list  = $group->belong($this->uid);
+        $list  = empty($list)? array():$list;
+
+        $this->data = array();
+        foreach ($list as $item) {
+            $this->data[] = array_merge($item, array(
+                'member' => $group->getMember($item['gid'])
+            ));
+        }
     }
 
     //成绩
@@ -166,7 +184,7 @@ class Api extends Base
             $this->msg = $exam->error;
         } elseif (empty($this->data)) {
             $this->code = Config::RETURN_ERROR;
-            $this->msg  = '未查询到相关考试安排！';
+            $this->msg  = '未查询到相关考试安排';
         }
         $this->info = array(
             'sid'  => $this->sid
@@ -192,7 +210,7 @@ class Api extends Base
     //一卡通
     public function card()
     {
-        $type       = \Hnust\input('type', '');
+        $type       = \Hnust\input('type');
         $startDate  = \Hnust\input('startDate', null);
         $endDate    = \Hnust\input('endDate', null);
         $card       = new \Hnust\Analyse\Card($this->sid, $this->passwd);
@@ -216,7 +234,7 @@ class Api extends Base
     {
         $by    = \Hnust\input('by', 'term');
         $scope = \Hnust\input('scope', 'class');
-        $term  = \Hnust\input('term', '');
+        $term  = \Hnust\input('term');
         if (empty($term) || !in_array(strlen($term), array(9, 11))) {
             $term = Config::getConfig('current_term');
         } elseif (('term' === $by) && (11 !== strlen($term))) {
@@ -241,7 +259,7 @@ class Api extends Base
     //学费查询
     public function tuition()
     {
-        $tuition = new \Hnust\Analyse\Tuition($this->sid, $this->passwd);
+        $tuition    = new \Hnust\Analyse\Tuition($this->sid, $this->passwd);
         $this->data = $tuition->getTuition();
         $this->msg  = $tuition->error;
         $this->info = array(
@@ -252,35 +270,11 @@ class Api extends Base
     //挂科率
     public function failRate()
     {
-        $failRate = new \Hnust\Analyse\FailRate();
+        $failRate   = new \Hnust\Analyse\FailRate();
         $this->data = $failRate->search($this->key);
         if (empty($this->data)) {
             $this->code = Config::RETURN_ERROR;
-            $this->msg  = '未找到相关课程。';
-        }
-    }
-
-    //学生资料
-    public function student()
-    {
-        $param = \Hnust\input('param.');
-        $student = new \Hnust\Analyse\Student();
-        $this->data = $student->api($param);
-        if (0 === count($this->data)) {
-            $this->msg = '未找到相关记录。';
-            $this->code = Config::RETURN_ERROR;
-        }
-    }
-
-    //老师资料
-    public function teacher()
-    {
-        $param = \Hnust\input('param.');
-        $teacher = new \Hnust\Analyse\Teacher();
-        $this->data = $teacher->api($param);
-        if (0 === count($this->data)) {
-            $this->msg = '未找到相关记录。';
-            $this->code = Config::RETURN_ERROR;
+            $this->msg  = '未找到相关课程';
         }
     }
 }

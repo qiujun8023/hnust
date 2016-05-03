@@ -1,0 +1,95 @@
+<div class="container">
+  <div ng-include="'loading.html'" ng-if="loading"></div>
+  <div class="ui warning message" ng-if="!loading && error">
+    <div class="header" ng-bind="error"></div>
+  </div>
+  <div class="animate" ng-show="!loading && !error">
+    <div class="ui top attached fluid three item tabular menu">
+      <a class="item" data-tab="put">发布</a>
+      <a class="active item" data-tab="log">统计</a>
+      <a class="item" data-tab="online">在线</a>
+    </div>
+    <div class="ui bottom attached tab segment" data-tab="put">
+      <form class="ui put form">
+        <div class="field">
+          <label>版本号</label>
+          <input type="text" placeholder="安卓APP版本号" name="version" ng-model="put.version">
+        </div>
+        <div class="field">
+          <label>类型</label>
+          <div class="ui put fluid selection dropdown">
+            <input type="hidden" name="develop" value="1">
+            <i class="dropdown icon"></i>
+            <div class="default text">请选择APP类型</div>
+            <div class="menu">
+              <div class="item" data-value="0">稳定版</div>
+              <div class="item" data-value="1">开发版</div>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label>APP介绍</label>
+          <textarea name="intro" ng-model="put.intro"></textarea>
+        </div>
+        <div class="field">
+          <label>APK上传</label>
+          <input type="file" name="file" ng-hide="true" nv-file-select="" uploader="put.uploader">
+          <input class="pointer" type="text" placeholder="选择APK" ng-model="put.name" onclick="document.getElementsByName('file')[0].click()" readonly>
+        </div>
+        <div class="ui positive submit button" ng-class="{loading:put.loading}">发布APP</div>
+      </form>
+      <div class="ui warning message" ng-if="put.error" ng-bind="put.error"></div>
+    </div>
+    <div class="ui bottom attached active tab segment" data-tab="log" style="border-top: none; margin: 0;">
+      <form class="ui form">
+        <div class="field">
+          <input type="text" placeholder="输入关键词筛选" ng-model="log.key" ng-change="log.action(log.key, 1)">
+        </div>
+      </form>
+      <div class="animate" ng-if="log.result">
+        <div class="ui vertical segment" ng-repeat="item in log.result track by $index">
+          <h4 class="ui header ng-binding" ng-bind="item.name + '(' + item.uid + ')'"></h4>
+          <div class="ui selection list">
+            <div class="item">
+              <div class="ui teal horizontal label">版本</div>
+              <span style="color:#333" ng-bind="'Hnust ' + item.version + ' / ' + item.system"></span>
+            </div>
+            <div class="item">
+              <div class="ui green horizontal label">设备</div>
+              <span style="color:#333" ng-bind="item.model + ' ' + item.resolution"></span>
+            </div>
+            <div class="item">
+              <div class="ui orange horizontal label">网络</div>
+              <span style="color:#333" ng-bind="item.network"></span>
+            </div>
+            <div class="item">
+              <div class="ui red horizontal label">时间</div>
+              <span style="color:#333" ng-bind="item.time"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <paging page="log.page" page-size="log.per" total="log.total" paging-action="log.action(log.key, page)"></paging>
+    </div>
+    <div class="ui tab" data-tab="online">
+      <div class="animate" ng-if="$root.onlineUser && $root.onlineUser.length">
+        <table class="ui striped unstackable bottom attached table" style="border-top:none;">
+          <tr>
+            <td class="center aligned">姓名</td>
+            <td class="center aligned">权限</td>
+            <td class="center aligned">时间</td>
+            <td class="center aligned">窗口</td>
+          </tr>
+          <tr ng-repeat="item in $root.onlineUser | sortBy:'time':true">
+            <td class="center aligned" ng-bind="item.name"></td>
+            <td class="center aligned" ng-bind="item.rank"></td>
+            <td class="center aligned" ng-bind="item.time"></td>
+            <td class="pointer center aligned" ng-click="$root.sendMsg(item.sid, item.name)">
+              {{item.count}} <i class="green comment icon"></i>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

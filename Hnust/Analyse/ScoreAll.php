@@ -24,7 +24,7 @@ Class ScoreAll
     public function scoreAll($scope, $course, $re = true)
     {
         if (empty($this->sid) || empty($course)) {
-            throw new \Exception('参数有误！', Config::RETURN_ERROR);
+            throw new \Exception('参数有误', Config::RETURN_ERROR);
         }
 
         //获取学生信息
@@ -117,18 +117,20 @@ Class ScoreAll
         //创建图像
         $im = imagecreate($imgWidth, $imgHeight);
 
-        //字体设置
+        //图片字体设置
         $font  = Config::BASE_PATH . Config::FONT_PATH;
-        //定义常用颜色
-        $black = ImageColorAllocate($im,   0,   0,   0);
-        $white = ImageColorAllocate($im, 255, 255, 255);
-        $green = ImageColorAllocate($im, 223, 240, 216);
-        $blue  = ImageColorAllocate($im, 217, 237, 247);
-        $gray  = ImageColorAllocate($im, 245, 245, 245);
-        $red   = ImageColorAllocate($im, 242, 222, 222);
+
+        //定义颜色
+        $headBoxColor  = ImageColorAllocate($im, 217, 237, 247);
+        $headFontColor = ImageColorAllocate($im,  91, 192, 222);
+        $titleBoxColor = ImageColorAllocate($im, 223, 240, 216);
+        $oddBoxColor   = ImageColorAllocate($im, 245, 245, 245);
+        $evenBoxColor  = ImageColorAllocate($im, 255, 255, 255);
+        $failBoxColor  = ImageColorAllocate($im, 242, 222, 222);
+        $markBoxColor  = ImageColorAllocate($im, 217, 237, 247);
+        $dataFontColor = ImageColorAllocate($im,  51,  51,  51);
 
         //headBox
-        $headBoxColor = $blue;
         imagefilledrectangle($im, 0, 0, $headBoxWidth, $headBoxHeight, $headBoxColor);
 
         //head
@@ -138,7 +140,6 @@ Class ScoreAll
         } else {
             $head .= $course;
         }
-        $headColor    = ImageColorAllocate($im,  91, 192, 222);
         $headFontSize = 20;
         $headSize     = ImageTTFBBox($headFontSize, 0, $font, $head);
         $headWidth    = $headSize[2] - $headSize[0];
@@ -147,7 +148,7 @@ Class ScoreAll
         $headOffsetY  = - $headSize[5];
         $headX = (int) ($headBoxWidth  - $headWidth)  / 2 + $headOffsetX;
         $headY = (int) ($headBoxHeight - $headHeight) / 2 + $headOffsetY;
-        ImageTTFText($im, $headFontSize, 0, $headX, $headY, $headColor, $font, $head);
+        ImageTTFText($im, $headFontSize, 0, $headX, $headY, $headFontColor, $font, $head);
 
         //成绩排序
         usort($data, function($a, $b){
@@ -157,22 +158,22 @@ Class ScoreAll
         for ($i = -1; $i <= count($data); $i++) {
             //单双行背景
             if ($i % 2) {
-                $dataBoxColor = $gray;
+                $dataBoxColor = $oddBoxColor;
             } else {
-                $dataBoxColor = $white;
+                $dataBoxColor = $evenBoxColor;
             }
 
             if ($i == -1) {
-                $dataBoxColor = $green;
+                $dataBoxColor = $titleBoxColor;
                 $row = array ('学号', '姓名', '分数');
             } else if ($i == count($data)) {
-                $dataBoxColor = $blue;
+                $dataBoxColor = $markBoxColor;
                 $row = array('注：带*的为补考；By:Tick网络工作室');
             } else {
                 $score = $data[$i]['score'];
                 //不及格红色标记
                 if ((is_numeric($score) && ($score < 60)) || ($score == '不及格') || empty($score)) {
-                    $dataBoxColor = $red;
+                    $dataBoxColor = $failBoxColor;
                 }
                 //补考加×号
                 if ($data[$i]['resit']) {
@@ -186,7 +187,6 @@ Class ScoreAll
             imagefilledrectangle($im, 0, $dataBoxOffsetHeight, $dataBoxWidth, ($dataBoxOffsetHeight + $dataBoxHeight), $dataBoxColor);
 
             //填入一行数据
-            $dataColor = ImageColorAllocate($im,  51,  51,  51);
             for ($j = 0; $j < count($row); $j++) {
                 $dataFontSize = 16;
                 $dataSize     = ImageTTFBBox($dataFontSize, 0, $font, $row[$j]);
@@ -196,14 +196,14 @@ Class ScoreAll
                 $dataOffsetY  = $headBoxHeight + (($i + 1) * $dataBoxHeight) - $dataSize[5];
                 $dataX = (int) ($dataBoxWidth / count($row) - $dataWidth) / 2 + ($dataBoxWidth / count($row)) * $j + $dataOffsetX;
                 $dataY = (int) ($dataBoxHeight - $dataHeight) / 2 + $dataOffsetY;
-                ImageTTFText($im, $dataFontSize, 0, $dataX, $dataY, $dataColor, $font, $row[$j]);
+                ImageTTFText($im, $dataFontSize, 0, $dataX, $dataY, $dataFontColor, $font, $row[$j]);
             }
         }
 
         //输出下载
         $fileName = (($scope == 'class')? $this->class:$this->major) . "_{$course}.png";
-        header ('Content-type: image/png');
-        header ("Content-Disposition: attachment; filename={$fileName}");
+        header('Content-type: image/png');
+        header("Content-Disposition: attachment; filename={$fileName}");
         ImagePng($im);
         ImageDestroy($im);
         exit;

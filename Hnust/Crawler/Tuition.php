@@ -116,12 +116,12 @@ class Tuition
                 }
                 return true;
             } elseif (false !== stripos($content, '密码有误，请重试')) {
-                throw new \Exception('登录失败，财务网密码错误！', Config::RETURN_NEED_PASSWORD);
+                throw new \Exception('登录失败，财务网密码错误', Config::RETURN_NEED_PASSWORD);
             } else {
                 continue;
             }
         }
-        throw new \Exception('登录失败，财务网网络环境异常。', Config::RETURN_ERROR);
+        throw new \Exception('登录失败，财务网网络环境异常', Config::RETURN_ERROR);
     }
 
     //获取学费内容

@@ -98,7 +98,7 @@ class Elective extends Jwc
                     CURLOPT_TIMEOUT    => 5,
                 ));
             } catch (\Exception $e) {
-                throw new \Exception('网络异常，已选列表获取失败！', Config::RETURN_ERROR);
+                throw new \Exception('网络异常，已选列表获取失败', Config::RETURN_ERROR);
             }
 
             //正则提取数据
@@ -143,7 +143,7 @@ class Elective extends Jwc
                 CURLOPT_TIMEOUT => 10,
             ));
         } catch (\Exception $e) {
-            throw new \Exception('网络异常，操作失败！', Config::RETURN_ERROR);
+            throw new \Exception('网络异常，操作失败', Config::RETURN_ERROR);
         }
 
         //正则结果

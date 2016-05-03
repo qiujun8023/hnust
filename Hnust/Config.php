@@ -27,16 +27,16 @@ class Config
 
     //Cache相关
     const CACHE_HOST = 'localhost';
-    const CACHE_PORT = '11211';
+    const CACHE_PORT = '6379';
 
     //权限控制缓存时间
     const ACCESS_CACHE_TIME = 86400;
     const CONFIG_CACHE_TIME = 86400;
 
     //缓存文件路径
-    const TMP_PATH = '/tmp';
+    const TMP_PATH  = '/tmp';
     //程序根目录地址
-    const BASE_PATH = '/var/www/hnust';
+    const BASE_PATH = '/home/qiujun/hnust';
     //程序相对WEB目录
     const WEB_PATH  = '';
     //资料文件路径
@@ -46,7 +46,7 @@ class Config
     //日志记录目录
     const LOGS_PATH = '/runtime/logs';
     //字体路径
-    const FONT_PATH = '/static/font/文泉驿等宽微米黑.ttf';
+    const FONT_PATH = '/static/src/font/文泉驿等宽微米黑.ttf';
 
     //返回值相关
     const RETURN_NEED_LOGIN    = -2; //需要登陆
@@ -119,7 +119,7 @@ class Config
             $sql = 'SELECT `module`, `method`, `rank` FROM `access`';
             $result = Mysql::execute($sql);
             if (false === $result) {
-                throw new \Exception('服务器数据库异常。', Config::RETURN_ERROR);
+                throw new \Exception('服务器数据库异常', Config::RETURN_ERROR);
             }
             foreach ($result as $item) {
                 self::$access[$item['module']][$item['method']] = (int)$item['rank'];
@@ -154,7 +154,7 @@ class Config
             $sql = 'SELECT `method`, `value` FROM `ini`';
             $result = Mysql::execute($sql);
             if (false === $result) {
-                throw new \Exception('服务器数据库异常。', Config::RETURN_ERROR);
+                throw new \Exception('服务器数据库异常', Config::RETURN_ERROR);
             }
             foreach ($result as $item) {
                 self::$config[$item['method']] = $item['value'];

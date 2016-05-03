@@ -10,13 +10,13 @@ class Push extends Auth
     {
         $uid     = \Hnust\input('uid/d', $this->uid);
         $type    = \Hnust\input('type/d', 0);
-        $title   = \Hnust\input('title', '');
-        $content = \Hnust\input('content', '');
-        $success = \Hnust\input('success', '');
-        $push = new \Hnust\Analyse\Push();
+        $title   = \Hnust\input('title');
+        $content = \Hnust\input('content');
+        $success = \Hnust\input('success');
+        $push    = new \Hnust\Analyse\Push();
         $this->data = $push->add($uid, $type, $title, $content, $success);
-        if (!$this->data){
-            $this->msg  = 'Something Wrong';
+        if (!$this->data) {
+            $this->msg  = '添加失败';
         }
     }
 
@@ -26,9 +26,8 @@ class Push extends Auth
         $push = new \Hnust\Analyse\Push();
         if ($push->achieve($this->uid, $id)) {
             $this->code = Config::RETURN_NORMAL;
-            $this->msg  = 'Change Success';
         } else {
-            $this->msg  = 'Something Wrong';
+            $this->msg  = '修改失败';
         }
     }
 

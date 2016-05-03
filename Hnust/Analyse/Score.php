@@ -12,15 +12,21 @@ Class Score extends \Hnust\Crawler\Score
 
     public function __construct($sid, $name = '', $idcard = '')
     {
-        if (empty($name) || empty($idcard)) {
-            $sql    = 'SELECT `name`, `idcard` FROM `student` WHERE `sid` = ?';
-            $result = Mysql::execute($sql, array($sid));
-            $name   = $result[0]['name'];
-            $idcard = $result[0]['idcard'];
-        }
-
         parent::__construct($sid, $name, $idcard);
     }
+
+    public function login()
+    {
+        if (empty($this->name) || empty($this->idcard)) {
+            $sql    = 'SELECT `name`, `idcard` FROM `student` WHERE `sid` = ?';
+            $result = Mysql::execute($sql, array($this->sid));
+            $this->name   = $result[0]['name'];
+            $this->idcard = $result[0]['idcard'];
+        }
+
+        return parent::login();
+    }
+
 
     public function getScore()
     {

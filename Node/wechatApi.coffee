@@ -3,6 +3,7 @@ APISDK = require('wechat-enterprise').API
 
 # 自定义模块
 config = require(__dirname + '/config')
+youtu  = require(__dirname + '/youtu')
 
 # log4js日志
 logger = config.logger
@@ -36,6 +37,15 @@ exports.route  = (req, res) ->
 
     # API模块判断
     switch req.params.apiName
+        when 'face'
+            pic = body.pic
+            logger.info "识别图片#{pic}"
+            youtu pic, (err, candidates) ->
+                if err then return res.send errFormat err
+                res.send
+                    errcode: 0
+                    errmsg : 'ok'
+                    result : candidates
         when 'getUser'
             logger.info "请求用户#{body.uid}的信息"
             apisdk.getUser body.uid, callback

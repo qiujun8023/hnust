@@ -10,8 +10,8 @@ class Score extends Jwc
     public function __construct($sid, $name, $idcard)
     {
         //判断数据完整性
-        if (empty($sid) || empty($name) || empty($idcard)) {
-            throw new \Exception('参数不能为空！', Config::RETURN_ERROR);
+        if (empty($sid)) {
+            throw new \Exception('学号不能为空', Config::RETURN_ERROR);
         }
 
         $this->sid    = $sid;
@@ -41,7 +41,7 @@ class Score extends Jwc
                     CURLOPT_TIMEOUT    => 3,
                 ));
             } catch (\Exception $e) {
-                throw new \Exception('验证码提交失败。', Config::RETURN_ERROR);
+                throw new \Exception('验证码提交失败', Config::RETURN_ERROR);
             }
 
             $content = trim($http->content);
@@ -53,7 +53,7 @@ class Score extends Jwc
                 continue;
             }
         }
-        throw new \Exception('登录失败，教务网网络环境异常。', Config::RETURN_ERROR);
+        throw new \Exception('登录失败，教务网网络环境异常', Config::RETURN_ERROR);
     }
 
     //获取成绩信息
@@ -70,12 +70,12 @@ class Score extends Jwc
                 CURLOPT_TIMEOUT => 3,
             ));
         } catch (\Exception $e) {
-            throw new \Exception('成绩获取失败，教务网网络过慢。', Config::RETURN_ERROR);
+            throw new \Exception('成绩获取失败，教务网网络过慢', Config::RETURN_ERROR);
         }
 
         //判断成绩数据是否正常
         if (false === stripos($http->content, $this->name)) {
-            throw new \Exception('查询失败，教务网数据有误。', Config::RETURN_ERROR);
+            throw new \Exception('查询失败，教务网数据有误', Config::RETURN_ERROR);
         }
 
         //正则个人信息

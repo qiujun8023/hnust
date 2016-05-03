@@ -7,24 +7,37 @@ use Hnust\Config;
 class Output
 {
     //格式化
-    public static function format($msg = '', $code = '', $info = array(), $data = array(), $output = false)
+    public static function format($msg = null, $code = null, $info = null, $data = null, $output = false)
     {
-        $code = (string) $code;
-        if (!empty($msg) && !empty($data) && is_string($data)) {
-            $code = strlen($code)? $code:Config::RETURN_CONFIRM;
-        } else if (!empty($msg)) {
-            $code = strlen($code)? $code:Config::RETURN_ALERT;
+        //code及msg属性
+        if (isset($msg) && isset($data) && is_string($data)) {
+            $code = isset($code)? $code:Config::RETURN_CONFIRM;
+        } else if (isset($msg)) {
+            $code = isset($code)? $code:Config::RETURN_ALERT;
         } else {
-            $code = strlen($code)? $code:Config::RETURN_NORMAL;
+            $msg  = '';
+            $code = isset($code)? $code:Config::RETURN_NORMAL;
         }
 
-        $get   = \Hnust\array_map_recursive('htmlspecialchars', $_GET);
+        //info属性
+        $get = \Hnust\array_map_recursive('htmlspecialchars', $_GET);
+        if (isset($info)) {
+            $info = array_merge($get, $info);
+        } else {
+            $info = $get;
+        }
+        //data属性
+        $data = isset($data)? $data:array();
+
+        //构造数组
         $anser = array(
             'code' => $code,
-            'msg'  => isset($msg)?  $msg :'',
-            'info' => isset($info) && !empty($info)? $info:$get,
-            'data' => isset($data) && !empty($data)? $data:array()
+            'msg'  => $msg,
+            'info' => $info,
+            'data' => $data
         );
+
+        //输出或返回
         return $output? self::output($anser):$anser;
     }
 

@@ -1,0 +1,615 @@
+<div class="api container">
+  <div class="ui animate segment" ng-show="$root.user.rank > 0">
+    <div class="ui vertical segment">
+      <div class="ui header">API介绍</div>
+      <p>通过本站API接口可以调用本站大部分数据，API通过API TOKEN校验用户身份，每个用户的API TOKEN都是唯一的，请妥善保管好自己的API TOKEN，禁止赠与、借用、租用、转让或售卖API TOKEN给他人使用</p>
+    </div>
+    <div class="ui vertical segment">
+      <div class="ui header">Request</div>
+      <p>
+        API请求通过API TOKEN校验用户身份，每次API请求都要在
+        <span class="red">Request Headers</span>
+        中添加以下内容（即您的API TOKEN），请求方式可使用GET/POST，不过需要注意
+        <span class="red">参数的提交方式必须与请求方式保持一致，POST提交数据方式请使用 application/x-www-form-urlencoded</span>
+      </p>
+      <div class="ui info message">Token:{{$root.user.apiToken}}</div>
+    </div>
+    <div class="ui vertical segment">
+      <div class="ui header">Response</div>
+      <p>返回结果为Json对象，Json对象中包含四个属性，分别为code、msg、info、data，其中code为错误码，msg为错误消息，info为一些额外信息，data为数据包，其中code的一些取值如下：</p>
+      <table class="ui teal celled striped unstackable attached table">
+        <thead>
+          <tr>
+            <th class="three wide center aligned">取值</th>
+            <th class="thirteen wide center aligned">含义</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="center aligned">-2</td>
+            <td class="center aligned">API调用不存在此值</td>
+          </tr>
+          <tr>
+            <td class="center aligned">-1</td>
+            <td class="center aligned">发生错误，msg参数为错误原因</td>
+          </tr>
+          <tr>
+            <td class="center aligned">0</td>
+            <td class="center aligned">正常</td>
+          </tr>
+          <tr>
+            <td class="center aligned">1</td>
+            <td class="center aligned">提示信息，msg为提示内容</td>
+          </tr>
+          <tr>
+            <td class="center aligned">2</td>
+            <td class="center aligned">弹窗提示，msg为提示标题，data为提示内容</td>
+          </tr>
+          <tr>
+            <td class="center aligned">3</td>
+            <td class="center aligned">API调用不存在此值</td>
+          </tr>
+          <tr>
+            <td class="center aligned">4</td>
+            <td class="center aligned">当前的操作需要提供密码，如教务密码等具体根据当前查询的内容而定，请在POST对象中添加passwd属性，值为密码，并重复上次提交</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="ui vertical segment">
+      <div class="ui header">获取当前学期</div>
+      <div class="ui info message">请求地址：{{baseUrl}}/api/term</div>
+    </div>
+    <div class="ui vertical segment">
+      <div class="ui header">获取当前周次</div>
+      <div class="ui info message">请求地址：{{baseUrl}}/api/week</div>
+    </div>
+    <div class="ui vertical segment">
+      <div class="ui header">获取群组信息</div>
+      <div class="ui info message">请求地址：{{baseUrl}}/api/group</div>
+      <p>返回结果：data群组数组；每个群组数组中属性如下：</p>
+      <table class="ui teal celled striped unstackable attached table">
+        <thead>
+          <tr>
+            <th class="four wide center aligned">属性</th>
+            <th class="twelve wide center aligned">说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="center aligned">gid</td>
+            <td class="center aligned">群组ID</td>
+          </tr>
+          <tr>
+            <td class="center aligned">name</td>
+            <td class="center aligned">群组名称</td>
+          </tr>
+          <tr>
+            <td class="center aligned">member</td>
+            <td class="center aligned">群组成员数组</td>
+          </tr>
+          <tr>
+            <td class="center aligned">member.sid</td>
+            <td class="center aligned">群组成员学号</td>
+          </tr>
+          <tr>
+            <td class="center aligned">member.name</td>
+            <td class="center aligned">群组成员姓名</td>
+          </tr>
+          <tr>
+            <td class="center aligned">member.phone</td>
+            <td class="center aligned">群组成员电话</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="ui vertical segment">
+      <div class="ui header">获取成绩</div>
+      <div class="ui info message">请求地址：{{baseUrl}}/api/score</div>
+      <table class="ui teal celled striped unstackable attached table" ng-show="$root.user.rank >= 4">
+        <thead>
+          <tr>
+            <th class="three wide center aligned">参数</th>
+            <th class="three wide center aligned">必填</th>
+            <th class="six wide center aligned">描述</th>
+            <th class="four wide center aligned">默认</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="center aligned">sid</td>
+            <td class="center aligned">否</td>
+            <td class="center aligned">待查询的学号</td>
+            <td class="center aligned">当前用户</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>返回结果：data为{学期:课程}关联数组；每门课程对象中属性如下：</p>
+      <table class="ui teal celled striped unstackable attached table">
+        <thead>
+          <tr>
+            <th class="four wide center aligned">属性</th>
+            <th class="twelve wide center aligned">说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="center aligned">course</td>
+            <td class="center aligned">课程名称</td>
+          </tr>
+          <tr>
+            <td class="center aligned">credit</td>
+            <td class="center aligned">课程学分</td>
+          </tr>
+          <tr>
+            <td class="center aligned">mark</td>
+            <td class="center aligned">分数</td>
+          </tr>
+          <tr>
+            <td class="center aligned">mode</td>
+            <td class="center aligned">课程类型（分数制、等级制）</td>
+          </tr>
+          <tr>
+            <td class="center aligned">resit</td>
+            <td class="center aligned">补考标记</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="ui vertical segment">
+      <div class="ui header">获取课表</div>
+      <div class="ui info message">请求地址：{{baseUrl}}/api/schedule</div>
+      <table class="ui teal celled striped unstackable attached table">
+        <thead>
+          <tr>
+            <th class="three wide center aligned">参数</th>
+            <th class="three wide center aligned">必填</th>
+            <th class="seven wide center aligned">描述</th>
+            <th class="three wide center aligned">默认</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-show="$root.user.rank >= 4">
+            <td class="center aligned">sid</td>
+            <td class="center aligned">否</td>
+            <td class="center aligned">待查询的学号</td>
+            <td class="center aligned">当前用户</td>
+          </tr>
+          <tr>
+            <td class="center aligned">type</td>
+            <td class="center aligned">否</td>
+            <td class="center aligned">课表数据结构。当值为0时课表结构类似 [星期][节次][课程数组][课程信息]；当值为1时课表结构类似[周次][星期][节次][课程信息]；当值为2时课表结构类似[所有课程][课程信息]</td>
+            <td class="center aligned">0</td>
+          </tr>
+          <tr>
+            <td class="center aligned">week</td>
+            <td class="center aligned">否</td>
+            <td class="center aligned">指定周次的课表，当且仅当type参数为0时有效</td>
+            <td class="center aligned">-1</td>
+          </tr>
+          <tr>
+            <td class="center aligned">term</td>
+            <td class="center aligned">否</td>
+            <td class="center aligned">指定学期的课表，形如2015-2016-1</td>
+            <td class="center aligned">当前学期</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>返回结果：info对象中term属性为查询学期、week属性为周次、remarks属性为课表备注；每个课程信息对象中的属性说明如下：</p>
+      <table class="ui teal celled striped unstackable attached table">
+        <thead>
+          <tr>
+            <th class="four wide center aligned">属性</th>
+            <th class="twelve wide center aligned">说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="center aligned">class</td>
+            <td class="center aligned">上课班级</td>
+          </tr>
+          <tr>
+            <td class="center aligned">classroom</td>
+            <td class="center aligned">上课教室</td>
+          </tr>
+          <tr>
+            <td class="center aligned">course</td>
+            <td class="center aligned">上课课程</td>
+          </tr>
+          <tr>
+            <td class="center aligned">teacher</td>
+            <td class="center aligned">上课教师</td>
+          </tr>
+          <tr>
+            <td class="center aligned">time</td>
+            <td class="center aligned">上课时间</td>
+          </tr>
+          <tr>
+            <td class="center aligned">weeks</td>
+            <td class="center aligned">上课周次的标记(21位字符串分别代表0-20周中哪些周次需要上该次课程)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="ui vertical segment">
+      <div class="ui header">获取考试安排</div>
+      <div class="ui info message">请求地址：{{baseUrl}}/api/exam</div>
+      <table class="ui teal celled striped unstackable attached table" ng-show="$root.user.rank >= 4">
+        <thead>
+          <tr>
+            <th class="three wide center aligned">参数</th>
+            <th class="three wide center aligned">必填</th>
+            <th class="six wide center aligned">描述</th>
+            <th class="four wide center aligned">默认</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="center aligned">sid</td>
+            <td class="center aligned">否</td>
+            <td class="center aligned">待查询的学号</td>
+            <td class="center aligned">当前用户</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>返回结果：data对象为考试安排数组；每门考试安排对象中属性如下：</p>
+      <table class="ui teal celled striped unstackable attached table">
+        <thead>
+          <tr>
+            <th class="four wide center aligned">属性</th>
+            <th class="twelve wide center aligned">说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="center aligned">course</td>
+            <td class="center aligned">课程名称</td>
+          </tr>
+          <tr>
+            <td class="center aligned">begin</td>
+            <td class="center aligned">考试开始时间</td>
+          </tr>
+          <tr>
+            <td class="center aligned">end</td>
+            <td class="center aligned">考试结束时间</td>
+          </tr>
+          <tr>
+            <td class="center aligned">room</td>
+            <td class="center aligned">考试地点</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="ui vertical segment">
+      <div class="ui header">获取学分绩点</div>
+      <div class="ui info message">请求地址：{{baseUrl}}/api/credit</div>
+      <table class="ui teal celled striped unstackable attached table" ng-show="$root.user.rank >= 4">
+        <thead>
+          <tr>
+            <th class="three wide center aligned">参数</th>
+            <th class="three wide center aligned">必填</th>
+            <th class="six wide center aligned">描述</th>
+            <th class="four wide center aligned">默认</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="center aligned">sid</td>
+            <td class="center aligned">否</td>
+            <td class="center aligned">待查询的学号</td>
+            <td class="center aligned">当前用户</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>返回结果：data对象为学分绩点数组；每门科目对象中属性如下：</p>
+      <table class="ui teal celled striped unstackable attached table">
+        <thead>
+          <tr>
+            <th class="four wide center aligned">属性</th>
+            <th class="twelve wide center aligned">说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="center aligned">course</td>
+            <td class="center aligned">课程名称</td>
+          </tr>
+          <tr>
+            <td class="center aligned">credit</td>
+            <td class="center aligned">该科目学分</td>
+          </tr>
+          <tr>
+            <td class="center aligned">score</td>
+            <td class="center aligned">所得分数</td>
+          </tr>
+          <tr>
+            <td class="center aligned">point</td>
+            <td class="center aligned">所得分数对应绩点</td>
+          </tr>
+          <tr>
+            <td class="center aligned">gpa</td>
+            <td class="center aligned">所得学分绩点</td>
+          </tr>
+          <tr>
+            <td class="center aligned">resit</td>
+            <td class="center aligned">补考标记</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="ui vertical segment" ng-show="$root.user.rank >= 2">
+      <div class="ui header">获取成绩排名</div>
+      <div class="ui info message">请求地址：{{baseUrl}}/api/rank</div>
+      <table class="ui teal celled striped unstackable attached table">
+        <thead>
+          <tr>
+            <th class="three wide center aligned">参数</th>
+            <th class="three wide center aligned">必填</th>
+            <th class="six wide center aligned">描述</th>
+            <th class="four wide center aligned">默认</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-show="$root.user.rank >= 4">
+            <td class="center aligned">sid</td>
+            <td class="center aligned">否</td>
+            <td class="center aligned">待查询的学号</td>
+            <td class="center aligned">当前用户</td>
+          </tr>
+          <tr>
+            <td class="center aligned">by</td>
+            <td class="center aligned">否</td>
+            <td class="center aligned">排名依据，可选参数term（学期）或year（学年）</td>
+            <td class="center aligned">term</td>
+          </tr>
+          <tr>
+            <td class="center aligned">scope</td>
+            <td class="center aligned">否</td>
+            <td class="center aligned">排名范围，可选参数class（班级）或major（专业）</td>
+            <td class="center aligned">class</td>
+          </tr>
+          <tr>
+            <td class="center aligned">term</td>
+            <td class="center aligned">否</td>
+            <td class="center aligned">指定学期的排名，形如2015-2016-1</td>
+            <td class="center aligned">当前学期</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>返回结果：info对象中term属性为排名学期、rankName属性为排名的班级或专业名称、courses属性为所有排名课程（与data对象中course属性相对应）；data对象为排名数组，每个学生对象中属性如下：</p>
+      <table class="ui teal celled striped unstackable attached table">
+        <thead>
+          <tr>
+            <th class="four wide center aligned">属性</th>
+            <th class="twelve wide center aligned">说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="center aligned">rank</td>
+            <td class="center aligned">名次</td>
+          </tr>
+          <tr>
+            <td class="center aligned">name</td>
+            <td class="center aligned">姓名</td>
+          </tr>
+          <tr>
+            <td class="center aligned">sid</td>
+            <td class="center aligned">学号</td>
+          </tr>
+          <tr>
+            <td class="center aligned">course</td>
+            <td class="center aligned">课程对应分数数组</td>
+          </tr>
+          <tr>
+            <td class="center aligned">avgMark</td>
+            <td class="center aligned">平均分</td>
+          </tr>
+          <tr>
+            <td class="center aligned">countMark</td>
+            <td class="center aligned">总分</td>
+          </tr>
+          <tr>
+            <td class="center aligned">countFail</td>
+            <td class="center aligned">不及格门数</td>
+          </tr>
+          <tr>
+            <td class="center aligned">avgGpa</td>
+            <td class="center aligned">平均学分绩</td>
+          </tr>
+          <tr>
+            <td class="center aligned">avgPoint</td>
+            <td class="center aligned">平均学分绩点</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="ui vertical segment">
+      <div class="ui header">获取一卡通交易记录</div>
+      <div class="ui info message">请求地址：{{baseUrl}}/api/card</div>
+      <table class="ui teal celled striped unstackable attached table">
+        <thead>
+          <tr>
+            <th class="three wide center aligned">参数</th>
+            <th class="three wide center aligned">必填</th>
+            <th class="five wide center aligned">描述</th>
+            <th class="five wide center aligned">默认</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-show="$root.user.rank >= 4">
+            <td class="center aligned">sid</td>
+            <td class="center aligned">否</td>
+            <td class="center aligned">待查询的学号</td>
+            <td class="center aligned">当前用户</td>
+          </tr>
+          <tr>
+            <td class="center aligned">type</td>
+            <td class="center aligned">否</td>
+            <td class="center aligned">类型，可选 record (消费记录), bill (账单)</td>
+            <td class="center aligned">record</td>
+          </tr>
+          <tr>
+            <td class="center aligned">startDate</td>
+            <td class="center aligned">否</td>
+            <td class="center aligned">交易记录开始日期</td>
+            <td class="center aligned">一个月前（形如20160101）</td>
+          </tr>
+          <tr>
+            <td class="center aligned">endDate</td>
+            <td class="center aligned">否</td>
+            <td class="center aligned">交易记录结束日期</td>
+            <td class="center aligned">当天（形如20160101）</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>返回结果：data对象为交易记录数组，其中每条记录中的属性如下：
+      </p>
+      <table class="ui teal celled striped unstackable attached table">
+        <thead>
+          <tr>
+            <th class="four wide center aligned">属性</th>
+            <th class="twelve wide center aligned">说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="center aligned">count</td>
+            <td class="center aligned">计数</td>
+          </tr>
+          <tr>
+            <td class="center aligned">system</td>
+            <td class="center aligned">消费系统</td>
+          </tr>
+          <tr>
+            <td class="center aligned">type</td>
+            <td class="center aligned">消费类型</td>
+          </tr>
+          <tr>
+            <td class="center aligned">trade</td>
+            <td class="center aligned">消费金额</td>
+          </tr>
+          <tr>
+            <td class="center aligned">balance</td>
+            <td class="center aligned">余额</td>
+          </tr>
+          <tr>
+            <td class="center aligned">status</td>
+            <td class="center aligned">状态</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="ui vertical segment">
+      <div class="ui header">获取学费</div>
+      <div class="ui info message">请求地址：{{baseUrl}}/api/tuition</div>
+      <table class="ui teal celled striped unstackable attached table" ng-show="$root.user.rank >= 4">
+        <thead>
+          <tr>
+            <th class="three wide center aligned">参数</th>
+            <th class="three wide center aligned">必填</th>
+            <th class="six wide center aligned">描述</th>
+            <th class="four wide center aligned">默认</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="center aligned">sid</td>
+            <td class="center aligned">否</td>
+            <td class="center aligned">待查询的学号</td>
+            <td class="center aligned">当前用户</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>返回结果：data对象为{学期:学费详情}关联数组，其中total为总学费情况；每个收费项目对象中属性如下：
+      </p>
+      <table class="ui teal celled striped unstackable attached table">
+        <thead>
+          <tr>
+            <th class="four wide center aligned">属性</th>
+            <th class="twelve wide center aligned">说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="center aligned">item</td>
+            <td class="center aligned">收费项目名称</td>
+          </tr>
+          <tr>
+            <td class="center aligned">payable</td>
+            <td class="center aligned">应缴学费</td>
+          </tr>
+          <tr>
+            <td class="center aligned">returns</td>
+            <td class="center aligned">退费</td>
+          </tr>
+          <tr>
+            <td class="center aligned">reduction</td>
+            <td class="center aligned">减免学费</td>
+          </tr>
+          <tr>
+            <td class="center aligned">paid</td>
+            <td class="center aligned">已缴学费</td>
+          </tr>
+          <tr>
+            <td class="center aligned">owing</td>
+            <td class="center aligned">欠缴学费</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="ui vertical segment" ng-show="$root.user.rank >= 3">
+      <div class="ui header">获取挂科率</div>
+      <div class="ui info message">请求地址：{{baseUrl}}/api/failRate</div>
+      <table class="ui teal celled striped unstackable attached table">
+        <thead>
+          <tr>
+            <th class="three wide center aligned">参数</th>
+            <th class="three wide center aligned">必填</th>
+            <th class="seven wide center aligned">描述</th>
+            <th class="three wide center aligned">默认</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="center aligned">key</td>
+            <td class="center aligned">是</td>
+            <td class="center aligned">完整课程名称/学院名称</td>
+            <td class="center aligned">无</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>返回结果：data对象为数组；每个挂科率对象中属性如下：</p>
+      <table class="ui teal celled striped unstackable attached table">
+        <thead>
+          <tr>
+            <th class="four wide center aligned">属性</th>
+            <th class="twelve wide center aligned">说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="center aligned">name</td>
+            <td class="center aligned">名称</td>
+          </tr>
+          <tr>
+            <td class="center aligned">course</td>
+            <td class="center aligned">课程名称</td>
+          </tr>
+          <tr>
+            <td class="center aligned">all</td>
+            <td class="center aligned">考试人数</td>
+          </tr>
+          <tr>
+            <td class="center aligned">fail</td>
+            <td class="center aligned">不及格人数</td>
+          </tr>
+          <tr>
+            <td class="center aligned">rate</td>
+            <td class="center aligned">挂科率</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+ </div>

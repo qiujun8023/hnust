@@ -74,8 +74,7 @@ class Student extends Auth
         $isDownload = \Hnust\input('download/b', false);
         $schedule   = new \Hnust\Analyse\Schedule($this->sid);
         if ($isDownload) {
-            $path = $schedule->getExcel($this->sid, $term);
-            header('Location:' . Config::WEB_PATH . $path);
+            $schedule->getExcel($this->uid, $this->sid, $term);
         } else {
             $this->data = $schedule->getSchdule($this->sid, $term, $type, $week);
             $this->info = array(
@@ -99,7 +98,7 @@ class Student extends Auth
             $this->msg = $exam->error;
         } elseif (empty($this->data)) {
             $this->code = Config::RETURN_ERROR;
-            $this->msg  = '未查询到相关考试安排！';
+            $this->msg  = '未查询到相关考试安排';
         }
         $this->info = array(
             'sid'  => $this->sid,
@@ -126,14 +125,14 @@ class Student extends Auth
     //空闲教室
     public function classroom()
     {
-        $term  = \Hnust\input('term', '');
-        $term = empty($term)? Config::getConfig('current_term'):$term;
-        $build = \Hnust\input('build', '');
-        $week  = \Hnust\input('week', '');
-        $day   = \Hnust\input('day', '');
-        $beginSession = \Hnust\input('beginSession', '');
-        $endSession   = \Hnust\input('endSession', '');
-        $classroom = new \Hnust\Analyse\Classroom($this->sid, $this->passwd);
+        $term  = \Hnust\input('term');
+        $term  = empty($term)? Config::getConfig('current_term'):$term;
+        $build = \Hnust\input('build');
+        $week  = \Hnust\input('week');
+        $day   = \Hnust\input('day');
+        $beginSession = \Hnust\input('beginSession');
+        $endSession   = \Hnust\input('endSession');
+        $classroom  = new \Hnust\Analyse\Classroom($this->sid, $this->passwd);
         $this->data = $classroom->getClassroom($term, $build, $week, $day, $beginSession, $endSession);
         if(empty($this->data)) {
             $this->msg  = '未找到相关空闲教室';
@@ -144,10 +143,10 @@ class Student extends Auth
     //选课平台
     public function elective()
     {
-        $key   = \Hnust\input('key', '');
-        $title = \Hnust\input('title', '');
-        $url   = \Hnust\input('url', '');
-        $type  = \Hnust\input('type', '');
+        $key   = \Hnust\input('key');
+        $title = \Hnust\input('title');
+        $url   = \Hnust\input('url');
+        $type  = \Hnust\input('type');
         $elective = new \Hnust\Analyse\Elective($this->sid, $this->passwd);
         if ('key' === $type) {
             $this->data = $elective->complet($key);
@@ -161,7 +160,7 @@ class Student extends Auth
             }
         } elseif ('addQueue' === $type) {
             $this->data = $elective->addQueue($title, $url);
-            $this->msg  = '已成功加入操作队列。';
+            $this->msg  = '已成功加入操作队列';
         } else {
             $this->data['selected'] = $elective->getSelected();
             $this->data['queue']    = $elective->getQueue();
@@ -171,18 +170,18 @@ class Student extends Auth
     //评教
     public function judge()
     {
-        $type = \Hnust\input('type', '');
+        $type = \Hnust\input('type');
         $judge = new \Hnust\Analyse\Judge($this->sid, $this->passwd);
         if ('submit' === $type) {
             $radio  = \Hnust\input('radio/a', array());
-            $params = \Hnust\input('params', '');
+            $params = \Hnust\input('params');
             if (count($radio) != 10) {
                 $this->code = Config::RETURN_ERROR;
                 $this->msg  = '请确定表单已经填写完整';
                 return false;
             } elseif (empty($params)) {
                 $this->code = Config::RETURN_ERROR;
-                $this->msg  = '参数有误。';
+                $this->msg  = '参数有误';
                 return false;
             }
             $judge->submit($params, $radio);
@@ -198,18 +197,22 @@ class Student extends Auth
     //图书借阅
     public function book()
     {
-        $type = \Hnust\input('type', '');
+        $type = \Hnust\input('type');
         $book = new \Hnust\Analyse\Book($this->sid, $this->passwd);
         if ('renew' === $type) {
-            $barcode    = \Hnust\input('barcode', '');
-            $department = \Hnust\input('department', '');
-            $library    = \Hnust\input('library', '');
+            $barcode    = \Hnust\input('barcode');
+            $department = \Hnust\input('department');
+            $library    = \Hnust\input('library');
             $this->code = Config::RETURN_ALERT;
             $this->data = $this->msg = $book->doRenew($barcode, $department, $library);
         } elseif ('search' === $type) {
             $this->data = $book->getBookList($this->key, $this->page);
+            if (empty($this->data)) {
+                $this->code = Config::RETURN_ERROR;
+                $this->msg  = (1 === $this->page)? '未找到相关书籍':'没有更多了...';
+            }
         } elseif ('info' === $type) {
-            $id = \Hnust\input('id', '');
+            $id = \Hnust\input('id');
             $this->data = $book->getBookInfo($id);
         } else {
             $this->data = $book->getLoanList();
@@ -234,7 +237,7 @@ class Student extends Auth
     //一卡通
     public function card()
     {
-        $type      = \Hnust\input('type', '');
+        $type      = \Hnust\input('type');
         $startDate = \Hnust\input('startDate', null);
         $endDate   = \Hnust\input('endDate', null);
         $card      = new \Hnust\Analyse\Card($this->sid, $this->passwd);
@@ -263,7 +266,7 @@ class Student extends Auth
     {
         $by    = \Hnust\input('by', 'term');
         $scope = \Hnust\input('scope', 'class');
-        $term  = \Hnust\input('term', '');
+        $term  = \Hnust\input('term');
         if (empty($term) || !in_array(strlen($term), array(9, 11))) {
             $term = Config::getConfig('current_term');
         } elseif (('term' === $by) && (11 !== strlen($term))) {
@@ -273,8 +276,7 @@ class Student extends Auth
         $isDownload = \Hnust\input('download/b', false);
         $rank = new \Hnust\Analyse\Rank($this->sid);
         if ($isDownload) {
-            $path = $rank->getExcel($term, $scope, $by);
-            header('Location:' . Config::WEB_PATH . $path);
+            $rank->getExcel($this->uid, $term, $scope, $by);
         } else {
             $this->data = $rank->getRank($term, $scope, $by);
             $this->info = array(

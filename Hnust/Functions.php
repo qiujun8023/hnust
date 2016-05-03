@@ -79,7 +79,7 @@ function templet($message, $context = array())
         $replace['{' . $key . '}'] = $val;
     }
 
-    // 替换记录信息中的占位符，最后返回修改后的记录信息。
+    // 替换记录信息中的占位符，最后返回修改后的记录信息
     return strtr($message, $replace);
 }
 
@@ -90,6 +90,15 @@ function array_map_recursive($func, $arr)
         $out[$k] = is_array($x)? array_map_recursive($func, $x):$func($x);
     }
     return $out;
+}
+
+//判断是否HTTPS
+function ishttps()
+{
+    if ($_SERVER['HTTPS'] === 'on') {
+        return true;
+    }
+    return false;
 }
 
 //获取输入参数

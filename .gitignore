@@ -1,2 +1,5 @@
-/phpmyadmin
+/backup
+/public/dist
+/public/mysql
 /Node/node_modules
+/static/node_modules

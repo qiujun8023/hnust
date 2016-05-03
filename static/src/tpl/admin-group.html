@@ -1,0 +1,97 @@
+<div class="group container">
+  <div ng-include="'loading.html'" ng-if="loading"></div>
+  <div class="ui warning message" ng-if="!loading && error">
+    <div class="header" ng-bind="error"></div>
+  </div>
+  <div class="animate" ng-show="!loading && !error && 'get' == method">
+    <div class="ui positive message">
+      <span ng-bind="'当前共有 ' + data.length + ' 个群组'"></span>
+      <a class="ui horizontal pointer green right label" ng-click="edit()">创建群组</a>
+    </div>
+    <div class="ui green fluid card" ng-repeat="item in data track by $index">
+      <div class="pointer content" ng-click="view(item.gid)">
+        <div class="header" ng-bind="item.name"></div>
+        <div class="meta" ng-bind="'创建者：' + item.creator"></div>
+        <div class="ui middle aligned list">
+          <div class="item" ng-if="item.share == '1'">
+            <i class="green toggle on icon"></i> 已开启群组通讯录共享
+          </div>
+          <div class="item" ng-if="item.share == '0'">
+            <i class="green toggle off icon"></i> 已关闭群组通讯录共享
+          </div>
+          <div class="item">
+            <i class="green history icon"></i> 创建于{{item.time}}
+          </div>
+        </div>
+      </div>
+      <div class="extra content">
+        <span class="left floated reset operate" ng-click="edit(item)">
+          <i class="refresh icon"></i> 编辑群组
+        </span>
+        <span class="right floated delete operate" ng-click="delete(item)">
+          <i class="remove icon"></i> 删除群组
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="animate" ng-show="!loading && !error && 'getMember' == method">
+    <div class="ui add search form">
+      <div class="field">
+        <input type="text" placeholder="请输入学号" ng-model="sid">
+      </div>
+      <button class="ui submit positive button" ng-click="addMember(sid)">添加</button>
+    </div>
+    <div class="ui positive message" ng-bind="'【' + info.name + '】共有成员 ' + data.length + ' 人'"></div>
+    <table class="ui teal striped unstackable bottom attached table" ng-show="data && data.length">
+      <thead>
+        <tr>
+          <th class="center aligned">姓名</th>
+          <th class="center aligned">学号</th>
+          <th class="center aligned">移除</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="item in data">
+          <td class="center aligned" ng-bind="item.name"></td>
+          <td class="center aligned" ng-bind="item.sid"></td>
+          <td class="center aligned">
+            <i class="pointer red remove icon" ng-click="deleteMember(item.sid)"></i>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<form class="ui group edit small modal form">
+  <i class="close icon"></i>
+  <div class="header" ng-bind="(editItem.gid? '修改':'新增') + '群组'"></div>
+  <div class="content">
+    <div class="field" ng-if="editItem.gid">
+      <label>索引</label>
+      <input type="text" name="gid" ng-model="editItem.gid" readonly>
+    </div>
+    <div class="field">
+      <label>名称</label>
+      <input type="text" name="name" ng-model="editItem.name" placeholder="群组名称">
+    </div>
+    <div class="field">
+      <label>共享</label>
+      <div class="ui fluid share selection dropdown">
+        <input type="hidden" name="share">
+        <i class="dropdown icon"></i>
+        <div class="default text">是否启用群组通讯录共享</div>
+        <div class="menu">
+          <div class="item" data-value="0">关闭通讯录共享</div>
+          <div class="item" data-value="1">开启通讯录共享</div>
+        </div>
+      </div>
+    </div>
+    <div class="ui warning message" ng-show="editItem.error">
+      <div class="header" ng-bind="editItem.error"></div>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui deny orange button">取消</div>
+    <div class="ui approve teal button" ng-class="{loading:editItem.loading}">保存</div>
+  </div>
+</form>

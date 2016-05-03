@@ -1,0 +1,150 @@
+<div class="user container">
+  <div ng-include="'loading.html'" ng-if="loading"></div>
+  <div class="ui warning message" ng-if="!loading && error">
+    <div class="header" ng-bind="error"></div>
+  </div>
+  <div class="animate" ng-show="!loading && !error">
+    <div class="ui top attached three fluid item tabular menu">
+      <a class="item" data-tab="add">添加</a>
+      <a class="active item" data-tab="online">在线</a>
+      <a class="item" data-tab="list">列表</a>
+    </div>
+    <div class="ui bottom attached tab segment" data-tab="add">
+      <form class="ui add form">
+        <div class="field">
+          <label>学号</label>
+          <input type="text" placeholder="请输入学号" name="uid" ng-model="add.uid">
+        </div>
+        <div class="field">
+          <label>权限</label>
+          <div class="ui add fluid selection dropdown">
+            <input type="hidden" name="rank">
+            <i class="dropdown icon"></i>
+            <div class="default text">请选择权限</div>
+            <div class="menu">
+              <div class="item" data-value="{{rank}}" ng-repeat="(rank, group) in rank2group" ng-bind="group"></div>
+            </div>
+          </div>
+        </div>
+        <div class="ui positive submit button" ng-class="{loading:add.loading}">添加用户</div>
+      </form>
+      <div class="ui teal message" ng-if="add.error" ng-bind="add.error"></div>
+    </div>
+    <div class="ui bottom attached tab segment" data-tab="list">
+      <form class="ui form">
+        <div class="field">
+          <input type="text" placeholder="输入关键词筛选" ng-model="list.key" ng-change="list.action(list.key, 1)">
+        </div>
+        <div class="field">
+          <div class="ui fluid selection sort dropdown">
+            <i class="dropdown icon"></i>
+            <div class="default text">排序方式</div>
+            <div class="menu">
+              <div class="item" ng-click="list.action(list.key, 1, 'rank', false)">按权限排序</div>
+              <div class="item" ng-click="list.action(list.key, 1, 'uid', true)">按学号排序</div>
+              <div class="item" ng-click="list.action(list.key, 1, 'count', false)">按使用次数排序</div>
+              <div class="item" ng-click="list.action(list.key, 1, 'error', false)">按错误次数排序</div>
+              <div class="item" ng-click="list.action(list.key, 1, 'lastTime', false)">按活跃时间排序</div>
+              <div class="item" ng-click="list.action(list.key, 1, 'wxTime', false)">按关注时间排序</div>
+              <div class="active item" ng-click="list.action(list.key, 1, 'regTime', false)">按注册时间排序</div>
+            </div>
+          </div>
+        </div>
+      </form>
+      <div class="ui fluid card" ng-class="{true:'green',false:'orange'}[item.error == 0]" ng-repeat="item in list.result track by $index">
+        <div class="content">
+          <div class="right floated">
+            <div class="ui right pointing change dropdown">
+              <div class="text" ng-bind="(item.rank == -1)? '冻结':rank2group[item.rank]"></div>
+              <i class="dropdown icon"></i>
+              <div class="menu">
+                <div class="item" ng-click="change(item.uid, -1)">冻结</div>
+                <div class="item" ng-repeat="(rank, group) in rank2group" ng-click="change(item.uid, rank)" ng-bind="group"></div>
+              </div>
+            </div>
+          </div>
+          <div class="header">
+            <span ng-bind="item.name"></span>
+            <span ng-bind="'（' + item.state + '）'" ng-if="item.error != 0"></span>
+            <span class="pointer" ng-click="$root.sendMsg(item.uid, item.name)">
+              <i class="green comments icon"></i>
+            </span>
+          </div>
+          <div class="meta">
+            <span ng-bind="'添加者：' + (item.inviter || '未知')"></span>
+          </div>
+          <div class="ui middle aligned list">
+            <div class="item" ng-if="item.wid && (-1 == item.wxStatus)">
+              <i class="wechat icon" style="width: 20px"></i>
+              <div class="content">
+                微信 <span ng-bind="item.wid"></span> | 未知
+              </div>
+            </div>
+            <div class="item" ng-if="item.wid && (1 == item.wxStatus)">
+              <i class="green wechat icon" style="width: 20px"></i>
+              <div class="content">
+                微信 <span ng-bind="item.wid"></span> | 关注
+              </div>
+            </div>
+            <div class="item" ng-if="item.wid && (2 == item.wxStatus)">
+              <i class="red wechat icon" style="width: 20px"></i>
+              <div class="content">
+                微信 <span ng-bind="item.wid"></span> | 禁用
+              </div>
+            </div>
+            <div class="item" ng-if="item.wid && (4 == item.wxStatus)">
+              <i class="orange wechat icon" style="width: 20px"></i>
+              <div class="content">
+                微信 <span ng-bind="item.wid"></span> | 取关
+              </div>
+            </div>
+            <div class="item">
+              <i class="green browser icon" style="width: 20px"></i>
+              <div class="content" ng-bind="'活跃于 ' + item.lastTime"></div>
+            </div>
+            <div class="item">
+              <i class="green add user icon" style="width: 20px"></i>
+              <div class="content" ng-bind="'添加于 ' + item.regTime"></div>
+            </div>
+            <div class="item">
+              <i class="green write square icon" style="width: 20px"></i>
+              <div class="content" ng-bind="'网页 ' + item.webCount + ' 次 | 微信 ' + item.wxCount + ' 次 | API ' + item.apiCount + ' 次'"></div>
+            </div>
+          </div>
+        </div>
+        <div class="extra content">
+          <span class="left floated reset operate" ng-click="reset(item.uid, item.name)">
+            <i class="refresh icon"></i> 重置密码
+          </span>
+          <span class="left floated unlock operate" ng-click="unlock(item.uid)" ng-if="item.error != 0">
+            <i class="unlock icon"></i> 解锁
+          </span>
+          <span class="right floated delete operate" ng-click="delete(item.uid, item.name)">
+            <i class="remove icon"></i> 删除用户
+          </span>
+        </div>
+      </div>
+      <paging page="list.page" page-size="list.per" total="list.total" paging-action="list.action(list.key, page)"></paging>
+    </div>
+    <div class="ui active tab" data-tab="online">
+      <div class="animate" ng-if="$root.onlineUser && $root.onlineUser.length">
+        <table class="ui striped unstackable bottom attached table" style="border-top:none;">
+          <tr>
+            <td class="center aligned">姓名</td>
+            <td class="center aligned">权限</td>
+            <td class="center aligned">时间</td>
+            <td class="center aligned">窗口</td>
+          </tr>
+          <tr ng-repeat="item in $root.onlineUser | sortBy:'time':true">
+            <td class="center aligned" ng-bind="item.name"></td>
+            <td class="center aligned" ng-bind="item.rank"></td>
+            <td class="center aligned" ng-bind="item.time"></td>
+            <td class="pointer center aligned" ng-click="$root.sendMsg(item.sid, item.name)">
+              {{item.count}} <i class="green comment icon"></i>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

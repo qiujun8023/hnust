@@ -1,0 +1,52 @@
+<div class="container">
+  <div class="ui top attached two fluid item tabular menu">
+    <a class="active item" data-tab="setting">设置</a>
+    <a class="item" data-tab="update">更新</a>
+  </div>
+  <div class="ui bottom attached active tab segment" data-tab="setting">
+    <div ng-include="'loading.html'" ng-if="setting.loading"></div>
+    <div class="ui warning message" ng-if="!setting.loading && setting.error">
+      <div class="header" ng-bind="setting.error"></div>
+    </div>
+    <form class="ui setting form" ng-show="!setting.loading && !setting.error">
+      <div class="field" ng-repeat="item in setting.data track by $index">
+        <label ng-bind="item.mark + '：'" ng-init="item.changed = false"></label>
+        <input type="text" ng-model="item.value" ng-change="item.changed = true">
+        <button class="ui positive button" ng-class="{disabled:!item.changed}" ng-click="setting.update(item)">保存</button>
+      </div>
+    </form>
+  </div>
+  <div class="ui bottom attached tab segment" data-tab="update">
+    <div class="ui update form">
+      <div class="ui info message">
+        更新数据需要较长的时间及较大的资源占用，请谨慎操作
+      </div>
+      <div class="field">
+        <label>类型</label>
+        <div class="ui fluid selection update dropdown">
+          <i class="dropdown icon"></i>
+          <span class="default text">请选择要更新的数据</span>
+          <input type="hidden" name="type">
+          <div class="menu">
+            <div class="item" data-value="passwd">弱密码</div>
+            <div class="item" data-value="failRate">挂科率</div>
+            <div class="item" data-value="allScore">成绩信息</div>
+            <div class="item" data-value="schedule">课表信息</div>
+            <div class="item" data-value="dorm">学生宿舍</div>
+            <div class="item" data-value="info">详细资料</div>
+            <div class="item" data-value="jwc">教务密码</div>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>学号</label>
+        <input type="text" name="start" ng-model="update.start" placeholder="更新的起始学号（不填即为继续上次更新）">
+      </div>
+      <div class="field">
+        <label>Cookie</label>
+        <textarea name="cookie" ng-model="update.cookie" placeholder="更新需要用到的Cookie"></textarea>
+      </div>
+      <div class="ui submit positive button" ng-class="{loading:update.loading}">更新</div>
+    </div>
+  </div>
+</div>
